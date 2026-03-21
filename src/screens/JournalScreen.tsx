@@ -1,0 +1,281 @@
+// src/screens/JournalScreen.tsx
+import React, {useState} from 'react';
+import {View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Alert, StyleSheet} from 'react-native';
+import {Fonts} from '../theme';
+import {JournalEntry, Member, fmtTime} from '../utils';
+import {exportEntryTxt, exportEntryMd, exportEntryJSON} from '../export/exportUtils';
+
+interface Props {
+  theme: any;
+  journal: JournalEntry[];
+  members: Member[];
+  systemJournalPassword?: string;
+  onAdd: () => void;
+  onEdit: (entry: JournalEntry) => void;
+  onDelete: (id: string) => void;
+}
+
+export const JournalScreen = ({theme: T, journal, members, systemJournalPassword, onAdd, onEdit, onDelete}: Props) => {
+  const [journalUnlocked, setJournalUnlocked] = useState(!systemJournalPassword);
+  const [globalPwInput, setGlobalPwInput] = useState('');
+  const [globalPwError, setGlobalPwError] = useState(false);
+  const [unlockedEntries, setUnlockedEntries] = useState<Set<string>>(new Set());
+  const [entryPwModal, setEntryPwModal] = useState<{entry: JournalEntry; mode: 'edit' | 'delete'} | null>(null);
+  const [entryPwInput, setEntryPwInput] = useState('');
+  const [entryPwError, setEntryPwError] = useState(false);
+  const [exportMenuEntry, setExportMenuEntry] = useState<JournalEntry | null>(null);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+
+  const [activeAuthor, setActiveAuthor] = useState<string | null>(null);
+
+  const getMember = (id: string) => members.find(m => m.id === id);
+  const allTags = [...new Set(journal.flatMap(e => e.hashtags || []))].sort();
+
+  // Authors who have at least one entry
+  const activeAuthors = members.filter(m => journal.some(e => (e.authorIds || []).includes(m.id)));
+
+  const filteredJournal = journal.filter(e => {
+    const tagMatch = !activeTag || (e.hashtags || []).includes(activeTag);
+    const authorMatch = !activeAuthor || (e.authorIds || []).includes(activeAuthor);
+    return tagMatch && authorMatch;
+  });
+
+  const handleGlobalUnlock = () => {
+    if (globalPwInput === systemJournalPassword) {setJournalUnlocked(true); setGlobalPwError(false); setGlobalPwInput('');}
+    else setGlobalPwError(true);
+  };
+
+  const handleEntryTap = (entry: JournalEntry) => {
+    if (!entry.password || unlockedEntries.has(entry.id)) {onEdit(entry);}
+    else {setEntryPwInput(''); setEntryPwError(false); setEntryPwModal({entry, mode: 'edit'});}
+  };
+
+  const handleDeleteTap = (entry: JournalEntry) => {
+    if (!entry.password || unlockedEntries.has(entry.id)) {
+      Alert.alert('Delete Entry', 'Are you sure?', [{text: 'Cancel', style: 'cancel'}, {text: 'Delete', style: 'destructive', onPress: () => onDelete(entry.id)}]);
+    } else {
+      setEntryPwInput(''); setEntryPwError(false); setEntryPwModal({entry, mode: 'delete'});
+    }
+  };
+
+  const handleEntryPwConfirm = () => {
+    if (!entryPwModal) return;
+    if (entryPwInput === entryPwModal.entry.password) {
+      setUnlockedEntries(prev => new Set([...prev, entryPwModal.entry.id]));
+      setEntryPwError(false);
+      if (entryPwModal.mode === 'edit') {onEdit(entryPwModal.entry);}
+      else {Alert.alert('Delete Entry', 'Are you sure?', [{text: 'Cancel', style: 'cancel'}, {text: 'Delete', style: 'destructive', onPress: () => onDelete(entryPwModal.entry.id)}]);}
+      setEntryPwModal(null);
+    } else setEntryPwError(true);
+  };
+
+  const handleEntryExport = (entry: JournalEntry, fmt: 'txt' | 'md' | 'json') => {
+    setExportMenuEntry(null);
+    const run = async () => {
+      try {
+        if (fmt === 'txt') await exportEntryTxt(entry, members);
+        else if (fmt === 'md') await exportEntryMd(entry, members);
+        else await exportEntryJSON(entry);
+      } catch (e) {Alert.alert('Export Failed', String(e));}
+    };
+    run();
+  };
+
+  if (!journalUnlocked) {
+    return (
+      <View style={{flex: 1, backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32}}>
+        <Text style={{fontSize: 44, color: T.accent, marginBottom: 16}}>◉</Text>
+        <Text style={[s.heading, {color: T.text, marginBottom: 8}]}>Journal Locked</Text>
+        <Text style={{fontSize: 13, color: T.dim, textAlign: 'center', marginBottom: 24}}>Enter the journal password to continue.</Text>
+        <TextInput value={globalPwInput} onChangeText={v => {setGlobalPwInput(v); setGlobalPwError(false);}}
+          placeholder="Password" placeholderTextColor={T.muted} secureTextEntry
+          style={[s.input, {width: '100%', backgroundColor: T.surface, color: T.text, borderColor: globalPwError ? T.danger : T.border, marginBottom: 6}]}
+          onSubmitEditing={handleGlobalUnlock} />
+        {globalPwError && <Text style={{fontSize: 12, color: T.danger, marginBottom: 10, alignSelf: 'flex-start'}}>Incorrect password.</Text>}
+        <TouchableOpacity onPress={handleGlobalUnlock} activeOpacity={0.8}
+          style={{width: '100%', backgroundColor: T.accent, borderRadius: 8, paddingVertical: 13, alignItems: 'center', marginTop: 8}}>
+          <Text style={{fontSize: 15, fontWeight: '700', color: '#0a0508'}}>Unlock Journal</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={{flex: 1, backgroundColor: T.bg}} contentContainerStyle={s.content}>
+      <View style={s.headerRow}>
+        <Text style={[s.heading, {color: T.text}]}>Journal</Text>
+        <TouchableOpacity onPress={onAdd} activeOpacity={0.7}
+          style={{paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`}}>
+          <Text style={{fontSize: 13, fontWeight: '500', color: T.accent}}>+ New</Text>
+        </TouchableOpacity>
+      </View>
+
+      {allTags.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom: 8}}>
+          <View style={{flexDirection: 'row', gap: 6}}>
+            <TouchableOpacity onPress={() => setActiveTag(null)} activeOpacity={0.7}
+              style={[s.tagChip, {backgroundColor: !activeTag ? `${T.info}18` : T.surface, borderColor: !activeTag ? `${T.info}50` : T.border}]}>
+              <Text style={{fontSize: 11, color: !activeTag ? T.info : T.dim, fontWeight: !activeTag ? '600' : '400'}}>All Tags</Text>
+            </TouchableOpacity>
+            {allTags.map(t => (
+              <TouchableOpacity key={t} onPress={() => setActiveTag(activeTag === t ? null : t)} activeOpacity={0.7}
+                style={[s.tagChip, {backgroundColor: activeTag === t ? `${T.info}18` : T.surface, borderColor: activeTag === t ? `${T.info}50` : T.border}]}>
+                <Text style={{fontSize: 11, color: activeTag === t ? T.info : T.dim, fontWeight: activeTag === t ? '600' : '400'}}>{t}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      )}
+
+      {activeAuthors.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom: 14}}>
+          <View style={{flexDirection: 'row', gap: 6}}>
+            <TouchableOpacity onPress={() => setActiveAuthor(null)} activeOpacity={0.7}
+              style={[s.tagChip, {backgroundColor: !activeAuthor ? `${T.accent}18` : T.surface, borderColor: !activeAuthor ? `${T.accent}40` : T.border}]}>
+              <Text style={{fontSize: 11, color: !activeAuthor ? T.accent : T.dim, fontWeight: !activeAuthor ? '600' : '400'}}>All Authors</Text>
+            </TouchableOpacity>
+            {activeAuthors.map(m => (
+              <TouchableOpacity key={m.id} onPress={() => setActiveAuthor(activeAuthor === m.id ? null : m.id)} activeOpacity={0.7}
+                style={[s.tagChip, {backgroundColor: activeAuthor === m.id ? `${m.color}20` : T.surface, borderColor: activeAuthor === m.id ? `${m.color}60` : T.border}]}>
+                <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
+                  <View style={{width: 7, height: 7, borderRadius: 3.5, backgroundColor: m.color}} />
+                  <Text style={{fontSize: 11, color: activeAuthor === m.id ? m.color : T.dim, fontWeight: activeAuthor === m.id ? '600' : '400'}}>{m.name}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      )}
+
+      {!filteredJournal.length ? (
+        <View style={{alignItems: 'center', paddingVertical: 48}}>
+          <Text style={{fontSize: 36, opacity: 0.4, marginBottom: 12}}>◉</Text>
+          <Text style={{fontSize: 13, color: T.dim, textAlign: 'center', marginBottom: 16}}>
+            {activeTag ? `No entries tagged ${activeTag}.` : 'No entries yet. Start writing.'}
+          </Text>
+          {!activeTag && (
+            <TouchableOpacity onPress={onAdd} activeOpacity={0.7}
+              style={{paddingHorizontal: 16, paddingVertical: 9, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`}}>
+              <Text style={{fontSize: 14, fontWeight: '500', color: T.accent}}>Write Entry</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        <View style={{gap: 9}}>
+          {filteredJournal.map(e => {
+            const authors = (e.authorIds || []).map(id => getMember(id)).filter(Boolean) as Member[];
+            const isLocked = !!e.password && !unlockedEntries.has(e.id);
+            return (
+              <View key={e.id} style={[s.card, {backgroundColor: T.card, borderColor: T.border}]}>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4}}>
+                  <Text style={{fontSize: 15, fontWeight: '500', color: T.text, flex: 1, marginRight: 8}} numberOfLines={2}>{e.title || 'Untitled'}</Text>
+                  <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+                    {isLocked && <Text style={{fontSize: 13}}>🔒</Text>}
+                    <TouchableOpacity onPress={() => handleEntryTap(e)} style={{padding: 4}}><Text style={{fontSize: 14, color: T.dim}}>✎</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={() => setExportMenuEntry(e)} style={{padding: 4}}><Text style={{fontSize: 14, color: T.dim}}>↑</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDeleteTap(e)} style={{padding: 4}}><Text style={{fontSize: 14, color: T.muted}}>✕</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <Text style={{fontSize: 11, color: T.muted, marginBottom: 8}}>{fmtTime(e.timestamp)}</Text>
+                {authors.length > 0 && (
+                  <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: 8}}>
+                    {authors.map(m => (
+                      <View key={m.id} style={{flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3,
+                        borderRadius: 999, borderWidth: 1, backgroundColor: `${m.color}20`, borderColor: `${m.color}45`}}>
+                        <View style={{width: 6, height: 6, borderRadius: 3, backgroundColor: m.color}} />
+                        <Text style={{fontSize: 11, fontWeight: '600', color: m.color}}>{m.name}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                {isLocked ? (
+                  <TouchableOpacity onPress={() => handleEntryTap(e)} style={{paddingVertical: 8, alignItems: 'center'}}>
+                    <Text style={{fontSize: 12, color: T.muted, fontStyle: 'italic'}}>Tap to unlock this entry</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <>
+                    {e.body ? <Text style={{fontSize: 13, color: T.dim, lineHeight: 19}} numberOfLines={3}>{e.body}</Text> : null}
+                    {(e.hashtags || []).length > 0 && (
+                      <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: 8}}>
+                        {(e.hashtags || []).map(t => (
+                          <TouchableOpacity key={t} onPress={() => setActiveTag(activeTag === t ? null : t)} activeOpacity={0.7}
+                            style={[s.tagChip, {backgroundColor: activeTag === t ? `${T.info}25` : `${T.info}12`, borderColor: activeTag === t ? `${T.info}60` : `${T.info}30`}]}>
+                            <Text style={{fontSize: 11, color: T.info}}>{t}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </>
+                )}
+              </View>
+            );
+          })}
+        </View>
+      )}
+
+      {/* Export menu */}
+      <Modal visible={!!exportMenuEntry} transparent animationType="fade" onRequestClose={() => setExportMenuEntry(null)}>
+        <View style={s.overlay}>
+          <View style={[s.modalCard, {backgroundColor: T.card, borderColor: T.border}]}>
+            <Text style={[s.modalTitle, {color: T.text}]}>Export Entry</Text>
+            <Text style={{fontSize: 13, color: T.dim, marginBottom: 16}} numberOfLines={1}>{exportMenuEntry?.title || 'Untitled'}</Text>
+            <View style={{flexDirection: 'row', gap: 8, marginBottom: 8}}>
+              {(['txt', 'md', 'json'] as const).map(fmt => (
+                <TouchableOpacity key={fmt} onPress={() => exportMenuEntry && handleEntryExport(exportMenuEntry, fmt)} activeOpacity={0.7}
+                  style={{flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8, borderWidth: 1,
+                    backgroundColor: T.accentBg, borderColor: `${T.accent}40`}}>
+                  <Text style={{fontSize: 13, color: T.accent, fontWeight: '500'}}>↓ .{fmt}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity onPress={() => setExportMenuEntry(null)} activeOpacity={0.7}
+              style={{alignItems: 'center', paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: T.border}}>
+              <Text style={{fontSize: 13, color: T.dim}}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Password modal */}
+      <Modal visible={!!entryPwModal} transparent animationType="fade" onRequestClose={() => setEntryPwModal(null)}>
+        <View style={s.overlay}>
+          <View style={[s.modalCard, {backgroundColor: T.card, borderColor: T.border}]}>
+            <Text style={[s.modalTitle, {color: T.text}]}>Entry Locked</Text>
+            <Text style={{fontSize: 13, color: T.dim, marginBottom: 16}}>
+              {entryPwModal?.mode === 'delete' ? 'Enter the password to delete this entry.' : 'Enter the password to unlock this entry.'}
+            </Text>
+            <TextInput value={entryPwInput} onChangeText={v => {setEntryPwInput(v); setEntryPwError(false);}}
+              placeholder="Password" placeholderTextColor={T.muted} secureTextEntry
+              style={[s.input, {backgroundColor: T.surface, color: T.text, borderColor: entryPwError ? T.danger : T.border, marginBottom: 6}]}
+              onSubmitEditing={handleEntryPwConfirm} />
+            {entryPwError && <Text style={{fontSize: 12, color: T.danger, marginBottom: 10}}>Incorrect password.</Text>}
+            <View style={{flexDirection: 'row', gap: 8, marginTop: 12}}>
+              <TouchableOpacity onPress={() => setEntryPwModal(null)} activeOpacity={0.7}
+                style={{flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: T.border}}>
+                <Text style={{fontSize: 13, color: T.dim}}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleEntryPwConfirm} activeOpacity={0.7}
+                style={{flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8, backgroundColor: T.accentBg, borderWidth: 1, borderColor: `${T.accent}40`}}>
+                <Text style={{fontSize: 13, fontWeight: '500', color: T.accent}}>
+                  {entryPwModal?.mode === 'delete' ? 'Delete' : 'Unlock'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </ScrollView>
+  );
+};
+
+const s = StyleSheet.create({
+  content: {padding: 16, paddingBottom: 32},
+  headerRow: {flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14},
+  heading: {fontFamily: Fonts.display, fontSize: 26, fontWeight: '600', fontStyle: 'italic'},
+  input: {borderWidth: 1, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15},
+  card: {borderRadius: 12, borderWidth: 1, padding: 14},
+  tagChip: {paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1},
+  overlay: {flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', alignItems: 'center', justifyContent: 'center', padding: 24},
+  modalCard: {borderRadius: 16, borderWidth: 1, padding: 24, width: '100%', maxWidth: 360},
+  modalTitle: {fontFamily: Fonts.display, fontSize: 20, fontWeight: '600', fontStyle: 'italic', marginBottom: 6},
+});
