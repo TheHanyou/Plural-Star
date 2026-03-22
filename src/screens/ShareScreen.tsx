@@ -180,13 +180,62 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           }));
           const merged = [...members, ...newM.filter(nm => !members.find(em => em.name.toLowerCase() === nm.name.toLowerCase()))];
           await store.set(KEYS.members, merged);
-        }
-        if (extSel.frontHistory && extPreview.switches.length > 0) {
+
+          // Build a map from external ID → local member ID for switch resolution
+          const idMap: Record<string, string> = {};
+          extPreview.members.forEach((m: any, i: number) => {
+            const externalId = isPK ? (m.uuid || m.id) : (m.id);
+            const localMember = merged.find(lm => lm.name.toLowerCase() === newM[i]?.name.toLowerCase());
+            if (externalId && localMember) idMap[externalId] = localMember.id;
+            // Also map short ID for PK
+            if (isPK && m.id && localMember) idMap[m.id] = localMember.id;
+          });
+
+          if (extSel.frontHistory && extPreview.switches.length > 0) {
+            const newH: HistoryEntry[] = extPreview.switches.map((sw: any, i: number, arr: any[]) => {
+              const next = arr[i - 1];
+              // Resolve member IDs from external to local
+              const externalMemberIds: string[] = isPK
+                ? (Array.isArray(sw.members) ? sw.members : [])
+                : (Array.isArray(sw.content?.members) ? sw.content.members : []);
+              const resolvedIds = externalMemberIds
+                .map((eid: string) => idMap[eid])
+                .filter(Boolean) as string[];
+              return {
+                memberIds: resolvedIds,
+                startTime: isPK ? new Date(sw.timestamp).getTime() : (sw.content?.startTime || Date.now()),
+                endTime: isPK ? (next ? new Date(next.timestamp).getTime() : null) : (sw.content?.endTime || null),
+                note: isPK ? '' : (sw.content?.comment || ''),
+                mood: undefined,
+                location: undefined,
+              };
+            });
+            await store.set(KEYS.history, [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000));
+          }
+        } else if (extSel.frontHistory && extPreview.switches.length > 0) {
+          // Members not imported — try to resolve against existing local members by name
+          const existingIdMap: Record<string, string> = {};
+          extPreview.members.forEach((m: any) => {
+            const externalId = isPK ? (m.uuid || m.id) : m.id;
+            const name = isPK ? (m.display_name || m.name || '') : (m.content?.name || m.name || '');
+            const localMember = members.find(lm => lm.name.toLowerCase() === name.toLowerCase());
+            if (externalId && localMember) existingIdMap[externalId] = localMember.id;
+            if (isPK && m.id && localMember) existingIdMap[m.id] = localMember.id;
+          });
           const newH: HistoryEntry[] = extPreview.switches.map((sw: any, i: number, arr: any[]) => {
             const next = arr[i - 1];
-            return {memberIds: [], startTime: isPK ? new Date(sw.timestamp).getTime() : (sw.content?.startTime || Date.now()),
+            const externalMemberIds: string[] = isPK
+              ? (Array.isArray(sw.members) ? sw.members : [])
+              : (Array.isArray(sw.content?.members) ? sw.content.members : []);
+            const resolvedIds = externalMemberIds.map((eid: string) => existingIdMap[eid]).filter(Boolean) as string[];
+            return {
+              memberIds: resolvedIds,
+              startTime: isPK ? new Date(sw.timestamp).getTime() : (sw.content?.startTime || Date.now()),
               endTime: isPK ? (next ? new Date(next.timestamp).getTime() : null) : (sw.content?.endTime || null),
-              note: isPK ? '' : (sw.content?.comment || ''), mood: undefined, location: undefined};
+              note: isPK ? '' : (sw.content?.comment || ''),
+              mood: undefined,
+              location: undefined,
+            };
           });
           await store.set(KEYS.history, [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000));
         }
