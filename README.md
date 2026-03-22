@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://ko-fi.com/PluralSpace">
+  <a href="buymeacoffee.com/pluralspace">
     <img src="https://img.shields.io/badge/Support%20on%20Ko--Fi-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white" alt="Ko-Fi" />
   </a>
 </p>
