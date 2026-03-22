@@ -1,4 +1,3 @@
-// src/screens/ShareScreen.tsx
 import React, {useState} from 'react';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, Alert, StyleSheet, ActivityIndicator} from 'react-native';
 import DocumentPicker from '@react-native-documents/picker';
@@ -196,6 +195,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
               const next = arr[i - 1];
               const externalMemberIds: string[] = Array.isArray(sw.members) ? sw.members : (Array.isArray(sw.content?.members) ? sw.content.members : []);
               const resolvedIds = externalMemberIds.map((eid: string) => idMap[eid]).filter(Boolean) as string[];
+
               return {
                 memberIds: resolvedIds,
                 startTime: isPK ? new Date(sw.timestamp).getTime() : (sw.timestamp ? new Date(sw.timestamp).getTime() : Date.now()),
@@ -204,8 +204,11 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                 mood: undefined,
                 location: undefined,
               };
-            });
-            await store.set(KEYS.history, [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000));
+            }).filter(h => h.memberIds.length > 0);
+
+            if (newH.length > 0) {
+              await store.set(KEYS.history, [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000));
+            }
           }
         } else if (extSel.frontHistory && extPreview.switches.length > 0) {
           const existingIdMap: Record<string, string> = {};
@@ -221,6 +224,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
             const next = arr[i - 1];
             const externalMemberIds: string[] = Array.isArray(sw.members) ? sw.members : (Array.isArray(sw.content?.members) ? sw.content.members : []);
             const resolvedIds = externalMemberIds.map((eid: string) => existingIdMap[eid]).filter(Boolean) as string[];
+
             return {
               memberIds: resolvedIds,
               startTime: isPK ? new Date(sw.timestamp).getTime() : (sw.timestamp ? new Date(sw.timestamp).getTime() : Date.now()),
@@ -229,8 +233,11 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
               mood: undefined,
               location: undefined,
             };
-          });
-          await store.set(KEYS.history, [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000));
+          }).filter(h => h.memberIds.length > 0);
+
+          if (newH.length > 0) {
+            await store.set(KEYS.history, [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000));
+          }
         }
 
         setExtPreview(null); setExtToken(''); setTimeout(() => onDataImported(), 500);
