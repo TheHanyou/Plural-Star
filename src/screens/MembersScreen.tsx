@@ -1,8 +1,39 @@
 // src/screens/MembersScreen.tsx
 import React, {useState} from 'react';
-import {View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet} from 'react-native';
+import {View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Image} from 'react-native';
 import {Fonts} from '../theme';
 import {Member, FrontState, getInitials} from '../utils';
+
+const IMAGE_URL_RE = /https?:\/\/\S+\.(?:gif|png|jpe?g|webp)(?:\?\S*)?/gi;
+
+const RichDescription = ({text, T}: {text: string; T: any}) => {
+  if (!text) return null;
+  const parts: {type: 'text' | 'image'; value: string}[] = [];
+  let last = 0;
+  const matches = [...text.matchAll(IMAGE_URL_RE)];
+  if (matches.length === 0) {
+    return <Text style={{fontSize: 13, color: T.dim, lineHeight: 20}}>{text}</Text>;
+  }
+  for (const match of matches) {
+    const idx = match.index ?? 0;
+    if (idx > last) parts.push({type: 'text', value: text.slice(last, idx).trim()});
+    parts.push({type: 'image', value: match[0]});
+    last = idx + match[0].length;
+  }
+  if (last < text.length) parts.push({type: 'text', value: text.slice(last).trim()});
+  return (
+    <View style={{gap: 8}}>
+      {parts.map((p, i) =>
+        p.type === 'image' ? (
+          <Image key={i} source={{uri: p.value}} style={{width: '100%', height: 200, borderRadius: 8}}
+            resizeMode="contain" />
+        ) : p.value ? (
+          <Text key={i} style={{fontSize: 13, color: T.dim, lineHeight: 20}}>{p.value}</Text>
+        ) : null
+      )}
+    </View>
+  );
+};
 
 const Avatar = ({member, size = 40, pulse = false, T}: {member?: Member | null; size?: number; pulse?: boolean; T: any}) => (
   <View style={{width: size, height: size, borderRadius: size / 2, backgroundColor: member?.color || T.muted,
@@ -22,6 +53,7 @@ interface Props {
 
 export const MembersScreen = ({theme: T, members, front, onAdd, onEdit}: Props) => {
   const [query, setQuery] = useState('');
+  const [expanded, setExpanded] = useState<string | null>(null);
   const frontIds = new Set(front?.memberIds || []);
   const filtered = members.filter(m =>
     m.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -57,27 +89,37 @@ export const MembersScreen = ({theme: T, members, front, onAdd, onEdit}: Props) 
       ) : (
         <View style={{gap: 8}}>
           {filtered.map(m => (
-            <TouchableOpacity key={m.id} onPress={() => onEdit(m)} activeOpacity={0.75}
-              style={[s.card, {backgroundColor: T.card, borderColor: frontIds.has(m.id) ? `${m.color}60` : T.border}]}>
-              <Avatar member={m} size={44} pulse={frontIds.has(m.id)} T={T} />
-              <View style={{flex: 1, overflow: 'hidden'}}>
-                <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2}}>
-                  <Text style={{fontSize: 15, fontWeight: '500', color: T.text}}>{m.name}</Text>
-                  {frontIds.has(m.id) && (
-                    <View style={{paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999,
-                      backgroundColor: `${m.color}18`, borderWidth: 1, borderColor: `${m.color}35`}}>
-                      <Text style={{fontSize: 10, color: m.color, fontWeight: '500'}}>FRONT</Text>
-                    </View>
-                  )}
+            <TouchableOpacity key={m.id} activeOpacity={0.75}
+              style={[s.card, {backgroundColor: T.card, borderColor: frontIds.has(m.id) ? `${m.color}60` : T.border}]}
+              onPress={() => setExpanded(expanded === m.id ? null : m.id)}>
+              <View style={{flexDirection: 'row', alignItems: 'center', gap: 14}}>
+                <Avatar member={m} size={44} pulse={frontIds.has(m.id)} T={T} />
+                <View style={{flex: 1, overflow: 'hidden'}}>
+                  <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2}}>
+                    <Text style={{fontSize: 15, fontWeight: '500', color: T.text}}>{m.name}</Text>
+                    {frontIds.has(m.id) && (
+                      <View style={{paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999,
+                        backgroundColor: `${m.color}18`, borderWidth: 1, borderColor: `${m.color}35`}}>
+                        <Text style={{fontSize: 10, color: m.color, fontWeight: '500'}}>FRONT</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={{fontSize: 12, color: T.dim}}>
+                    {[m.pronouns, m.role].filter(Boolean).join(' · ') || 'No details set'}
+                  </Text>
+                  {m.description && expanded !== m.id ? (
+                    <Text style={{fontSize: 11, color: T.muted, marginTop: 3}} numberOfLines={1}>{m.description}</Text>
+                  ) : null}
                 </View>
-                <Text style={{fontSize: 12, color: T.dim}}>
-                  {[m.pronouns, m.role].filter(Boolean).join(' · ') || 'No details set'}
-                </Text>
-                {m.description ? (
-                  <Text style={{fontSize: 11, color: T.muted, marginTop: 3}} numberOfLines={1}>{m.description}</Text>
-                ) : null}
+                <TouchableOpacity onPress={() => onEdit(m)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+                  <Text style={{fontSize: 14, color: T.muted}}>✎</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={{fontSize: 14, color: T.muted}}>✎</Text>
+              {expanded === m.id && m.description ? (
+                <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: T.border}}>
+                  <RichDescription text={m.description} T={T} />
+                </View>
+              ) : null}
             </TouchableOpacity>
           ))}
         </View>
@@ -93,5 +135,5 @@ const s = StyleSheet.create({
   addBtn: {paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1},
   search: {borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9, fontSize: 13, marginBottom: 14},
   empty: {alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24},
-  card: {borderRadius: 12, borderWidth: 1, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 14},
+  card: {borderRadius: 12, borderWidth: 1, padding: 14},
 });

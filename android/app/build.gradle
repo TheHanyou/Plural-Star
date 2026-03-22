@@ -30,6 +30,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('../../plural-space.keystore')
+            storePassword project.findProperty('PLURALSPACE_STORE_PASSWORD') ?: ''
+            keyAlias 'pluralspace'
+            keyPassword project.findProperty('PLURALSPACE_KEY_PASSWORD') ?: ''
+        }
     }
 
     buildTypes {
@@ -37,7 +43,7 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -63,5 +69,5 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.facebook.react:react-android")
     implementation("com.facebook.react:hermes-android")
-
+    implementation("com.facebook.fresco:animated-gif:3.6.0")
 }

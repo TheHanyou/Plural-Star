@@ -7,6 +7,37 @@ import {Member, JournalEntry, FrontState, SystemInfo, AppSettings, uid, isValidH
 
 const getInitials = (name: string) => name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
+const IMAGE_URL_RE = /https?:\/\/\S+\.(?:gif|png|jpe?g|webp)(?:\?\S*)?/gi;
+
+const RichDescription = ({text, T}: {text: string; T: any}) => {
+  if (!text) return null;
+  const parts: {type: 'text' | 'image'; value: string}[] = [];
+  let last = 0;
+  const matches = [...text.matchAll(IMAGE_URL_RE)];
+  if (matches.length === 0) {
+    return <Text style={{fontSize: 13, color: T.dim, lineHeight: 20}}>{text}</Text>;
+  }
+  for (const match of matches) {
+    const idx = match.index ?? 0;
+    if (idx > last) parts.push({type: 'text', value: text.slice(last, idx).trim()});
+    parts.push({type: 'image', value: match[0]});
+    last = idx + match[0].length;
+  }
+  if (last < text.length) parts.push({type: 'text', value: text.slice(last).trim()});
+  return (
+    <View style={{gap: 8}}>
+      {parts.map((p, i) =>
+        p.type === 'image' ? (
+          <Image key={i} source={{uri: p.value}} style={{width: '100%', height: 200, borderRadius: 8}}
+            resizeMode="contain" />
+        ) : p.value ? (
+          <Text key={i} style={{fontSize: 13, color: T.dim, lineHeight: 20}}>{p.value}</Text>
+        ) : null
+      )}
+    </View>
+  );
+};
+
 const Avatar = ({member, size = 36, T}: {member?: Member | null; size?: number; T: any}) => (
   <View style={{width: size, height: size, borderRadius: size / 2, backgroundColor: member?.color || T.muted,
     alignItems: 'center', justifyContent: 'center'}}>
@@ -244,7 +275,15 @@ export const MemberModal = ({visible, theme: T, member, onSave, onDelete, onClos
             style={{width: 30, height: 30, borderRadius: 15, backgroundColor: c, borderWidth: 2, borderColor: f.color === c ? '#fff' : 'transparent'}} />
         ))}
       </View>
-      <Field label="Description / Bio" value={f.description} onChange={(v: string) => set('description', v)} placeholder="A bit about this headmate…" multiline numberOfLines={4} T={T} />
+      <Field label="Description / Bio" value={f.description} onChange={(v: string) => set('description', v)} placeholder="A bit about this headmate… paste image/GIF URLs inline" multiline numberOfLines={4} T={T} />
+      {f.description ? (
+        <View style={{marginBottom: 14}}>
+          <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 8, fontWeight: '600'}}>Preview</Text>
+          <View style={{backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderRadius: 8, padding: 12}}>
+            <RichDescription text={f.description} T={T} />
+          </View>
+        </View>
+      ) : null}
     </Sheet>
   );
 };
