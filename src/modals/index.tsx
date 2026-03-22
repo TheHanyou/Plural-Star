@@ -1,6 +1,6 @@
 // src/modals/index.tsx
 import React, {useState} from 'react';
-import {View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView} from 'react-native';
+import {View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView, Image, Linking} from 'react-native';
 import {Sheet} from '../components/Sheet';
 import {PALETTE} from '../theme';
 import {Member, JournalEntry, FrontState, SystemInfo, AppSettings, uid, isValidHex, normalizeHex, DEFAULT_MOODS} from '../utils';
@@ -424,6 +424,15 @@ export const SystemModal = ({visible, theme: T, system, settings, onSave, onSave
           </View>
         </View>
       ))}
+
+      <View style={{borderTopWidth: 1, borderTopColor: T.border, paddingTop: 14, marginTop: 14, alignItems: 'center'}}>
+        <TouchableOpacity
+          onPress={() => Linking.openURL('https://www.buymeacoffee.com/PluralSpace')}
+          activeOpacity={0.8}
+          style={{paddingVertical: 11, paddingHorizontal: 28, borderRadius: 8, borderWidth: 1, borderColor: T.accent, backgroundColor: T.accentBg}}>
+          <Text style={{fontSize: 15, fontWeight: '600', color: T.accent}}>☕  Support PS</Text>
+        </TouchableOpacity>
+      </View>
     </Sheet>
   );
 };
