@@ -116,13 +116,13 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
       const userId = meData.id || meData.uid;
       const [mRes, sRes] = await Promise.all([
         fetch(`https://v2.apparyllis.com/v1/members/${userId}`, {headers}),
-        fetch(`https://v2.apparyllis.com/v1/switches/${userId}?limit=500`, {headers}),
+        fetch(`https://v2.apparyllis.com/v1/frontHistory/${userId}?startTime=0&endTime=${Date.now()}`, {headers}),
       ]);
       let mData: any = []; let sData: any = [];
       try { mData = await mRes.json(); } catch { mData = []; }
       try { sData = await sRes.json(); } catch { sData = []; }
       const memberList = Array.isArray(mData) ? mData : (mData.members || []);
-      const switchList = Array.isArray(sData) ? sData : (sData.switches || []);
+      const switchList = Array.isArray(sData) ? sData : (sData.switches || sData.frontHistory || []);
       const sanitized = memberList.map((m: any) => {
         if (m?.content?.name) m.content.name = String(m.content.name).replace(/[-\u001F\u007F]/g, '').trim();
         if (m?.name) m.name = String(m.name).replace(/[-\u001F\u007F]/g, '').trim();
@@ -159,6 +159,55 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
     finally {setExtLoading(false);}
   };
 
+
+  const convertSPSwitches = (switches: any[], idMap: Record<string, string>): HistoryEntry[] => {
+    return switches.map((sw: any, i: number, arr: any[]) => {
+      const next = arr[i - 1];
+      const externalMemberIds: string[] =
+        Array.isArray(sw.members) ? sw.members :
+        Array.isArray(sw.content?.members) ? sw.content.members :
+        (sw.content?.member ? [sw.content.member] : []);
+      const resolvedIds = externalMemberIds.map((eid: string) => idMap[eid]).filter(Boolean) as string[];
+
+      const rawTs = sw.content?.startTime || sw.content?.timestamp || sw.timestamp;
+      const startTime: number = typeof rawTs === 'number' ? rawTs :
+        (rawTs ? new Date(rawTs).getTime() : 0);
+      if (!startTime) return null;
+
+      const rawEnd = sw.content?.endTime ||
+        (next ? (next.content?.startTime || next.content?.timestamp || next.timestamp) : null);
+      const endTime: number | null = rawEnd
+        ? (typeof rawEnd === 'number' ? rawEnd : new Date(rawEnd).getTime())
+        : null;
+
+      return {
+        memberIds: resolvedIds,
+        startTime,
+        endTime,
+        note: sw.content?.comment || '',
+        mood: undefined,
+        location: undefined,
+      };
+    }).filter((h): h is HistoryEntry => h !== null && h.memberIds.length > 0);
+  };
+
+  const convertPKSwitches = (switches: any[], idMap: Record<string, string>): HistoryEntry[] => {
+    return switches.map((sw: any, i: number, arr: any[]) => {
+      const next = arr[i - 1];
+      const externalMemberIds: string[] = Array.isArray(sw.members) ? sw.members : [];
+      const resolvedIds = externalMemberIds.map((eid: string) => idMap[eid]).filter(Boolean) as string[];
+
+      return {
+        memberIds: resolvedIds,
+        startTime: new Date(sw.timestamp).getTime(),
+        endTime: next ? new Date(next.timestamp).getTime() : null,
+        note: '',
+        mood: undefined,
+        location: undefined,
+      };
+    }).filter(h => h.memberIds.length > 0);
+  };
+
   const handleExtImport = () => {
     if (!extPreview) return;
     const isPK = importSource === 'pluralkit';
@@ -166,8 +215,13 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
       {text: 'Cancel', style: 'cancel'},
       {text: 'Import', onPress: async () => {
         if (extSel.system && extPreview.system) {
-          const name = isPK ? extPreview.system.name : (extPreview.system.username || extPreview.system.name || system.name);
-          await store.set(KEYS.system, {...system, name: name || system.name, description: extPreview.system.description || system.description});
+          const name = isPK
+            ? extPreview.system.name
+            : (extPreview.system.content?.username || extPreview.system.content?.name || extPreview.system.username || extPreview.system.name || system.name);
+          const desc = isPK
+            ? (extPreview.system.description || system.description)
+            : (extPreview.system.content?.desc || extPreview.system.content?.description || extPreview.system.description || system.description);
+          await store.set(KEYS.system, {...system, name: name || system.name, description: desc});
         }
 
         if (extSel.members && extPreview.members.length > 0) {
@@ -191,20 +245,9 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           });
 
           if (extSel.frontHistory && extPreview.switches.length > 0) {
-            const newH: HistoryEntry[] = extPreview.switches.map((sw: any, i: number, arr: any[]) => {
-              const next = arr[i - 1];
-              const externalMemberIds: string[] = Array.isArray(sw.members) ? sw.members : (Array.isArray(sw.content?.members) ? sw.content.members : []);
-              const resolvedIds = externalMemberIds.map((eid: string) => idMap[eid]).filter(Boolean) as string[];
-
-              return {
-                memberIds: resolvedIds,
-                startTime: isPK ? new Date(sw.timestamp).getTime() : (sw.timestamp ? new Date(sw.timestamp).getTime() : Date.now()),
-                endTime: isPK ? (next ? new Date(next.timestamp).getTime() : null) : (next ? new Date(next.timestamp).getTime() : null),
-                note: isPK ? '' : (sw.content?.comment || ''),
-                mood: undefined,
-                location: undefined,
-              };
-            }).filter(h => h.memberIds.length > 0);
+            const newH: HistoryEntry[] = isPK
+              ? convertPKSwitches(extPreview.switches, idMap)
+              : convertSPSwitches(extPreview.switches, idMap);
 
             if (newH.length > 0) {
               await store.set(KEYS.history, [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000));
@@ -220,20 +263,9 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
             if (isPK && m.id && localMember) existingIdMap[m.id] = localMember.id;
           });
 
-          const newH: HistoryEntry[] = extPreview.switches.map((sw: any, i: number, arr: any[]) => {
-            const next = arr[i - 1];
-            const externalMemberIds: string[] = Array.isArray(sw.members) ? sw.members : (Array.isArray(sw.content?.members) ? sw.content.members : []);
-            const resolvedIds = externalMemberIds.map((eid: string) => existingIdMap[eid]).filter(Boolean) as string[];
-
-            return {
-              memberIds: resolvedIds,
-              startTime: isPK ? new Date(sw.timestamp).getTime() : (sw.timestamp ? new Date(sw.timestamp).getTime() : Date.now()),
-              endTime: isPK ? (next ? new Date(next.timestamp).getTime() : null) : (next ? new Date(next.timestamp).getTime() : null),
-              note: isPK ? '' : (sw.content?.comment || ''),
-              mood: undefined,
-              location: undefined,
-            };
-          }).filter(h => h.memberIds.length > 0);
+          const newH: HistoryEntry[] = isPK
+            ? convertPKSwitches(extPreview.switches, existingIdMap)
+            : convertSPSwitches(extPreview.switches, existingIdMap);
 
           if (newH.length > 0) {
             await store.set(KEYS.history, [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000));
@@ -427,14 +459,14 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
               {extPreview && (
                 <View>
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, padding: 14, marginBottom: 14}}>
-                    <Text style={{fontSize: 16, fontWeight: '600', color: T.accent}}>{extPreview.system?.name || extPreview.system?.username || 'System'}</Text>
-                    <Text style={{fontSize: 12, color: T.dim, marginTop: 2}}>{extPreview.members.length} members · {extPreview.switches.length} switches</Text>
+                    <Text style={{fontSize: 16, fontWeight: '600', color: T.accent}}>{extPreview.system?.content?.username || extPreview.system?.name || extPreview.system?.username || 'System'}</Text>
+                    <Text style={{fontSize: 12, color: T.dim, marginTop: 2}}>{extPreview.members.length} members · {extPreview.switches.length} front entries</Text>
                   </View>
                   <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>Import these categories</Text>
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
                     <SectionRow label="System Name & Description" value={extSel.system} onToggle={() => togE('system')} />
                     <SectionRow label="Member Profiles" sublabel={`${extPreview.members.length} members`} value={extSel.members} onToggle={() => togE('members')} />
-                    <SectionRow label="Front History" sublabel={`${extPreview.switches.length} switches`} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
+                    <SectionRow label="Front History" sublabel={`${extPreview.switches.length} entries`} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
                   </View>
                   <TouchableOpacity onPress={handleExtImport} activeOpacity={0.7}
                     style={{alignItems: 'center', paddingVertical: 11, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`, marginBottom: 10}}>
