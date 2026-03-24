@@ -1,6 +1,6 @@
 // src/modals/index.tsx
 import React, {useState, useMemo} from 'react';
-import {View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView, Image, Linking} from 'react-native';
+import {View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView, Image, Linking, Keyboard} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {Sheet} from '../components/Sheet';
 import {PALETTE} from '../theme';
@@ -65,6 +65,7 @@ const TierMemberPicker = ({tierKey, selected, setSelected, members, groups, allA
   }, [members, search, filterTag, selected]);
 
   const toggle = (id: string) => {
+    Keyboard.dismiss();
     const next = new Set(selected);
     if (next.has(id)) { next.delete(id); } else { next.add(id); }
     setSelected(next);
@@ -193,6 +194,7 @@ export const SetFrontModal = ({visible, theme: T, members, groups, current, sett
   const resolveMood = (mood: string, customMood: string, showCustom: boolean) => showCustom ? customMood || undefined : mood || undefined;
 
   const handleSave = () => {
+    Keyboard.dismiss();
     onSave({memberIds: [...primaryIds], mood: resolveMood(primaryMood, primaryCustomMood, primaryShowCustom), note: primaryNote, location: primaryLocation || undefined},
       {memberIds: [...coFrontIds], mood: resolveMood(coFrontMood, coFrontCustomMood, coFrontShowCustom), note: coFrontNote},
       {memberIds: [...coConsciousIds], mood: resolveMood(coConsciousMood, coConsciousCustomMood, coConsciousShowCustom), note: coConsciousNote});

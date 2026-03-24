@@ -248,7 +248,8 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
 
               {showMemberPicker && (
                 <View style={{marginHorizontal: 16, backgroundColor: T.card, borderRadius: 10,
-                  borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginTop: 4}}>
+                  borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginTop: 4, maxHeight: 280}}>
+                  <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true}>
                   {members.map(m => (
                     <TouchableOpacity key={m.id}
                       onPress={() => {setSelectedMemberId(m.id); setShowMemberPicker(false);}}
@@ -262,6 +263,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
                         <Text style={{color: m.color, marginLeft: 'auto'}}>✓</Text>}
                     </TouchableOpacity>
                   ))}
+                  </ScrollView>
                 </View>
               )}
 
