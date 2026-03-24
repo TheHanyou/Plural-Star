@@ -210,22 +210,40 @@ function MainAppContent() {
 
   const updateFront = async (primary: FrontTier, coFront: FrontTier, coConscious: FrontTier) => {
     const now = Date.now();
-    const resolvedLocation = await maybeGPS(primary.location?.trim() || lastKnownLocation);
     let newHistory = [...history];
     if (front) {
       newHistory = newHistory.map(e =>
         e.endTime === null && e.startTime === front.startTime && e.changeType === 'front' ? {...e, endTime: now} : e);
     }
-    const resolvedPrimary = {...primary, location: resolvedLocation};
     const isEmpty = primary.memberIds.length === 0 && coFront.memberIds.length === 0 && coConscious.memberIds.length === 0;
-    const nf: FrontState | null = isEmpty ? null : {primary: resolvedPrimary, coFront, coConscious, startTime: now};
+
+    // Set front IMMEDIATELY with whatever location we have — don't wait for GPS
+    const quickLocation = primary.location?.trim() || lastKnownLocation || undefined;
+    const nf: FrontState | null = isEmpty ? null : {primary: {...primary, location: quickLocation}, coFront, coConscious, startTime: now};
+
     if (nf) {
       const frontEntry = frontToHistoryEntry(nf, null, 'front');
-      newHistory = [frontEntry, ...newHistory];
-      if (resolvedLocation) await updateLastLocation(resolvedLocation);
-      newHistory = newHistory.slice(0, 1000);
+      newHistory = [frontEntry, ...newHistory].slice(0, 1000);
     }
-    setFront(nf); await store.set(KEYS.front, nf); await saveHistory(newHistory);
+
+    setFront(nf);
+    await store.set(KEYS.front, nf);
+    await saveHistory(newHistory);
+
+    // THEN resolve GPS asynchronously and patch in the location if it changed
+    if (nf && appSettings.gpsEnabled && !primary.location?.trim()) {
+      try {
+        const gpsLocation = await getGPSLocation();
+        if (gpsLocation && gpsLocation !== quickLocation) {
+          const patched: FrontState = {...nf, primary: {...nf.primary, location: gpsLocation}};
+          setFront(patched);
+          await store.set(KEYS.front, patched);
+          await updateLastLocation(gpsLocation);
+        }
+      } catch (e) { console.error('[PS] GPS post-save error:', e); }
+    } else if (quickLocation) {
+      await updateLastLocation(quickLocation);
+    }
   };
 
   const updateFrontNote = async (tier: FrontTierKey, note: string) => {
