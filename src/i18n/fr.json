@@ -16,9 +16,9 @@
   "tabs": {
     "front": "Front",
     "members": "Membres",
-    "history": "Historique",
+    "hub": "Centre",
     "journal": "Journal",
-    "share": "Partager"
+    "history": "Historique"
   },
   "tier": {
     "primaryFront": "Front Principal",
@@ -66,7 +66,10 @@
     "front": "FRONT",
     "allTags": "Tous les Tags",
     "searchToAdd": "Tapez pour chercher des membres…",
-    "searchHint": "Tapez un nom ou sélectionnez un tag"
+    "searchHint": "Tapez un nom ou sélectionnez un tag",
+    "active": "Actifs",
+    "archived": "Archivés",
+    "noArchived": "Aucun membre archivé."
   },
   "history": {
     "title": "Historique",
@@ -89,7 +92,8 @@
     "tierSuffix": " ({{tier}})",
     "now": "maintenant",
     "mood": "humeur",
-    "at": "à"
+    "at": "à",
+    "searchMember": "Rechercher des membres…"
   },
   "journal": {
     "title": "Journal",
@@ -253,7 +257,21 @@
     "memberTags": "Tags",
     "memberTagPlaceholder": "#tag",
     "fileAccess": "Accès aux Fichiers",
-    "fileAccessDesc": "Autoriser l'importation et l'exportation de fichiers. Activé par défaut."
+    "fileAccessDesc": "Autoriser l'importation et l'exportation de fichiers. Activé par défaut.",
+    "archiveMember": "Archiver le Membre",
+    "archiveDesc": "Masquer de la liste active et du sélecteur de front. L'historique est conservé.",
+    "palette": "Palette de Thème",
+    "paletteDesc": "Choisissez un thème intégré ou créez le vôtre.",
+    "newPalette": "Nouvelle Palette",
+    "paletteName": "Nom de la palette…",
+    "palBg": "Fond",
+    "palAccent": "Accent",
+    "palText": "Texte",
+    "palMid": "Ton Moyen",
+    "palPreviewAccent": "Accent",
+    "palPreviewText": "Texte",
+    "palPreviewMid": "Moyen",
+    "paletteSlots": "{{used}} / {{max}} palettes personnalisées"
   },
   "notification": {
     "locationPermTitle": "Permission de Localisation",
@@ -277,7 +295,8 @@
     "en": "English",
     "es": "Español",
     "fr": "Français",
-    "de": "Deutsch"
+    "de": "Deutsch",
+    "pt": "Português"
   },
   "memberGroups": {
     "title": "Groupes",
@@ -286,5 +305,27 @@
     "addPlaceholder": "Nom du groupe…",
     "deleteGroup": "Supprimer le Groupe",
     "deleteGroupMsg": "Supprimer ce groupe ? Les membres ne seront pas supprimés."
+  },
+  "hub": {
+    "title": "Centre",
+    "shareExport": "Partager et Exporter",
+    "shareExportDesc": "Exporter des données, importer d'autres apps, partager le profil du système.",
+    "addHistoryEntry": "Ajouter une Entrée d'Historique",
+    "addHistoryDesc": "Ajouter manuellement une entrée rétroactive à l'historique de front.",
+    "startTime": "Heure de Début",
+    "endTime": "Heure de Fin",
+    "current": "Actuel",
+    "noMembersSelected": "Aucun Membre Sélectionné",
+    "selectAtLeastOne": "Sélectionnez au moins un membre pour cette entrée.",
+    "invalidTime": "Heure Invalide",
+    "endBeforeStart": "L'heure de fin doit être après l'heure de début.",
+    "overlapDetected": "Chevauchement Détecté",
+    "overlapMsg": "Cette entrée chevauche des entrées existantes :",
+    "keepBoth": "Garder les Deux",
+    "replace": "Remplacer",
+    "activeFrontExists": "Front Actif Existant",
+    "activeFrontExistsMsg": "Il y a une session de front active pour {{names}}.",
+    "overwrite": "Écraser",
+    "addTo": "Ajouter À"
   }
 }

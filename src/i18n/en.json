@@ -16,9 +16,9 @@
   "tabs": {
     "front": "Front",
     "members": "Members",
-    "history": "History",
+    "hub": "Hub",
     "journal": "Journal",
-    "share": "Share"
+    "history": "History"
   },
   "tier": {
     "primaryFront": "Primary Front",
@@ -66,7 +66,10 @@
     "front": "FRONT",
     "allTags": "All Tags",
     "searchToAdd": "Type to search members…",
-    "searchHint": "Type a name or select a tag to find members"
+    "searchHint": "Type a name or select a tag to find members",
+    "active": "Active",
+    "archived": "Archived",
+    "noArchived": "No archived members."
   },
   "history": {
     "title": "History",
@@ -76,6 +79,7 @@
     "noMembers": "No members added yet.",
     "noActivity": "No recorded activity for {{name}} yet.",
     "selectMember": "Select a member",
+    "searchMember": "Search members…",
     "totalTime": "Total Time",
     "sessions": "Sessions",
     "topMood": "Top Mood",
@@ -195,6 +199,28 @@
     "notValidExport": "Not a valid Plural Space export file.",
     "filesDisabled": "File access is disabled. Enable it in System Settings."
   },
+  "hub": {
+    "title": "Hub",
+    "shareExport": "Share & Export",
+    "shareExportDesc": "Export data, import from other apps, share your system profile.",
+    "addHistoryEntry": "Add History Entry",
+    "addHistoryDesc": "Manually add a retroactive front history entry.",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "current": "Current",
+    "noMembersSelected": "No Members Selected",
+    "selectAtLeastOne": "Select at least one member for this entry.",
+    "invalidTime": "Invalid Time",
+    "endBeforeStart": "End time must be after start time.",
+    "overlapDetected": "Overlap Detected",
+    "overlapMsg": "This entry overlaps with existing entries:",
+    "keepBoth": "Keep Both",
+    "replace": "Replace",
+    "activeFrontExists": "Active Front Exists",
+    "activeFrontExistsMsg": "There is an active front session for {{names}}.",
+    "overwrite": "Overwrite",
+    "addTo": "Add To"
+  },
   "modal": {
     "updateFront": "Update Front",
     "addMembersFirst": "Add members first.",
@@ -221,6 +247,8 @@
     "descriptionPlaceholder": "A bit about this headmate… paste image/GIF URLs inline",
     "preview": "Preview",
     "confirmDelete": "Confirm Delete",
+    "archiveMember": "Archive Member",
+    "archiveDesc": "Hide from active member list and front picker. History is preserved.",
     "newEntry": "New Entry",
     "editEntry": "Edit Entry",
     "entryTitle": "Title",
@@ -253,7 +281,19 @@
     "memberTags": "Tags",
     "memberTagPlaceholder": "#tag",
     "fileAccess": "File Access",
-    "fileAccessDesc": "Allow importing and exporting files. On by default."
+    "fileAccessDesc": "Allow importing and exporting files. On by default.",
+    "palette": "Theme Palette",
+    "paletteDesc": "Choose a built-in theme or create your own.",
+    "newPalette": "New Palette",
+    "paletteName": "Palette name…",
+    "palBg": "Background",
+    "palAccent": "Accent",
+    "palText": "Text",
+    "palMid": "Mid-tone",
+    "palPreviewAccent": "Accent",
+    "palPreviewText": "Text",
+    "palPreviewMid": "Mid",
+    "paletteSlots": "{{used}} / {{max}} custom palettes"
   },
   "notification": {
     "locationPermTitle": "Location Permission",
@@ -277,7 +317,8 @@
     "en": "English",
     "es": "Español",
     "fr": "Français",
-    "de": "Deutsch"
+    "de": "Deutsch",
+    "pt": "Português"
   },
   "memberGroups": {
     "title": "Groups",

@@ -1,4 +1,3 @@
-// src/storage.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const KEYS = {
@@ -12,6 +11,7 @@ export const KEYS = {
   lightMode:'ps:lightMode',
   language: 'ps:language',
   groups:   'ps:groups',
+  palettes: 'ps:palettes',
 };
 
 export const store = {

@@ -49,7 +49,7 @@ Migrating from Simply Plural or PluralKit? Import your full system data — memb
 Export your full system data as JSON (reimportable), HTML (opens in Google Docs), or send a formatted summary to any email address. Import `.txt`, `.md`, or `.json` files directly as journal entries.
 
 **🌐 Multilingual**  
-Full interface available in English, Español, Français, and Deutsch. Auto-detects your device language on first launch. Change anytime in System Settings.
+Full interface available in English, Español, Français, Português, and Deutsch. Auto-detects your device language on first launch. Change anytime in System Settings.
 
 **Other Features**
 - Obsidian Blue dark theme and Steel light theme

@@ -19,7 +19,7 @@ const RichDescription = ({text, T}: {text: string; T: any}) => {
 };
 
 const Avatar = ({member, size = 40, pulse = false, T}: {member?: Member | null; size?: number; pulse?: boolean; T: any}) => (
-  <View style={{width: size, height: size, borderRadius: size / 2, backgroundColor: member?.color || T.muted, alignItems: 'center', justifyContent: 'center',
+  <View style={{width: size, height: size, borderRadius: size / 2, backgroundColor: member?.color || T.toggleOff, alignItems: 'center', justifyContent: 'center',
     shadowColor: pulse ? member?.color : 'transparent', shadowOpacity: pulse ? 0.5 : 0, shadowRadius: pulse ? 8 : 0, elevation: pulse ? 4 : 0}}>
     <Text style={{fontSize: size * 0.35, fontWeight: '700', color: 'rgba(0,0,0,0.75)'}}>{getInitials(member?.name || '?')}</Text>
   </View>
@@ -46,6 +46,7 @@ interface Props {
 
 export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, onSaveGroups}: Props) => {
   const {t} = useTranslation();
+  const [memberTab, setMemberTab] = useState<'active' | 'archived'>('active');
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
@@ -56,10 +57,12 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
   const [editGroupId, setEditGroupId] = useState<string | null>(null);
   const [editGroupName, setEditGroupName] = useState('');
 
+  const tabMembers = members.filter(m => memberTab === 'archived' ? m.archived : !m.archived);
   const allFrontIds = new Set(allFrontMemberIds(front));
-  const allTags = [...new Set(members.flatMap(m => m.tags || []))].sort();
+  const allTags = [...new Set(tabMembers.flatMap(m => m.tags || []))].sort();
+  const archivedCount = members.filter(m => m.archived).length;
 
-  const filtered = members.filter(m => {
+  const filtered = tabMembers.filter(m => {
     const nameMatch = !query || m.name.toLowerCase().includes(query.toLowerCase()) || m.role?.toLowerCase().includes(query.toLowerCase());
     const groupMatch = !activeGroup || (m.groupIds || []).includes(activeGroup);
     const tagMatch = !activeTag || (m.tags || []).includes(activeTag);
@@ -100,6 +103,17 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
             <Text style={{fontSize: 13, fontWeight: '500', color: T.accent}}>{t('members.add')}</Text>
           </TouchableOpacity>
         </View>
+      </View>
+
+      <View style={{flexDirection: 'row', gap: 0, marginBottom: 14, borderBottomWidth: 1, borderBottomColor: T.border}}>
+        {(['active', 'archived'] as const).map(tab => (
+          <TouchableOpacity key={tab} onPress={() => {setMemberTab(tab); setQuery(''); setActiveGroup(null); setActiveTag(null);}} activeOpacity={0.7}
+            style={{paddingVertical: 10, paddingHorizontal: 16, borderBottomWidth: 2, borderBottomColor: memberTab === tab ? T.accent : 'transparent'}}>
+            <Text style={{fontSize: 13, color: memberTab === tab ? T.accent : T.dim, fontWeight: memberTab === tab ? '600' : '400'}}>
+              {tab === 'active' ? t('members.active') : `${t('members.archived')}${archivedCount > 0 ? ` (${archivedCount})` : ''}`}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       {/* Manage Groups Section */}
@@ -177,18 +191,20 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
       )}
 
       {/* Search */}
-      {members.length > 3 && (
+      {tabMembers.length > 3 && (
         <TextInput value={query} onChangeText={setQuery} placeholder={t('members.search')} placeholderTextColor={T.muted}
           style={[s.search, {backgroundColor: T.surface, color: T.text, borderColor: T.border}]} />
       )}
 
-      {members.length === 0 ? (
+      {tabMembers.length === 0 ? (
         <View style={s.empty}>
           <Text style={{fontSize: 36, opacity: 0.4, marginBottom: 12}}>◇</Text>
-          <Text style={{fontSize: 13, color: T.dim, textAlign: 'center', marginBottom: 16}}>{t('members.noMembers')}</Text>
-          <TouchableOpacity onPress={onAdd} activeOpacity={0.7} style={[s.addBtn, {backgroundColor: T.accentBg, borderColor: `${T.accent}40`}]}>
-            <Text style={{fontSize: 13, fontWeight: '500', color: T.accent}}>{t('members.addMember')}</Text>
-          </TouchableOpacity>
+          <Text style={{fontSize: 13, color: T.dim, textAlign: 'center', marginBottom: 16}}>{memberTab === 'archived' ? t('members.noArchived') : t('members.noMembers')}</Text>
+          {memberTab === 'active' && (
+            <TouchableOpacity onPress={onAdd} activeOpacity={0.7} style={[s.addBtn, {backgroundColor: T.accentBg, borderColor: `${T.accent}40`}]}>
+              <Text style={{fontSize: 13, fontWeight: '500', color: T.accent}}>{t('members.addMember')}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <View style={{gap: 8}}>

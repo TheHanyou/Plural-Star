@@ -18,8 +18,8 @@ android {
         applicationId "com.pluralspace.app"
         minSdkVersion 24
         targetSdkVersion 35
-        versionCode 5
-        versionName "1.1.4"
+        versionCode 6
+        versionName "1.2.0"
         missingDimensionStrategy 'store', 'play'
     }
 
