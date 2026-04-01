@@ -1,4 +1,3 @@
-// src/utils.ts
 import i18n from './i18n/i18n';
 import type {SupportedLanguage} from './i18n/i18n';
 
@@ -23,6 +22,7 @@ export interface Member {
   description: string;
   tags?: string[];
   groupIds?: string[];
+  archived?: boolean;
 }
 
 export type HistoryChangeType = 'front' | 'mood' | 'location' | 'note';
@@ -84,6 +84,7 @@ export interface AppSettings {
   filesEnabled: boolean;
   language: SupportedLanguage;
   notificationsEnabled: boolean;
+  activePaletteId: string;
 }
 
 export interface ExportPayload {

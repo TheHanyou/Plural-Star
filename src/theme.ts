@@ -1,47 +1,145 @@
-// src/theme.ts
 import {StyleSheet} from 'react-native';
 
-export const T = {
-  bg: '#0A1F2E',
-  surface: '#0f2a3d',
-  card: '#142d40',
-  border: '#1e3a50',
-  borderLt: '#2a4d66',
-  accent: '#DAA520',
-  accentBg: 'rgba(218,165,32,0.12)',
-  text: '#C0C0C0',
-  dim: '#8899aa',
-  muted: '#2a4a60',
-  danger: '#d9534f',
-  dangerBg: 'rgba(217,83,79,0.12)',
-  success: '#4caf8a',
-  successBg: 'rgba(76,175,138,0.12)',
-  info: '#7B9FE8',
-  infoBg: 'rgba(123,159,232,0.12)',
-  // Light mode flag for consumers that need to adapt
-  isLight: false,
+export interface ThemeColors {
+  bg: string;
+  surface: string;
+  card: string;
+  border: string;
+  borderLt: string;
+  accent: string;
+  accentBg: string;
+  text: string;
+  dim: string;
+  muted: string;
+  toggleOff: string;
+  danger: string;
+  dangerBg: string;
+  success: string;
+  successBg: string;
+  info: string;
+  infoBg: string;
+  isLight: boolean;
+}
+
+export interface CustomPalette {
+  id: string;
+  name: string;
+  bg: string;
+  accent: string;
+  text: string;
+  mid: string;
+}
+
+const hexToRgb = (hex: string): [number, number, number] => {
+  const h = hex.replace('#', '');
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 };
 
-export const TLight = {
-  bg: '#7A8A99',
-  surface: '#8a99a8',
-  card: '#95a3b0',
-  border: '#6a7a88',
-  borderLt: '#5a6a78',
-  accent: '#DAA520',
-  accentBg: 'rgba(218,165,32,0.18)',
-  // Dark text in light mode = Obsidian Blue
-  text: '#0A1F2E',
-  dim: '#1e3a50',
-  muted: '#3a5060',
-  danger: '#d9534f',
-  dangerBg: 'rgba(217,83,79,0.15)',
-  success: '#2e7a5a',
-  successBg: 'rgba(46,122,90,0.15)',
-  info: '#2a5aaa',
-  infoBg: 'rgba(42,90,170,0.15)',
-  isLight: true,
+const rgbToHex = (r: number, g: number, b: number): string =>
+  '#' + [r, g, b].map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+
+const mix = (c1: string, c2: string, t: number): string => {
+  const [r1, g1, b1] = hexToRgb(c1);
+  const [r2, g2, b2] = hexToRgb(c2);
+  return rgbToHex(r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t);
 };
+
+const luminance = (hex: string): number => {
+  const [r, g, b] = hexToRgb(hex).map(v => v / 255);
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+};
+
+export const deriveTheme = (bg: string, accent: string, text: string, mid: string): ThemeColors => {
+  const lum = luminance(bg);
+  const isLight = lum > 0.3;
+
+  const surfaceT = isLight ? 0.04 : 0.08;
+  const cardT = isLight ? 0.07 : 0.14;
+  const borderT = isLight ? 0.12 : 0.20;
+  const borderLtT = isLight ? 0.18 : 0.30;
+
+  const surface = mix(bg, mid, surfaceT);
+  const card = mix(bg, mid, cardT);
+  const border = mix(bg, mid, borderT);
+  const borderLt = mix(bg, mid, borderLtT);
+
+  const dim = mix(text, mid, 0.12);
+  const muted = mix(text, mid, 0.30);
+  const toggleOff = mix(bg, mid, 0.22);
+
+  const accentRgb = hexToRgb(accent);
+  const bgRgb = hexToRgb(bg);
+  const accentBg = rgbToHex(
+    bgRgb[0] + (accentRgb[0] - bgRgb[0]) * 0.12,
+    bgRgb[1] + (accentRgb[1] - bgRgb[1]) * 0.12,
+    bgRgb[2] + (accentRgb[2] - bgRgb[2]) * 0.12,
+  );
+
+  const dangerBase = '#d9534f';
+  const successBase = isLight ? '#2e7a5a' : '#4caf8a';
+  const infoBase = isLight ? '#2a5aaa' : '#7B9FE8';
+
+  const dangerBgRgb = hexToRgb(dangerBase);
+  const successBgRgb = hexToRgb(successBase);
+  const infoBgRgb = hexToRgb(infoBase);
+  const opacity = isLight ? 0.15 : 0.12;
+
+  return {
+    bg,
+    surface,
+    card,
+    border,
+    borderLt,
+    accent,
+    accentBg,
+    text,
+    dim,
+    muted,
+    toggleOff,
+    danger: dangerBase,
+    dangerBg: rgbToHex(
+      bgRgb[0] + (dangerBgRgb[0] - bgRgb[0]) * opacity,
+      bgRgb[1] + (dangerBgRgb[1] - bgRgb[1]) * opacity,
+      bgRgb[2] + (dangerBgRgb[2] - bgRgb[2]) * opacity,
+    ),
+    success: successBase,
+    successBg: rgbToHex(
+      bgRgb[0] + (successBgRgb[0] - bgRgb[0]) * opacity,
+      bgRgb[1] + (successBgRgb[1] - bgRgb[1]) * opacity,
+      bgRgb[2] + (successBgRgb[2] - bgRgb[2]) * opacity,
+    ),
+    info: infoBase,
+    infoBg: rgbToHex(
+      bgRgb[0] + (infoBgRgb[0] - bgRgb[0]) * opacity,
+      bgRgb[1] + (infoBgRgb[1] - bgRgb[1]) * opacity,
+      bgRgb[2] + (infoBgRgb[2] - bgRgb[2]) * opacity,
+    ),
+    isLight,
+  };
+};
+
+export const DARK_PALETTE: CustomPalette = {
+  id: '__dark__',
+  name: 'Obsidian',
+  bg: '#0A1F2E',
+  accent: '#DAA520',
+  text: '#C0C0C0',
+  mid: '#7A8A99',
+};
+
+export const LIGHT_PALETTE: CustomPalette = {
+  id: '__light__',
+  name: 'Steel',
+  bg: '#7A8A99',
+  accent: '#DAA520',
+  text: '#0A1F2E',
+  mid: '#C0C0C0',
+};
+
+export const T: ThemeColors = deriveTheme(DARK_PALETTE.bg, DARK_PALETTE.accent, DARK_PALETTE.text, DARK_PALETTE.mid);
+export const TLight: ThemeColors = deriveTheme(LIGHT_PALETTE.bg, LIGHT_PALETTE.accent, LIGHT_PALETTE.text, LIGHT_PALETTE.mid);
+
+export const BUILTIN_PALETTES: CustomPalette[] = [DARK_PALETTE, LIGHT_PALETTE];
 
 export const accentTextStyle = (_isLight: boolean) => ({});
 

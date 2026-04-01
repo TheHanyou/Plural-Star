@@ -16,9 +16,9 @@
   "tabs": {
     "front": "Front",
     "members": "Mitglieder",
-    "history": "Verlauf",
+    "hub": "Zentrum",
     "journal": "Tagebuch",
-    "share": "Teilen"
+    "history": "Verlauf"
   },
   "tier": {
     "primaryFront": "Primärer Front",
@@ -66,7 +66,10 @@
     "front": "FRONT",
     "allTags": "Alle Tags",
     "searchToAdd": "Tippe um Mitglieder zu suchen…",
-    "searchHint": "Tippe einen Namen oder wähle einen Tag"
+    "searchHint": "Tippe einen Namen oder wähle einen Tag",
+    "active": "Aktiv",
+    "archived": "Archiviert",
+    "noArchived": "Keine archivierten Mitglieder."
   },
   "history": {
     "title": "Verlauf",
@@ -89,7 +92,8 @@
     "tierSuffix": " ({{tier}})",
     "now": "jetzt",
     "mood": "Stimmung",
-    "at": "bei"
+    "at": "bei",
+    "searchMember": "Mitglieder suchen…"
   },
   "journal": {
     "title": "Tagebuch",
@@ -253,7 +257,21 @@
     "memberTags": "Tags",
     "memberTagPlaceholder": "#Tag",
     "fileAccess": "Dateizugriff",
-    "fileAccessDesc": "Import und Export von Dateien erlauben. Standardmäßig aktiviert."
+    "fileAccessDesc": "Import und Export von Dateien erlauben. Standardmäßig aktiviert.",
+    "archiveMember": "Mitglied Archivieren",
+    "archiveDesc": "Aus der aktiven Liste und dem Front-Auswahl ausblenden. Der Verlauf bleibt erhalten.",
+    "palette": "Farbpalette",
+    "paletteDesc": "Wähle ein integriertes Thema oder erstelle dein eigenes.",
+    "newPalette": "Neue Palette",
+    "paletteName": "Palettenname…",
+    "palBg": "Hintergrund",
+    "palAccent": "Akzent",
+    "palText": "Text",
+    "palMid": "Mittelton",
+    "palPreviewAccent": "Akzent",
+    "palPreviewText": "Text",
+    "palPreviewMid": "Mittel",
+    "paletteSlots": "{{used}} / {{max}} benutzerdefinierte Paletten"
   },
   "notification": {
     "locationPermTitle": "Standortberechtigung",
@@ -277,7 +295,8 @@
     "en": "English",
     "es": "Español",
     "fr": "Français",
-    "de": "Deutsch"
+    "de": "Deutsch",
+    "pt": "Português"
   },
   "memberGroups": {
     "title": "Gruppen",
@@ -286,5 +305,27 @@
     "addPlaceholder": "Gruppenname…",
     "deleteGroup": "Gruppe Löschen",
     "deleteGroupMsg": "Diese Gruppe entfernen? Mitglieder werden nicht gelöscht."
+  },
+  "hub": {
+    "title": "Zentrum",
+    "shareExport": "Teilen und Exportieren",
+    "shareExportDesc": "Daten exportieren, aus anderen Apps importieren, Systemprofil teilen.",
+    "addHistoryEntry": "Verlaufseintrag Hinzufügen",
+    "addHistoryDesc": "Manuell einen rückwirkenden Front-Verlaufseintrag hinzufügen.",
+    "startTime": "Startzeit",
+    "endTime": "Endzeit",
+    "current": "Aktuell",
+    "noMembersSelected": "Keine Mitglieder Ausgewählt",
+    "selectAtLeastOne": "Wähle mindestens ein Mitglied für diesen Eintrag.",
+    "invalidTime": "Ungültige Zeit",
+    "endBeforeStart": "Die Endzeit muss nach der Startzeit liegen.",
+    "overlapDetected": "Überschneidung Erkannt",
+    "overlapMsg": "Dieser Eintrag überschneidet sich mit bestehenden Einträgen:",
+    "keepBoth": "Beide Behalten",
+    "replace": "Ersetzen",
+    "activeFrontExists": "Aktiver Front Vorhanden",
+    "activeFrontExistsMsg": "Es gibt eine aktive Front-Sitzung für {{names}}.",
+    "overwrite": "Überschreiben",
+    "addTo": "Hinzufügen"
   }
 }

@@ -1,4 +1,3 @@
-// src/components/Sheet.tsx
 import React, {ReactNode, useRef, useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, NativeSyntheticEvent, NativeScrollEvent} from 'react-native';
 import Modal from 'react-native-modal';
@@ -16,6 +15,10 @@ interface SheetProps {
 export const Sheet = ({visible, title, theme: T, onClose, children, footer}: SheetProps) => {
   const scrollRef = useRef<ScrollView>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+
+  const scrollOffsetMax = Math.max(0, contentHeight - containerHeight);
 
   const handleOnScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     setScrollOffset(e.nativeEvent.contentOffset.y);
@@ -36,7 +39,7 @@ export const Sheet = ({visible, title, theme: T, onClose, children, footer}: She
       propagateSwipe
       scrollTo={handleScrollTo}
       scrollOffset={scrollOffset}
-      scrollOffsetMax={400}
+      scrollOffsetMax={scrollOffsetMax}
       onModalShow={() => {
         scrollRef.current?.scrollTo({y: 0, animated: false});
         setScrollOffset(0);
@@ -59,6 +62,8 @@ export const Sheet = ({visible, title, theme: T, onClose, children, footer}: She
             onScroll={handleOnScroll}
             scrollEventThrottle={16}
             nestedScrollEnabled
+            onLayout={e => setContainerHeight(e.nativeEvent.layout.height)}
+            onContentSizeChange={(_w, h) => setContentHeight(h)}
           >
             {children}
             <View style={{height: 80}} />

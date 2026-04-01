@@ -1,13 +1,13 @@
 // src/screens/HistoryScreen.tsx
 import React, {useState} from 'react';
-import {View, Text, ScrollView, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {Fonts} from '../theme';
 import {AccentText} from '../components/AccentText';
 import {HistoryEntry, JournalEntry, Member, FrontTierKey, fmtTime, fmtDate, fmtDur, getInitials, TIER_LABELS} from '../utils';
 
 const Avatar = ({member, size = 26, T}: {member?: Member | null; size?: number; T: any}) => (
-  <View style={{width: size, height: size, borderRadius: size / 2, backgroundColor: member?.color || T.muted,
+  <View style={{width: size, height: size, borderRadius: size / 2, backgroundColor: member?.color || T.toggleOff,
     alignItems: 'center', justifyContent: 'center'}}>
     <Text style={{fontSize: size * 0.35, fontWeight: '700', color: 'rgba(0,0,0,0.75)'}}>{getInitials(member?.name || '?')}</Text>
   </View>
@@ -35,7 +35,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(
     members.length > 0 ? members[0].id : null,
   );
-  const [showMemberPicker, setShowMemberPicker] = useState(false);
+  const [memberSearch, setMemberSearch] = useState('');
 
   const selectedMember = members.find(m => m.id === selectedMemberId);
 
@@ -229,43 +229,41 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
             </View>
           ) : (
             <>
-              <TouchableOpacity onPress={() => setShowMemberPicker(!showMemberPicker)}
-                activeOpacity={0.7}
-                style={{margin: 16, marginBottom: 0, flexDirection: 'row', alignItems: 'center',
-                  gap: 10, padding: 12, borderRadius: 10, borderWidth: 1,
-                  backgroundColor: T.card, borderColor: selectedMember ? `${selectedMember.color}50` : T.border}}>
-                {selectedMember && <Avatar member={selectedMember} size={32} T={T} />}
-                <View style={{flex: 1}}>
-                  <Text style={{fontSize: 15, fontWeight: '500', color: T.text}}>
-                    {selectedMember?.name || t('history.selectMember')}
-                  </Text>
-                  {selectedMember?.pronouns
-                    ? <Text style={{fontSize: 11, color: T.dim}}>{selectedMember.pronouns}</Text>
-                    : null}
-                </View>
-                <Text style={{fontSize: 16, color: T.dim}}>{showMemberPicker ? '▲' : '▼'}</Text>
-              </TouchableOpacity>
-
-              {showMemberPicker && (
-                <View style={{marginHorizontal: 16, backgroundColor: T.card, borderRadius: 10,
-                  borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginTop: 4, maxHeight: 280}}>
-                  <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true}>
-                  {members.map(m => (
-                    <TouchableOpacity key={m.id}
-                      onPress={() => {setSelectedMemberId(m.id); setShowMemberPicker(false);}}
-                      activeOpacity={0.7}
-                      style={{flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12,
-                        borderBottomWidth: 1, borderBottomColor: T.border,
-                        backgroundColor: selectedMemberId === m.id ? `${m.color}12` : 'transparent'}}>
-                      <Avatar member={m} size={28} T={T} />
-                      <Text style={{fontSize: 14, fontWeight: '500', color: T.text}}>{m.name}</Text>
-                      {selectedMemberId === m.id &&
-                        <Text style={{color: m.color, marginLeft: 'auto'}}>✓</Text>}
+              <View style={{margin: 16, marginBottom: 0}}>
+                {selectedMember && (
+                  <View style={{flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 10, borderWidth: 1,
+                    backgroundColor: T.card, borderColor: `${selectedMember.color}50`, marginBottom: 8}}>
+                    <Avatar member={selectedMember} size={32} T={T} />
+                    <View style={{flex: 1}}>
+                      <Text style={{fontSize: 15, fontWeight: '500', color: T.text}}>{selectedMember.name}</Text>
+                      {selectedMember.pronouns ? <Text style={{fontSize: 11, color: T.dim}}>{selectedMember.pronouns}</Text> : null}
+                    </View>
+                    <TouchableOpacity onPress={() => {setSelectedMemberId(null); setMemberSearch('');}} activeOpacity={0.7}>
+                      <Text style={{fontSize: 14, color: T.dim}}>✕</Text>
                     </TouchableOpacity>
-                  ))}
-                  </ScrollView>
-                </View>
-              )}
+                  </View>
+                )}
+                <TextInput value={memberSearch} onChangeText={setMemberSearch} placeholder={t('history.searchMember')} placeholderTextColor={T.muted}
+                  style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9, fontSize: 13}} />
+                {memberSearch.length > 0 && (
+                  <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginTop: 4, maxHeight: 280}}>
+                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true}>
+                      {members.filter(m => m.name.toLowerCase().includes(memberSearch.toLowerCase())).map(m => (
+                        <TouchableOpacity key={m.id}
+                          onPress={() => {setSelectedMemberId(m.id); setMemberSearch('');}}
+                          activeOpacity={0.7}
+                          style={{flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12,
+                            borderBottomWidth: 1, borderBottomColor: T.border,
+                            backgroundColor: selectedMemberId === m.id ? `${m.color}12` : 'transparent'}}>
+                          <Avatar member={m} size={28} T={T} />
+                          <Text style={{fontSize: 14, fontWeight: '500', color: T.text}}>{m.name}</Text>
+                          {selectedMemberId === m.id && <Text style={{color: m.color, marginLeft: 'auto'}}>✓</Text>}
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
 
               {/* Stats summary */}
               {selectedMember && allMemberEvents.length > 0 && (() => {

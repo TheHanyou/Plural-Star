@@ -259,7 +259,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   );
 
   const Toggle = ({value, onToggle}: {value: boolean; onToggle: () => void}) => (
-    <TouchableOpacity onPress={onToggle} activeOpacity={0.8} style={{width: 40, height: 22, borderRadius: 11, backgroundColor: value ? T.accent : T.muted, justifyContent: 'center'}}>
+    <TouchableOpacity onPress={onToggle} activeOpacity={0.8} style={{width: 40, height: 22, borderRadius: 11, backgroundColor: value ? T.accent : T.toggleOff, justifyContent: 'center'}}>
       <View style={{width: 16, height: 16, borderRadius: 8, backgroundColor: '#fff', position: 'absolute', left: value ? 20 : 3}} />
     </TouchableOpacity>
   );
@@ -289,7 +289,6 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
 
   return (
     <ScrollView style={{flex: 1, backgroundColor: T.bg}} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-      <Text style={[s.heading, {color: T.text}]}>{t('share.title')}</Text>
       <View style={{flexDirection: 'row', gap: 6, marginBottom: 4}}>
         <SectionBtn id="export" label={t('share.export')} />
         <SectionBtn id="import" label={t('share.import')} />

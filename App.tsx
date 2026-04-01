@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useMemo} from 'react';
 import {View, Text, Image, TouchableOpacity, StyleSheet, StatusBar, Platform, PermissionsAndroid, Alert} from 'react-native';
 import {SafeAreaProvider, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
@@ -8,7 +8,8 @@ import './src/i18n/i18n';
 import {changeLanguage} from './src/i18n/i18n';
 import type {SupportedLanguage} from './src/i18n/i18n';
 
-import {T, TLight} from './src/theme';
+import {T, TLight, BUILTIN_PALETTES, deriveTheme} from './src/theme';
+import type {CustomPalette, ThemeColors} from './src/theme';
 import {AccentText} from './src/components/AccentText';
 import {store, KEYS} from './src/storage';
 import {SystemInfo, Member, MemberGroup, FrontState, FrontTier, FrontTierKey, HistoryEntry, JournalEntry, ShareSettings, AppSettings, EMPTY_TIER, migrateFrontState, isFrontEmpty, frontToHistoryEntry} from './src/utils';
@@ -20,16 +21,17 @@ import {MembersScreen} from './src/screens/MembersScreen';
 import {HistoryScreen} from './src/screens/HistoryScreen';
 import {JournalScreen} from './src/screens/JournalScreen';
 import {ShareScreen} from './src/screens/ShareScreen';
+import {HubScreen} from './src/screens/HubScreen';
 import {SetFrontModal, EditFrontDetailModal, MemberModal, JournalModal, SystemModal} from './src/modals';
 
-type Tab = 'front' | 'members' | 'history' | 'journal' | 'share';
+type Tab = 'front' | 'members' | 'hub' | 'journal' | 'history';
 
-const TAB_IDS: Tab[] = ['front', 'members', 'history', 'journal', 'share'];
+const TAB_IDS: Tab[] = ['front', 'members', 'hub', 'journal', 'history'];
 const TAB_ICONS: Record<Tab, string> = {
-  front: '◈', members: '◇', history: '◷', journal: '◉', share: '↑',
+  front: '◈', members: '◇', hub: '⬡', journal: '◉', history: '◷',
 };
 
-const DEFAULT_SETTINGS: AppSettings = {locations: [], customMoods: [], lightMode: false, gpsEnabled: false, filesEnabled: true, language: 'en', notificationsEnabled: true};
+const DEFAULT_SETTINGS: AppSettings = {locations: [], customMoods: [], lightMode: false, gpsEnabled: false, filesEnabled: true, language: 'en', notificationsEnabled: true, activePaletteId: '__dark__'};
 
 const getGPSLocation = (): Promise<string | null> =>
   new Promise(async resolve => {
@@ -67,7 +69,6 @@ function MainAppContent() {
   const [loaded, setLoaded] = useState(false);
   const [firstRun, setFirstRun] = useState(false);
   const [tab, setTab] = useState<Tab>('front');
-  const [lightMode, setLightMode] = useState(false);
   const [system, setSystem] = useState<SystemInfo>({name: '', description: ''});
   const [members, setMembers] = useState<Member[]>([]);
   const [front, setFront] = useState<FrontState | null>(null);
@@ -76,6 +77,8 @@ function MainAppContent() {
   const [shareSettings, setShareSettings] = useState<ShareSettings>({showFront: true, showMembers: true, showDescriptions: false});
   const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [groups, setGroups] = useState<MemberGroup[]>([]);
+  const [palettes, setPalettes] = useState<CustomPalette[]>([]);
+  const [activePaletteId, setActivePaletteId] = useState<string>('__dark__');
 
   const [showSetFront, setShowSetFront] = useState(false);
   const [showEditFrontDetail, setShowEditFrontDetail] = useState(false);
@@ -87,10 +90,15 @@ function MainAppContent() {
   const [showSystem, setShowSystem] = useState(false);
 
   const insets = useSafeAreaInsets();
-  const C = lightMode ? TLight : T;
+
+  const C: ThemeColors = useMemo(() => {
+    const allPals = [...BUILTIN_PALETTES, ...palettes];
+    const pal = allPals.find(p => p.id === activePaletteId) || BUILTIN_PALETTES[0];
+    return deriveTheme(pal.bg, pal.accent, pal.text, pal.mid);
+  }, [activePaletteId, palettes]);
 
   const loadAll = useCallback(async () => {
-    const [sys, mem, fr, hist, jour, share, settings, light, savedLang, grps] = await Promise.all([
+    const [sys, mem, fr, hist, jour, share, settings, savedLang, grps, savedPalettes] = await Promise.all([
       store.get<SystemInfo>(KEYS.system),
       store.get<Member[]>(KEYS.members, []),
       store.get<any>(KEYS.front),
@@ -98,9 +106,9 @@ function MainAppContent() {
       store.get<JournalEntry[]>(KEYS.journal, []),
       store.get<ShareSettings>(KEYS.share, {showFront: true, showMembers: true, showDescriptions: false}),
       store.get<AppSettings>(KEYS.settings, DEFAULT_SETTINGS),
-      store.get<boolean>(KEYS.lightMode, false),
       store.get<string>(KEYS.language, ''),
       store.get<MemberGroup[]>(KEYS.groups, []),
+      store.get<CustomPalette[]>(KEYS.palettes, []),
     ]);
     if (!sys) {setFirstRun(true);} else {setSystem(sys);}
     setMembers(mem || []);
@@ -114,8 +122,16 @@ function MainAppContent() {
     setShareSettings(share || {showFront: true, showMembers: true, showDescriptions: false});
     const mergedSettings = {...DEFAULT_SETTINGS, ...(settings || {})};
     setAppSettings(mergedSettings);
-    setLightMode(light || false);
     setGroups(grps || []);
+    setPalettes(savedPalettes || []);
+
+    const paletteId = mergedSettings.activePaletteId || '__dark__';
+    if (mergedSettings.lightMode && !mergedSettings.activePaletteId) {
+      setActivePaletteId('__light__');
+    } else {
+      setActivePaletteId(paletteId);
+    }
+
     if (savedLang) changeLanguage(savedLang as SupportedLanguage);
     setLoaded(true);
   }, []);
@@ -123,7 +139,6 @@ function MainAppContent() {
   const requestPermissions = async () => {
     if (Platform.OS !== 'android') return;
     try {
-      // Use notifee's own permission request — handles Android 13/14/15 correctly
       await notifee.requestPermission();
     } catch (e) { console.error('[PS] notification permission error:', e); }
     try {
@@ -148,8 +163,6 @@ function MainAppContent() {
   const requestFilesPermission = async () => {
     if (Platform.OS !== 'android') return;
     try {
-      // On Android 12 and below, request READ_EXTERNAL_STORAGE
-      // On Android 13+, SAF handles file access without runtime permission
       if (Platform.Version < 33) {
         const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
           {title: 'File Access', message: 'Allow Plural Space to import and export files.', buttonPositive: 'Allow', buttonNegative: 'Not now'});
@@ -180,6 +193,16 @@ function MainAppContent() {
   const saveJournal = async (d: JournalEntry[]) => {setJournal(d); await store.set(KEYS.journal, d);};
   const saveShareSettings = async (d: ShareSettings) => {setShareSettings(d); await store.set(KEYS.share, d);};
   const saveGroups = async (d: MemberGroup[]) => {setGroups(d); await store.set(KEYS.groups, d);};
+  const savePalettes = async (d: CustomPalette[]) => {setPalettes(d); await store.set(KEYS.palettes, d);};
+
+  const selectPalette = async (id: string) => {
+    setActivePaletteId(id);
+    const updated = {...appSettings, activePaletteId: id, lightMode: id === '__light__'};
+    setAppSettings(updated);
+    await store.set(KEYS.settings, updated);
+    await store.set(KEYS.lightMode, id === '__light__');
+  };
+
   const saveAppSettings = async (d: AppSettings) => {
     const gpsJustEnabled = d.gpsEnabled && !appSettings.gpsEnabled;
     const filesJustEnabled = d.filesEnabled && !appSettings.filesEnabled;
@@ -189,8 +212,6 @@ function MainAppContent() {
     if (gpsJustEnabled) { await requestGPSPermission(); }
     if (filesJustEnabled) { await requestFilesPermission(); }
   };
-
-  const toggleLightMode = async () => { const next = !lightMode; setLightMode(next); await store.set(KEYS.lightMode, next); };
 
   const [lastKnownLocation, setLastKnownLocation] = useState<string | undefined>(undefined);
   const getMember = (id: string) => members.find(m => m.id === id);
@@ -217,7 +238,6 @@ function MainAppContent() {
     }
     const isEmpty = primary.memberIds.length === 0 && coFront.memberIds.length === 0 && coConscious.memberIds.length === 0;
 
-    // Set front IMMEDIATELY with whatever location we have — don't wait for GPS
     const quickLocation = primary.location?.trim() || lastKnownLocation || undefined;
     const nf: FrontState | null = isEmpty ? null : {primary: {...primary, location: quickLocation}, coFront, coConscious, startTime: now};
 
@@ -230,7 +250,6 @@ function MainAppContent() {
     await store.set(KEYS.front, nf);
     await saveHistory(newHistory);
 
-    // THEN resolve GPS asynchronously and patch in the location if it changed
     if (nf && appSettings.gpsEnabled && !primary.location?.trim()) {
       try {
         const gpsLocation = await getGPSLocation();
@@ -291,9 +310,15 @@ function MainAppContent() {
   const handleDeleteAccount = async () => {
     await clearFrontNotification(); await store.clearAll();
     setSystem({name: '', description: ''}); setMembers([]); setFront(null);
-    setHistory([]); setJournal([]); setLightMode(false);
+    setHistory([]); setJournal([]);
     setShareSettings({showFront: true, showMembers: true, showDescriptions: false});
-    setAppSettings(DEFAULT_SETTINGS); setGroups([]); setTab('front'); setFirstRun(true);
+    setAppSettings(DEFAULT_SETTINGS); setGroups([]); setPalettes([]); setActivePaletteId('__dark__');
+    setTab('front'); setFirstRun(true);
+  };
+
+  const handleHubSetFront = async (f: FrontState | null) => {
+    setFront(f);
+    await store.set(KEYS.front, f);
   };
 
   if (!loaded) {
@@ -317,31 +342,32 @@ function MainAppContent() {
 
   const handleEditDetails = (tier: FrontTierKey) => { setEditTier(tier); setShowEditFrontDetail(true); };
 
+  const renderShareScreen = () => (
+    <ShareScreen theme={C} system={system} members={members} front={front} history={history} journal={journal} shareSettings={shareSettings} appSettings={appSettings} onSettingsChange={saveShareSettings} getMember={getMember} onDataImported={loadAll} onAddJournalEntry={addJournalEntry} onDeleteAccount={handleDeleteAccount} />
+  );
+
   const renderScreen = () => {
     switch (tab) {
       case 'front':
         return <FrontScreen theme={C} front={front} getMember={getMember} onSetFront={() => setShowSetFront(true)} onUpdateNote={updateFrontNote} onEditDetails={handleEditDetails} />;
       case 'members':
         return <MembersScreen theme={C} members={members} front={front} groups={groups} onAdd={() => {setEditMember(null); setShowMember(true);}} onEdit={m => {setEditMember(m); setShowMember(true);}} onSaveGroups={saveGroups} />;
-      case 'history':
-        return <HistoryScreen theme={C} history={history} journal={journal} getMember={getMember} members={members} />;
+      case 'hub':
+        return <HubScreen theme={C} members={members} history={history} front={front} onSaveHistory={saveHistory} onSetFront={handleHubSetFront} renderShareScreen={renderShareScreen} />;
       case 'journal':
         return <JournalScreen theme={C} journal={journal} members={members} systemJournalPassword={system.journalPassword} onAdd={() => {setEditJournal(null); setShowJournal(true);}} onEdit={e => {setEditJournal(e); setShowJournal(true);}} onDelete={deleteEntry} />;
-      case 'share':
-        return <ShareScreen theme={C} system={system} members={members} front={front} history={history} journal={journal} shareSettings={shareSettings} appSettings={appSettings} onSettingsChange={saveShareSettings} getMember={getMember} onDataImported={loadAll} onAddJournalEntry={addJournalEntry} onDeleteAccount={handleDeleteAccount} />;
+      case 'history':
+        return <HistoryScreen theme={C} history={history} journal={journal} getMember={getMember} members={members} />;
     }
   };
 
   return (
     <View style={[styles.root, {backgroundColor: C.bg}]}>
-      <StatusBar barStyle={lightMode ? 'dark-content' : 'light-content'} backgroundColor={C.bg} translucent={false} />
+      <StatusBar barStyle={C.isLight ? 'dark-content' : 'light-content'} backgroundColor={C.bg} translucent={false} />
       <View style={{backgroundColor: C.bg, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0}}>
         <View style={[styles.header, {borderBottomColor: C.border, backgroundColor: C.bg}]}>
           <AccentText T={C} style={[styles.headerTitle, {color: C.accent}]}>{system.name}</AccentText>
           <View style={styles.headerRight}>
-            <TouchableOpacity onPress={toggleLightMode} activeOpacity={0.7} style={styles.settingsBtn}>
-              <Text style={[styles.settingsIcon, {color: C.dim}]}>{lightMode ? '◑' : '◐'}</Text>
-            </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowSystem(true)} activeOpacity={0.7} style={styles.settingsBtn}>
               <Text style={[styles.settingsIcon, {color: C.dim}]}>⚙</Text>
             </TouchableOpacity>
@@ -352,32 +378,35 @@ function MainAppContent() {
       <View style={[styles.tabBar, {backgroundColor: C.surface, borderTopColor: C.border, paddingBottom: insets.bottom || 0}]}>
         {TAB_IDS.map(id => (
           <TouchableOpacity key={id} onPress={() => setTab(id)} activeOpacity={0.7} style={styles.tabBtn}>
-            <AccentText T={C} style={[styles.tabIcon, {color: tab === id ? C.accent : C.muted}]}>{TAB_ICONS[id]}</AccentText>
-            <AccentText T={C} style={[styles.tabLabel, {color: tab === id ? C.accent : C.muted}]}>{t(`tabs.${id}`)}</AccentText>
+            <AccentText T={C} style={[styles.tabIcon, {color: tab === id ? C.accent : C.dim}]}>{TAB_ICONS[id]}</AccentText>
+            <AccentText T={C} style={[styles.tabLabel, {color: tab === id ? C.accent : C.dim}]}>{t(`tabs.${id}`)}</AccentText>
           </TouchableOpacity>
         ))}
       </View>
 
-      <SetFrontModal visible={showSetFront} theme={C} members={members} groups={groups} current={front} settings={appSettings}
+      <SetFrontModal visible={showSetFront} theme={C} members={members.filter(m => !m.archived)} groups={groups} current={front} settings={appSettings}
         lastKnownLocation={lastKnownLocation}
-        onSave={async (primary, coFront, coConscious) => {await updateFront(primary, coFront, coConscious); setShowSetFront(false);}}
+        onSave={async (primary: FrontTier, coFront: FrontTier, coConscious: FrontTier) => {await updateFront(primary, coFront, coConscious); setShowSetFront(false);}}
         onClose={() => setShowSetFront(false)} />
       {front && (
         <EditFrontDetailModal visible={showEditFrontDetail} theme={C} front={front} tier={editTier} settings={appSettings}
           lastKnownLocation={lastKnownLocation}
-          onSave={async (mood, location, note) => {await updateFrontDetails(editTier, mood, location, note); setShowEditFrontDetail(false);}}
+          onSave={async (mood: string, location: string, note: string) => {await updateFrontDetails(editTier, mood, location, note); setShowEditFrontDetail(false);}}
           onClose={() => setShowEditFrontDetail(false)} />
       )}
       <MemberModal visible={showMember} theme={C} member={editMember} groups={groups}
-        onSave={async m => {await saveMember(m); setShowMember(false);}}
-        onDelete={async id => {await deleteMember(id); setShowMember(false);}}
+        onSave={async (m: Member) => {await saveMember(m); setShowMember(false);}}
+        onDelete={async (id: string) => {await deleteMember(id); setShowMember(false);}}
         onClose={() => setShowMember(false)} />
       <JournalModal visible={showJournal} theme={C} entry={editJournal} members={members}
-        onSave={async e => {await saveEntry(e); setShowJournal(false);}}
+        onSave={async (e: JournalEntry) => {await saveEntry(e); setShowJournal(false);}}
         onClose={() => setShowJournal(false)} />
       <SystemModal visible={showSystem} theme={C} system={system} settings={appSettings}
-        onSave={async s => {await saveSystem(s); setShowSystem(false);}}
-        onSaveSettings={async s => {await saveAppSettings(s); setShowSystem(false);}}
+        palettes={palettes} activePaletteId={activePaletteId}
+        onSave={async (s: SystemInfo) => {await saveSystem(s); setShowSystem(false);}}
+        onSaveSettings={async (s: AppSettings) => {await saveAppSettings(s); setShowSystem(false);}}
+        onSavePalettes={savePalettes}
+        onSelectPalette={selectPalette}
         onClose={() => setShowSystem(false)} />
     </View>
   );
