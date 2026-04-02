@@ -17,7 +17,7 @@
 
 <p align="center">
   <a href="https://www.buymeacoffee.com/PluralSpace">
-    <img src="https://img.buymeacoffee.com/button-api/?text=Support+PS&emoji=☕&slug=PluralSpace&button_colour=151929&font_colour=ffffff&font_family=Cookie&outline_colour=ffffff&coffee_colour=FFDD00" alt="Support PS on Buy Me a Coffee" />
+    <img src="https://img.buymeacoffee.com/button-api/?text=Support+PS&amp;emoji=%E2%98%95&amp;slug=PluralSpace&amp;button_colour=151929&amp;font_colour=ffffff&amp;font_family=Cookie&amp;outline_colour=ffffff&amp;coffee_colour=FFDD00" alt="Support PS on Buy Me a Coffee" />
   </a>
 </p>
 
@@ -111,7 +111,7 @@ This software is free and open source. You are free to use, modify, and distribu
 Plural Space is free, always. If it's been useful to you, a contribution helps cover Play Store fees and development time.
 
 <a href="https://www.buymeacoffee.com/PluralSpace">
-  <img src="https://img.buymeacoffee.com/button-api/?text=Support+PS&emoji=☕&slug=PluralSpace&button_colour=151929&font_colour=ffffff&font_family=Cookie&outline_colour=ffffff&coffee_colour=FFDD00" alt="Support PS on Buy Me a Coffee" />
+  <img src="https://img.buymeacoffee.com/button-api/?text=Support+PS&amp;emoji=%E2%98%95&amp;slug=PluralSpace&amp;button_colour=151929&amp;font_colour=ffffff&amp;font_family=Cookie&amp;outline_colour=ffffff&amp;coffee_colour=FFDD00" alt="Support PS on Buy Me a Coffee" />
 </a>
 
 ---
