@@ -13,6 +13,10 @@
   <a href="https://github.com/TheHanyou/Plural-Space/releases/latest/download/app-release.apk">
     <img src="https://img.shields.io/badge/Download%20APK-Latest%20Release-DAA520?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
   </a>
+  &nbsp;
+  <a href="https://github.com/TheHanyou/Plural-Space/releases/latest/download/PluralSpace.ipa">
+    <img src="https://img.shields.io/badge/Download%20IPA-Latest%20Release-DAA520?style=for-the-badge&logo=apple&logoColor=white" alt="Download IPA" />
+  </a>
 </p>
 
 <p align="center">
@@ -81,8 +85,11 @@ Full privacy policy: [https://thehanyou.github.io/Plural-Space/](https://thehany
 
 ## Installation
 
-**Direct APK (sideload)**  
+**Android — Direct APK (sideload)**  
 Download the latest APK from the button above or from [Releases](https://github.com/TheHanyou/Plural-Space/releases). Enable "Install from unknown sources" on your device and install.
+
+**iOS — IPA (sideload)**  
+Download the latest IPA from the button above or from [Releases](https://github.com/TheHanyou/Plural-Space/releases). Install using [AltStore](https://altstore.io/) or a Mac with Xcode. Requires either AltStore or an Apple Developer account.
 
 ---
 
