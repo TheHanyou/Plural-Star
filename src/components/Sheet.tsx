@@ -1,5 +1,5 @@
-import React, {ReactNode, useRef, useState} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, NativeSyntheticEvent, NativeScrollEvent} from 'react-native';
+import React, {ReactNode} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform} from 'react-native';
 import Modal from 'react-native-modal';
 import {Fonts} from '../theme';
 
@@ -13,37 +13,12 @@ interface SheetProps {
 }
 
 export const Sheet = ({visible, title, theme: T, onClose, children, footer}: SheetProps) => {
-  const scrollRef = useRef<ScrollView>(null);
-  const [scrollOffset, setScrollOffset] = useState(0);
-  const [contentHeight, setContentHeight] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(0);
-
-  const scrollOffsetMax = Math.max(0, contentHeight - containerHeight);
-
-  const handleOnScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    setScrollOffset(e.nativeEvent.contentOffset.y);
-  };
-
-  const handleScrollTo = (p: {x?: number; y?: number; animated?: boolean}) => {
-    scrollRef.current?.scrollTo(p);
-  };
-
   return (
     <Modal
       isVisible={visible}
       onBackdropPress={onClose}
-      onSwipeComplete={onClose}
-      swipeDirection="down"
       style={{justifyContent: 'flex-end', margin: 0}}
       backdropOpacity={0.85}
-      propagateSwipe
-      scrollTo={handleScrollTo}
-      scrollOffset={scrollOffset}
-      scrollOffsetMax={scrollOffsetMax}
-      onModalShow={() => {
-        scrollRef.current?.scrollTo({y: 0, animated: false});
-        setScrollOffset(0);
-      }}
     >
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={[s.sheet, {backgroundColor: T.card, borderColor: T.border}]}>
@@ -55,15 +30,9 @@ export const Sheet = ({visible, title, theme: T, onClose, children, footer}: She
             </TouchableOpacity>
           </View>
           <ScrollView
-            ref={scrollRef}
             style={s.body}
             showsVerticalScrollIndicator={true}
             keyboardShouldPersistTaps="handled"
-            onScroll={handleOnScroll}
-            scrollEventThrottle={16}
-            nestedScrollEnabled
-            onLayout={e => setContainerHeight(e.nativeEvent.layout.height)}
-            onContentSizeChange={(_w, h) => setContentHeight(h)}
           >
             {children}
             <View style={{height: 80}} />
