@@ -113,6 +113,36 @@ export const migrateFrontState = (raw: any): FrontState | null => {
   };
 };
 
+export const historyEntryToFrontState = (entry: HistoryEntry): FrontState => ({
+  primary: {
+    memberIds: entry.memberIds,
+    mood: entry.mood,
+    note: entry.note || '',
+    location: entry.location,
+  },
+  coFront: {
+    memberIds: entry.coFrontIds || [],
+    mood: entry.coFrontMood,
+    note: entry.coFrontNote || '',
+  },
+  coConscious: {
+    memberIds: entry.coConsciousIds || [],
+    mood: entry.coConsciousMood,
+    note: entry.coConsciousNote || '',
+  },
+  startTime: entry.startTime,
+});
+
+export const findOpenFrontInHistory = (history: HistoryEntry[]): FrontState | null => {
+  const openFrontEntry = history.find(entry =>
+    entry.endTime === null &&
+    entry.memberIds.length > 0 &&
+    (!entry.changeType || entry.changeType === 'front')
+  );
+
+  return openFrontEntry ? historyEntryToFrontState(openFrontEntry) : null;
+};
+
 export const isFrontEmpty = (f: FrontState | null): boolean =>
   !f || (f.primary.memberIds.length === 0 && f.coFront.memberIds.length === 0 && f.coConscious.memberIds.length === 0);
 

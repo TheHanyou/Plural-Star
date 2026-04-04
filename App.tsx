@@ -12,7 +12,7 @@ import {T, TLight, BUILTIN_PALETTES, deriveTheme} from './src/theme';
 import type {CustomPalette, ThemeColors} from './src/theme';
 import {AccentText} from './src/components/AccentText';
 import {store, KEYS} from './src/storage';
-import {SystemInfo, Member, MemberGroup, FrontState, FrontTier, FrontTierKey, HistoryEntry, JournalEntry, ShareSettings, AppSettings, EMPTY_TIER, migrateFrontState, isFrontEmpty, frontToHistoryEntry} from './src/utils';
+import {SystemInfo, Member, MemberGroup, FrontState, FrontTier, FrontTierKey, HistoryEntry, JournalEntry, ShareSettings, AppSettings, EMPTY_TIER, findOpenFrontInHistory, migrateFrontState, isFrontEmpty, frontToHistoryEntry} from './src/utils';
 import {showFrontNotification, clearFrontNotification} from './src/services/NotificationService';
 
 import {SetupScreen} from './src/screens/SetupScreen';
@@ -112,9 +112,9 @@ function MainAppContent() {
     ]);
     if (!sys) {setFirstRun(true);} else {setSystem(sys);}
     setMembers(mem || []);
-    const migratedFront = migrateFrontState(fr);
+    const migratedFront = migrateFrontState(fr) || findOpenFrontInHistory(hist || []);
     setFront(migratedFront);
-    if (fr && !fr.primary && migratedFront) {
+    if ((fr && !fr.primary && migratedFront) || (!fr && migratedFront)) {
       await store.set(KEYS.front, migratedFront);
     }
     setHistory(hist || []);

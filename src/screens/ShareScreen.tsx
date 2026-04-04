@@ -5,7 +5,7 @@ import {pick as pickDocument, isCancel as isPickerCancel} from '@react-native-do
 import RNFS from 'react-native-fs';
 import {exportJSON, exportHTML, exportEmail, exportAllJournalJSON, exportAllJournalTxt, exportAllJournalMd} from '../export/exportUtils';
 import {store, KEYS} from '../storage';
-import {SystemInfo, Member, FrontState, HistoryEntry, JournalEntry, ShareSettings, AppSettings, ExportPayload, uid, allFrontMemberIds} from '../utils';
+import {SystemInfo, Member, FrontState, HistoryEntry, JournalEntry, ShareSettings, AppSettings, ExportPayload, uid, allFrontMemberIds, findOpenFrontInHistory} from '../utils';
 
 type Section = 'export' | 'import' | 'shareview';
 type ImportSource = 'backup' | 'journal' | 'simplyplural' | 'pluralkit';
@@ -90,7 +90,10 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
         if (restoreSel.system && restoreData.system) await store.set(KEYS.system, restoreData.system);
         if (restoreSel.members && restoreData.members) await store.set(KEYS.members, restoreData.members);
         if (restoreSel.journal && restoreData.journal) await store.set(KEYS.journal, restoreData.journal);
-        if (restoreSel.frontHistory && restoreData.frontHistory) await store.set(KEYS.history, restoreData.frontHistory);
+        if (restoreSel.frontHistory && restoreData.frontHistory) {
+          await store.set(KEYS.history, restoreData.frontHistory);
+          await store.set(KEYS.front, findOpenFrontInHistory(restoreData.frontHistory));
+        }
         setRestoreDone(true); setTimeout(() => onDataImported(), 800);
       }},
     ]);
@@ -210,12 +213,25 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           await store.set(KEYS.members, merged);
           const idMap: Record<string, string> = {};
           extPreview.members.forEach((m: any, i: number) => { const eid = isPK ? (m.uuid || m.id) : m.id; const lm = merged.find(l => l.name.toLowerCase() === newM[i]?.name.toLowerCase()); if (eid && lm) idMap[eid] = lm.id; if (isPK && m.id && lm) idMap[m.id] = lm.id; });
-          if (extSel.frontHistory && extPreview.switches.length > 0) { const newH = isPK ? convertPKSwitches(extPreview.switches, idMap) : convertSPSwitches(extPreview.switches, idMap); if (newH.length > 0) await store.set(KEYS.history, [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000)); }
+          if (extSel.frontHistory && extPreview.switches.length > 0) {
+            const newH = isPK ? convertPKSwitches(extPreview.switches, idMap) : convertSPSwitches(extPreview.switches, idMap);
+            if (newH.length > 0) {
+              const mergedHistory = [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000);
+              await store.set(KEYS.history, mergedHistory);
+              const importedOpenFront = findOpenFrontInHistory(mergedHistory);
+              if (importedOpenFront) await store.set(KEYS.front, importedOpenFront);
+            }
+          }
         } else if (extSel.frontHistory && extPreview.switches.length > 0) {
           const existingIdMap: Record<string, string> = {};
           extPreview.members.forEach((m: any) => { const eid = isPK ? (m.uuid || m.id) : m.id; const name = isPK ? (m.display_name || m.name || '') : (m.content?.name || m.name || ''); const lm = members.find(l => l.name.toLowerCase() === name.toLowerCase()); if (eid && lm) existingIdMap[eid] = lm.id; if (isPK && m.id && lm) existingIdMap[m.id] = lm.id; });
           const newH = isPK ? convertPKSwitches(extPreview.switches, existingIdMap) : convertSPSwitches(extPreview.switches, existingIdMap);
-          if (newH.length > 0) await store.set(KEYS.history, [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000));
+          if (newH.length > 0) {
+            const mergedHistory = [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000);
+            await store.set(KEYS.history, mergedHistory);
+            const importedOpenFront = findOpenFrontInHistory(mergedHistory);
+            if (importedOpenFront) await store.set(KEYS.front, importedOpenFront);
+          }
         }
         setExtPreview(null); setExtToken(''); setTimeout(() => onDataImported(), 500);
       }},
