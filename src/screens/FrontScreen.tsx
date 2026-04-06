@@ -222,7 +222,8 @@ export const FrontScreen = ({
   onEditDetails,
 }: Props) => {
   const {t} = useTranslation();
-  
+  const fs = (s: number) => Math.round(s * (T.textScale || 1));
+
   const empty = isFrontEmpty(front);
 
   return (
@@ -232,7 +233,6 @@ export const FrontScreen = ({
         contentContainerStyle={{
           padding: 16,
           paddingBottom: 140,
-          flexGrow: 1,
         }}>
 
         <View style={s.headerRow}>
@@ -295,7 +295,6 @@ export const FrontScreen = ({
           </>
         )}
 
-        <View style={{height: 300}} />
       </ScrollView>
     </View>
   );
