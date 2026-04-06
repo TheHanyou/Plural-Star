@@ -13,6 +13,7 @@ import type {CustomPalette, ThemeColors} from './src/theme';
 import {AccentText} from './src/components/AccentText';
 import {store, KEYS} from './src/storage';
 import {SystemInfo, Member, MemberGroup, FrontState, FrontTier, FrontTierKey, HistoryEntry, JournalEntry, ShareSettings, AppSettings, ChatChannel, ChatMessage, DEFAULT_CHANNELS, EMPTY_TIER, findOpenFrontInHistory, migrateFrontState, isFrontEmpty, frontToHistoryEntry, uid} from './src/utils';
+import {migrateInlineAvatars, migrateInlineChatMedia, clearAllMedia} from './src/utils/mediaUtils';
 import {showFrontNotification, clearFrontNotification} from './src/services/NotificationService';
 
 import {SetupScreen} from './src/screens/SetupScreen';
@@ -108,7 +109,11 @@ function MainAppContent() {
     for (const ch of channels) {
       if (ch.archived) continue;
       const msgs = await store.get<ChatMessage[]>(`ps:chat:${ch.id}`, []);
-      if (msgs) allMsgs.push(...msgs);
+      if (msgs) {
+        const {messages: migrated, changed} = await migrateInlineChatMedia(msgs);
+        if (changed) await store.set(`ps:chat:${ch.id}`, migrated);
+        allMsgs.push(...(changed ? migrated : msgs));
+      }
     }
     setAllChatMessages(allMsgs);
   }, []);
@@ -128,7 +133,13 @@ function MainAppContent() {
       store.get<ChatChannel[]>(KEYS.chatChannels, []),
     ]);
     if (!sys) {setFirstRun(true);} else {setSystem(sys);}
-    setMembers(mem || []);
+    let loadedMembers = mem || [];
+    const {members: migratedMembers, changed: avatarsChanged} = await migrateInlineAvatars(loadedMembers);
+    if (avatarsChanged) {
+      loadedMembers = migratedMembers;
+      await store.set(KEYS.members, loadedMembers);
+    }
+    setMembers(loadedMembers);
     const migratedFront = migrateFrontState(fr) || findOpenFrontInHistory(hist || []);
     setFront(migratedFront);
     if ((fr && !fr.primary && migratedFront) || (!fr && migratedFront)) {
@@ -334,7 +345,7 @@ function MainAppContent() {
   const addJournalEntry = async (e: JournalEntry) => saveJournal([e, ...journal]);
 
   const handleDeleteAccount = async () => {
-    await clearFrontNotification(); await store.clearAll();
+    await clearFrontNotification(); await store.clearAll(); await clearAllMedia();
     setSystem({name: '', description: ''}); setMembers([]); setFront(null);
     setHistory([]); setJournal([]);
     setShareSettings({showFront: true, showMembers: true, showDescriptions: false});

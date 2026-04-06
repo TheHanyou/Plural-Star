@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, Alert, FlatList, Image, Linking} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import RNFS from 'react-native-fs';
-import {pick as pickDocument, isCancel as isPickerCancel} from '@react-native-documents/picker';
+import {safePick, isPickerCancel} from '../utils/safePicker';
 import {Fonts} from '../theme';
 import {Member, ChatChannel, ChatMessage, DEFAULT_CHANNELS, uid, getInitials, fmtTime} from '../utils';
 import {store, chatMsgKey} from '../storage';
@@ -91,7 +91,7 @@ export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props)
   const sendImage = async () => {
     if (!activeChannelId || !activeMemberId) return;
     try {
-      const [res] = await pickDocument({type: ['image/png', 'image/jpeg', 'image/gif', 'image/webp']});
+      const [res] = await safePick({type: ['image/png', 'image/jpeg', 'image/gif', 'image/webp']});
       const base64 = await RNFS.readFile(res.uri, 'base64');
       const ext = (res.name || '').split('.').pop()?.toLowerCase() || 'png';
       const mimeMap: Record<string, string> = {png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp'};

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, Alert, StyleSheet, ActivityIndicator} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {pick as pickDocument, isCancel as isPickerCancel} from '@react-native-documents/picker';
+import {safePick, isPickerCancel} from '../utils/safePicker';
 import RNFS from 'react-native-fs';
 import {exportJSON, exportHTML, exportEmail, exportAllJournalJSON, exportAllJournalTxt, exportAllJournalMd} from '../export/exportUtils';
 import {store, KEYS} from '../storage';
@@ -73,7 +73,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const handleImportJournalFile = async () => {
     setImportStatus('idle'); setImportMsg('');
     try {
-      const [res] = await pickDocument({type: ['text/plain', 'text/markdown', 'application/json']});
+      const [res] = await safePick({type: ['text/plain', 'text/markdown', 'application/json']});
       const ext = (res.name || '').split('.').pop()?.toLowerCase() || '';
       const titleBase = (res.name || 'Imported Entry').replace(/\.[^.]+$/, '');
       let body = '';
@@ -91,7 +91,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const handlePickBackup = async () => {
     setRestoreError(''); setRestoreData(null); setRestoreFile(null); setRestoreDone(false);
     try {
-      const [res] = await pickDocument({type: ['application/json']});
+      const [res] = await safePick({type: ['application/json']});
       const content = await RNFS.readFile(res.uri, 'utf8');
       const parsed: ExportPayload = JSON.parse(content);
       if (!parsed._meta || parsed._meta.app !== 'Plural Space') throw new Error(t('share.notValidExport'));
@@ -275,7 +275,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
 
   const handleSPFileImport = async () => {
     try {
-      const [res] = await pickDocument({type: ['application/json', 'text/plain']});
+      const [res] = await safePick({type: ['application/json', 'text/plain']});
       const content = await RNFS.readFile(res.uri, 'utf8');
       const data = JSON.parse(content);
       if (!data.members && !data.frontHistory && !data.users) {
