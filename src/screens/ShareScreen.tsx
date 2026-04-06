@@ -10,6 +10,23 @@ import {SystemInfo, Member, FrontState, HistoryEntry, JournalEntry, ShareSetting
 type Section = 'export' | 'import' | 'shareview';
 type ImportSource = 'backup' | 'journal' | 'simplyplural' | 'pluralkit' | 'spfile';
 
+const fetchAvatarBase64 = async (url: string): Promise<string | undefined> => {
+  if (!url || !url.startsWith('http')) return undefined;
+  try {
+    // FileReader is a browser Web API and is unreliable in React Native's JS runtime.
+    // Use RNFS.downloadFile instead, which works correctly on both iOS and Android.
+    const ext = url.split('?')[0].split('.').pop()?.toLowerCase() || 'jpg';
+    const mimeMap: Record<string, string> = {jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp'};
+    const mime = mimeMap[ext] || 'image/jpeg';
+    const tmpPath = `${RNFS.TemporaryDirectoryPath}/ps_avatar_${Date.now()}.${ext}`;
+    const result = await RNFS.downloadFile({fromUrl: url, toFile: tmpPath}).promise;
+    if (result.statusCode < 200 || result.statusCode >= 300) return undefined;
+    const base64 = await RNFS.readFile(tmpPath, 'base64');
+    RNFS.unlink(tmpPath).catch(() => {}); // clean up temp file, fire-and-forget
+    return `data:${mime};base64,${base64}`;
+  } catch { return undefined; }
+};
+
 interface Props {
   theme: any; system: SystemInfo; members: Member[]; front: FrontState | null;
   history: HistoryEntry[]; journal: JournalEntry[]; shareSettings: ShareSettings; appSettings: AppSettings;
@@ -208,9 +225,27 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           await store.set(KEYS.system, {...system, name: name || system.name, description: desc});
         }
         if (extSel.members && extPreview.members.length > 0) {
-          const newM: Member[] = extPreview.members.map((m: any) => ({id: uid(), name: isPK ? m.display_name || m.name : (m.content?.name || m.name || 'Unknown'), pronouns: isPK ? (m.pronouns || '') : (m.content?.pronouns || ''), role: isPK ? '' : (m.content?.role || ''), color: isPK ? (m.color ? `#${m.color}` : '#DAA520') : (m.content?.color || '#DAA520'), description: isPK ? (m.description || '') : (m.content?.desc || '')}));
+          const avatarUrls: Record<string, string> = {};
+          const newM: Member[] = extPreview.members.map((m: any) => {
+            const id = uid();
+            const avatarUrl = isPK ? (m.avatar_url || '') : (m.content?.avatarUrl || m.avatarUrl || '');
+            if (avatarUrl) avatarUrls[id] = avatarUrl;
+            return {id, name: isPK ? m.display_name || m.name : (m.content?.name || m.name || 'Unknown'), pronouns: isPK ? (m.pronouns || '') : (m.content?.pronouns || ''), role: isPK ? '' : (m.content?.role || ''), color: isPK ? (m.color ? `#${m.color}` : '#DAA520') : (m.content?.color || '#DAA520'), description: isPK ? (m.description || '') : (m.content?.desc || '')};
+          });
           const merged = [...members, ...newM.filter(nm => !members.find(em => em.name.toLowerCase() === nm.name.toLowerCase()))];
           await store.set(KEYS.members, merged);
+          const avatarEntries = Object.entries(avatarUrls);
+          if (avatarEntries.length > 0) {
+            const withAvatars = [...merged];
+            for (const [memberId, url] of avatarEntries) {
+              const avatar = await fetchAvatarBase64(url);
+              if (avatar) {
+                const idx = withAvatars.findIndex(m => m.id === memberId);
+                if (idx >= 0) withAvatars[idx] = {...withAvatars[idx], avatar};
+              }
+            }
+            await store.set(KEYS.members, withAvatars);
+          }
           const idMap: Record<string, string> = {};
           extPreview.members.forEach((m: any, i: number) => { const eid = isPK ? (m.uuid || m.id) : m.id; const lm = merged.find(l => l.name.toLowerCase() === newM[i]?.name.toLowerCase()); if (eid && lm) idMap[eid] = lm.id; if (isPK && m.id && lm) idMap[m.id] = lm.id; });
           if (extSel.frontHistory && extPreview.switches.length > 0) {
@@ -276,17 +311,35 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           await store.set(KEYS.system, {...system, name: name || system.name, description: desc});
         }
         if (extSel.members && spMembers.length > 0) {
-          const newM: Member[] = spMembers.map((m: any) => ({
-            id: uid(),
-            name: m.name || 'Unknown',
-            pronouns: m.pronouns || '',
-            role: '',
-            color: m.color || '#DAA520',
-            description: m.desc || '',
-            archived: m.archived || false,
-          }));
+          const avatarUrls: Record<string, string> = {};
+          const newM: Member[] = spMembers.map((m: any) => {
+            const id = uid();
+            const avatarUrl = m.avatarUrl || '';
+            if (avatarUrl) avatarUrls[id] = avatarUrl;
+            return {
+              id,
+              name: m.name || 'Unknown',
+              pronouns: m.pronouns || '',
+              role: '',
+              color: m.color || '#DAA520',
+              description: m.desc || '',
+              archived: m.archived || false,
+            };
+          });
           const merged = [...members, ...newM.filter(nm => !members.find(em => em.name.toLowerCase() === nm.name.toLowerCase()))];
           await store.set(KEYS.members, merged);
+          const avatarEntries = Object.entries(avatarUrls);
+          if (avatarEntries.length > 0) {
+            const withAvatars = [...merged];
+            for (const [memberId, url] of avatarEntries) {
+              const avatar = await fetchAvatarBase64(url);
+              if (avatar) {
+                const idx = withAvatars.findIndex(m => m.id === memberId);
+                if (idx >= 0) withAvatars[idx] = {...withAvatars[idx], avatar};
+              }
+            }
+            await store.set(KEYS.members, withAvatars);
+          }
           if (extSel.frontHistory && spHistory.length > 0) {
             const idMap: Record<string, string> = {};
             spMembers.forEach((m: any, i: number) => {

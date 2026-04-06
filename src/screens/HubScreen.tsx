@@ -51,13 +51,13 @@ const DateTimeEditor = ({date, onChange, label, T}: {date: Date; onChange: (d: D
   const Stepper = ({value, field, width}: {value: string; field: string; width: number}) => (
     <View style={{alignItems: 'center', width}}>
       <TouchableOpacity onPress={() => adjust(field, 1)} activeOpacity={0.6} style={{padding: 4}}>
-        <Text style={{fontSize: 14, color: T.dim}}>▲</Text>
+        <Text style={{fontSize: fs(14), color: T.dim}}>▲</Text>
       </TouchableOpacity>
       <View style={{backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, minWidth: width, alignItems: 'center'}}>
-        <Text style={{fontSize: 14, color: T.text, fontWeight: '500', fontFamily: 'monospace'}}>{value}</Text>
+        <Text style={{fontSize: fs(14), color: T.text, fontWeight: '500', fontFamily: 'monospace'}}>{value}</Text>
       </View>
       <TouchableOpacity onPress={() => adjust(field, -1)} activeOpacity={0.6} style={{padding: 4}}>
-        <Text style={{fontSize: 14, color: T.dim}}>▼</Text>
+        <Text style={{fontSize: fs(14), color: T.dim}}>▼</Text>
       </TouchableOpacity>
     </View>
   );
@@ -70,8 +70,8 @@ const DateTimeEditor = ({date, onChange, label, T}: {date: Date; onChange: (d: D
       {label ? <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{label}</Text> : null}
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}
         style={{flexDirection: 'row', gap: 8, padding: 10, borderRadius: 8, borderWidth: 1, backgroundColor: T.surface, borderColor: expanded ? `${T.accent}50` : T.border}}>
-        <Text style={{flex: 1, fontSize: 14, color: T.text}}>{fmtDateDisplay(date)}</Text>
-        <Text style={{fontSize: 14, color: T.text}}>{fmtTimeDisplay(date)}</Text>
+        <Text style={{flex: 1, fontSize: fs(14), color: T.text}}>{fmtDateDisplay(date)}</Text>
+        <Text style={{fontSize: fs(14), color: T.text}}>{fmtTimeDisplay(date)}</Text>
         <Text style={{fontSize: 12, color: T.dim}}>{expanded ? '▲' : '▼'}</Text>
       </TouchableOpacity>
       {expanded && (
@@ -82,11 +82,11 @@ const DateTimeEditor = ({date, onChange, label, T}: {date: Date; onChange: (d: D
             <Stepper value={String(year)} field="year" width={56} />
             <View style={{width: 12}} />
             <Stepper value={String(displayHour).padStart(2, '0')} field="hour" width={40} />
-            <Text style={{fontSize: 18, color: T.dim, fontWeight: '700'}}>:</Text>
+            <Text style={{fontSize: fs(18), color: T.dim, fontWeight: '700'}}>:</Text>
             <Stepper value={String(minutes).padStart(2, '0')} field="minute" width={40} />
             <TouchableOpacity onPress={() => adjust('ampm', 0)} activeOpacity={0.6}
               style={{backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, marginTop: 2}}>
-              <Text style={{fontSize: 13, color: T.accent, fontWeight: '600'}}>{isPM ? 'PM' : 'AM'}</Text>
+              <Text style={{fontSize: fs(13), color: T.accent, fontWeight: '600'}}>{isPM ? 'PM' : 'AM'}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -131,7 +131,7 @@ const TierMemberPicker = ({tierKey, label, color, selected, setSelected, members
         </View>
       )}
       <TextInput value={search} onChangeText={setSearch} placeholder={t('members.searchToAdd')} placeholderTextColor={T.muted}
-        style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, fontSize: 13, marginBottom: 4}} />
+        style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, fontSize: fs(13), marginBottom: 4}} />
       {search.length > 0 && (
         <View style={{backgroundColor: T.card, borderRadius: 8, borderWidth: 1, borderColor: T.border, maxHeight: 160, overflow: 'hidden'}}>
           <ScrollView nestedScrollEnabled>
@@ -143,7 +143,7 @@ const TierMemberPicker = ({tierKey, label, color, selected, setSelected, members
                 <TouchableOpacity key={m.id} onPress={() => {toggle(m.id); setSearch('');}} activeOpacity={0.7}
                   style={{flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderBottomWidth: 1, borderBottomColor: T.border, opacity: otherLabel && !inThis ? 0.45 : 1}}>
                   <Avatar member={m} size={24} T={T} />
-                  <Text style={{fontSize: 13, color: inThis ? m.color : T.text, fontWeight: inThis ? '600' : '400'}}>{m.name}</Text>
+                  <Text style={{fontSize: fs(13), color: inThis ? m.color : T.text, fontWeight: inThis ? '600' : '400'}}>{m.name}</Text>
                   {m.pronouns ? <Text style={{fontSize: 11, color: T.muted}}>{m.pronouns}</Text> : null}
                   {otherLabel && !inThis ? <Text style={{fontSize: 10, color: T.muted, fontStyle: 'italic'}}>{otherLabel}</Text> : null}
                   {inThis && <Text style={{color: m.color, marginLeft: 'auto'}}>✓</Text>}
@@ -283,9 +283,9 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
     <ScrollView style={{flex: 1, backgroundColor: T.bg}} contentContainerStyle={{padding: 16, paddingBottom: 40}} keyboardShouldPersistTaps="handled">
       <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 16}}>
         <TouchableOpacity onPress={onBack} activeOpacity={0.7} style={{padding: 4, marginRight: 12}}>
-          <Text style={{fontSize: 18, color: T.dim}}>←</Text>
+          <Text style={{fontSize: fs(18), color: T.dim}}>←</Text>
         </TouchableOpacity>
-        <Text style={{fontFamily: Fonts.display, fontSize: 22, fontWeight: '600', fontStyle: 'italic', color: T.text}}>{t('hub.retroHistory')}</Text>
+        <Text style={{fontFamily: Fonts.display, fontSize: fs(22), fontWeight: '600', fontStyle: 'italic', color: T.text}}>{t('hub.retroHistory')}</Text>
       </View>
 
       <DateTimeEditor date={startDate} onChange={setStartDate} label={t('hub.startTime')} T={T} />
@@ -311,24 +311,24 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
 
       <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{t('modal.mood')}</Text>
       <TextInput value={mood} onChangeText={setMood} placeholder={t('modal.enterMood')} placeholderTextColor={T.muted}
-        style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, marginBottom: 14}} />
+        style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontSize: fs(14), marginBottom: 14}} />
 
       <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{t('modal.location')}</Text>
       <TextInput value={location} onChangeText={setLocation} placeholder={t('modal.typeLocation')} placeholderTextColor={T.muted}
-        style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, marginBottom: 14}} />
+        style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontSize: fs(14), marginBottom: 14}} />
 
       <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{t('modal.note')}</Text>
       <TextInput value={note} onChangeText={setNote} placeholder={t('modal.whatHappening')} placeholderTextColor={T.muted} multiline numberOfLines={3}
-        style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, minHeight: 80, textAlignVertical: 'top', marginBottom: 20}} />
+        style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontSize: fs(14), minHeight: 80, textAlignVertical: 'top', marginBottom: 20}} />
 
       <View style={{flexDirection: 'row', gap: 10}}>
         <TouchableOpacity onPress={onBack} activeOpacity={0.7}
           style={{flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 8, borderWidth: 1, backgroundColor: 'transparent', borderColor: T.border}}>
-          <Text style={{fontSize: 14, fontWeight: '500', color: T.dim}}>{t('common.cancel')}</Text>
+          <Text style={{fontSize: fs(14), fontWeight: '500', color: T.dim}}>{t('common.cancel')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleSave} activeOpacity={0.7}
           style={{flex: 2, alignItems: 'center', paddingVertical: 12, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`}}>
-          <Text style={{fontSize: 14, fontWeight: '500', color: T.accent}}>{t('common.save')}</Text>
+          <Text style={{fontSize: fs(14), fontWeight: '500', color: T.accent}}>{t('common.save')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -339,6 +339,7 @@ const DISCORD_URL = 'https://discord.gg/FFQw33cu8m';
 
 export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onSetFront, renderShareScreen, renderStatsScreen, renderChatScreen}: Props) => {
   const {t} = useTranslation();
+  const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const [activeTile, setActiveTile] = useState<HubTile | null>(null);
 
   if (activeTile === 'share') {
@@ -346,9 +347,9 @@ export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onS
       <View style={{flex: 1, backgroundColor: T.bg}}>
         <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8}}>
           <TouchableOpacity onPress={() => setActiveTile(null)} activeOpacity={0.7} style={{padding: 4, marginRight: 12}}>
-            <Text style={{fontSize: 18, color: T.dim}}>←</Text>
+            <Text style={{fontSize: fs(18), color: T.dim}}>←</Text>
           </TouchableOpacity>
-          <Text style={{fontFamily: Fonts.display, fontSize: 22, fontWeight: '600', fontStyle: 'italic', color: T.text}}>{t('hub.importExport')}</Text>
+          <Text style={{fontFamily: Fonts.display, fontSize: fs(22), fontWeight: '600', fontStyle: 'italic', color: T.text}}>{t('hub.importExport')}</Text>
         </View>
         {renderShareScreen()}
       </View>
@@ -364,9 +365,9 @@ export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onS
       <View style={{flex: 1, backgroundColor: T.bg}}>
         <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8}}>
           <TouchableOpacity onPress={() => setActiveTile(null)} activeOpacity={0.7} style={{padding: 4, marginRight: 12}}>
-            <Text style={{fontSize: 18, color: T.dim}}>←</Text>
+            <Text style={{fontSize: fs(18), color: T.dim}}>←</Text>
           </TouchableOpacity>
-          <Text style={{fontFamily: Fonts.display, fontSize: 22, fontWeight: '600', fontStyle: 'italic', color: T.text}}>{t('hub.statistics')}</Text>
+          <Text style={{fontFamily: Fonts.display, fontSize: fs(22), fontWeight: '600', fontStyle: 'italic', color: T.text}}>{t('hub.statistics')}</Text>
         </View>
         {renderStatsScreen()}
       </View>
@@ -378,9 +379,9 @@ export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onS
       <View style={{flex: 1, backgroundColor: T.bg}}>
         <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8}}>
           <TouchableOpacity onPress={() => setActiveTile(null)} activeOpacity={0.7} style={{padding: 4, marginRight: 12}}>
-            <Text style={{fontSize: 18, color: T.dim}}>←</Text>
+            <Text style={{fontSize: fs(18), color: T.dim}}>←</Text>
           </TouchableOpacity>
-          <Text style={{fontFamily: Fonts.display, fontSize: 22, fontWeight: '600', fontStyle: 'italic', color: T.text}}>{t('hub.systemChat')}</Text>
+          <Text style={{fontFamily: Fonts.display, fontSize: fs(22), fontWeight: '600', fontStyle: 'italic', color: T.text}}>{t('hub.systemChat')}</Text>
         </View>
         {renderChatScreen()}
       </View>
@@ -405,12 +406,12 @@ export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onS
 
   return (
     <ScrollView style={{flex: 1, backgroundColor: T.bg}} contentContainerStyle={{padding: 16, paddingBottom: 32}}>
-      <Text style={{fontFamily: Fonts.display, fontSize: 26, fontWeight: '600', fontStyle: 'italic', color: T.text, marginBottom: 20}}>{t('hub.title')}</Text>
+      <Text style={{fontFamily: Fonts.display, fontSize: fs(26), fontWeight: '600', fontStyle: 'italic', color: T.text, marginBottom: 20}}>{t('hub.title')}</Text>
       <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 10}}>
         {tiles.map(tile => (
           <TouchableOpacity key={tile.id} onPress={() => handleTilePress(tile)} activeOpacity={0.7}
             style={{width: '31%', aspectRatio: 1, borderRadius: 14, borderWidth: 1, backgroundColor: T.card, borderColor: T.border, alignItems: 'center', justifyContent: 'center', padding: 10}}>
-            <Text style={{fontSize: 28, color: T.accent, marginBottom: 8}}>{tile.icon}</Text>
+            <Text style={{fontSize: fs(28), color: T.accent, marginBottom: 8}}>{tile.icon}</Text>
             <Text style={{fontSize: 11, fontWeight: '600', color: T.text, textAlign: 'center'}} numberOfLines={2}>{tile.label}</Text>
           </TouchableOpacity>
         ))}

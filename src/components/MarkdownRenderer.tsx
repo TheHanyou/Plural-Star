@@ -3,6 +3,8 @@ import {View, Text, Image, Linking} from 'react-native';
 
 const IMAGE_URL_RE = /https?:\/\/\S+\.(?:gif|png|jpe?g|webp)(?:\?\S*)?/gi;
 
+const fs = (s: number, T: any): number => Math.round(s * (T?.textScale || 1));
+
 const isHTML = (text: string): boolean => {
   const t = text.trim();
   return t.startsWith('<') || /<(?:p|h[1-6]|div|ul|ol|blockquote|pre|hr)\b/i.test(t);
@@ -82,18 +84,18 @@ const renderHTMLBlocks = (html: string, T: any): React.ReactNode => {
     <View style={{gap: 2}}>
       {segments.map((seg, i) => {
         switch (seg.tag) {
-          case 'h1': return <Text key={i} style={{fontSize: 18, fontWeight: '700', color: T.text, marginBottom: 4}}>{renderInlineHTML(seg.content, T)}</Text>;
-          case 'h2': return <Text key={i} style={{fontSize: 16, fontWeight: '700', color: T.text, marginBottom: 4}}>{renderInlineHTML(seg.content, T)}</Text>;
-          case 'h3': return <Text key={i} style={{fontSize: 14, fontWeight: '700', color: T.text, marginBottom: 4}}>{renderInlineHTML(seg.content, T)}</Text>;
-          case 'blockquote': return <View key={i} style={{borderLeftWidth: 3, borderLeftColor: T.accent, paddingLeft: 10, marginVertical: 2}}><Text style={{fontSize: 13, color: T.dim, fontStyle: 'italic', lineHeight: 20}}>{renderInlineHTML(seg.content, T)}</Text></View>;
+          case 'h1': return <Text key={i} style={{fontSize: fs(18, T), fontWeight: '700', color: T.text, marginBottom: 4}}>{renderInlineHTML(seg.content, T)}</Text>;
+          case 'h2': return <Text key={i} style={{fontSize: fs(16, T), fontWeight: '700', color: T.text, marginBottom: 4}}>{renderInlineHTML(seg.content, T)}</Text>;
+          case 'h3': return <Text key={i} style={{fontSize: fs(14, T), fontWeight: '700', color: T.text, marginBottom: 4}}>{renderInlineHTML(seg.content, T)}</Text>;
+          case 'blockquote': return <View key={i} style={{borderLeftWidth: 3, borderLeftColor: T.accent, paddingLeft: 10, marginVertical: 2}}><Text style={{fontSize: fs(13, T), color: T.dim, fontStyle: 'italic', lineHeight: 20}}>{renderInlineHTML(seg.content, T)}</Text></View>;
           case 'pre': return <View key={i} style={{backgroundColor: T.surface, padding: 10, borderRadius: 8, marginVertical: 4}}><Text style={{fontFamily: 'monospace', fontSize: 12, color: T.dim}}>{decodeEntities(seg.content.replace(/<[^>]*>/g, ''))}</Text></View>;
           case 'hr': return <View key={i} style={{height: 1, backgroundColor: T.border, marginVertical: 8}} />;
-          case 'ul': return <View key={i} style={{marginVertical: 2}}>{(seg.listItems || []).map((li, j) => <View key={j} style={{flexDirection: 'row', gap: 6, marginVertical: 1}}><Text style={{fontSize: 13, color: T.dim}}>•</Text><Text style={{fontSize: 13, color: T.dim, flex: 1, lineHeight: 20}}>{renderInlineHTML(li, T)}</Text></View>)}</View>;
-          case 'ol': return <View key={i} style={{marginVertical: 2}}>{(seg.listItems || []).map((li, j) => <View key={j} style={{flexDirection: 'row', gap: 6, marginVertical: 1}}><Text style={{fontSize: 13, color: T.dim, width: 16, textAlign: 'right'}}>{j + 1}.</Text><Text style={{fontSize: 13, color: T.dim, flex: 1, lineHeight: 20}}>{renderInlineHTML(li, T)}</Text></View>)}</View>;
+          case 'ul': return <View key={i} style={{marginVertical: 2}}>{(seg.listItems || []).map((li, j) => <View key={j} style={{flexDirection: 'row', gap: 6, marginVertical: 1}}><Text style={{fontSize: fs(13, T), color: T.dim}}>•</Text><Text style={{fontSize: fs(13, T), color: T.dim, flex: 1, lineHeight: 20}}>{renderInlineHTML(li, T)}</Text></View>)}</View>;
+          case 'ol': return <View key={i} style={{marginVertical: 2}}>{(seg.listItems || []).map((li, j) => <View key={j} style={{flexDirection: 'row', gap: 6, marginVertical: 1}}><Text style={{fontSize: fs(13, T), color: T.dim, width: 16, textAlign: 'right'}}>{j + 1}.</Text><Text style={{fontSize: fs(13, T), color: T.dim, flex: 1, lineHeight: 20}}>{renderInlineHTML(li, T)}</Text></View>)}</View>;
           case 'p': default: {
             const content = seg.content.trim();
             if (!content) return <View key={i} style={{height: 4}} />;
-            return <Text key={i} style={{fontSize: 13, color: T.dim, lineHeight: 20}}>{renderInlineHTML(content, T)}</Text>;
+            return <Text key={i} style={{fontSize: fs(13, T), color: T.dim, lineHeight: 20}}>{renderInlineHTML(content, T)}</Text>;
           }
         }
       })}
@@ -131,15 +133,15 @@ const renderInline = (text: string, T: any): React.ReactNode => {
 };
 
 const renderMarkdownLine = (line: string, T: any, i: number): React.ReactNode => {
-  if (line.startsWith('### ')) return <Text key={i} style={{fontSize: 14, fontWeight: '700', color: T.text, marginBottom: 4}}>{line.slice(4)}</Text>;
-  if (line.startsWith('## ')) return <Text key={i} style={{fontSize: 16, fontWeight: '700', color: T.text, marginBottom: 4}}>{line.slice(3)}</Text>;
-  if (line.startsWith('# ')) return <Text key={i} style={{fontSize: 18, fontWeight: '700', color: T.text, marginBottom: 4}}>{line.slice(2)}</Text>;
-  if (line.startsWith('> ')) return <View key={i} style={{borderLeftWidth: 3, borderLeftColor: T.accent, paddingLeft: 10, marginVertical: 2}}><Text style={{fontSize: 13, color: T.dim, fontStyle: 'italic', lineHeight: 20}}>{line.slice(2)}</Text></View>;
+  if (line.startsWith('### ')) return <Text key={i} style={{fontSize: fs(14, T), fontWeight: '700', color: T.text, marginBottom: 4}}>{line.slice(4)}</Text>;
+  if (line.startsWith('## ')) return <Text key={i} style={{fontSize: fs(16, T), fontWeight: '700', color: T.text, marginBottom: 4}}>{line.slice(3)}</Text>;
+  if (line.startsWith('# ')) return <Text key={i} style={{fontSize: fs(18, T), fontWeight: '700', color: T.text, marginBottom: 4}}>{line.slice(2)}</Text>;
+  if (line.startsWith('> ')) return <View key={i} style={{borderLeftWidth: 3, borderLeftColor: T.accent, paddingLeft: 10, marginVertical: 2}}><Text style={{fontSize: fs(13, T), color: T.dim, fontStyle: 'italic', lineHeight: 20}}>{line.slice(2)}</Text></View>;
   if (line.startsWith('---') || line.startsWith('***')) return <View key={i} style={{height: 1, backgroundColor: T.border, marginVertical: 8}} />;
-  if (line.match(/^[-*] /)) return <View key={i} style={{flexDirection: 'row', gap: 6, marginVertical: 1}}><Text style={{fontSize: 13, color: T.dim}}>•</Text><Text style={{fontSize: 13, color: T.dim, flex: 1, lineHeight: 20}}>{renderInline(line.slice(2), T)}</Text></View>;
-  if (line.match(/^\d+\. /)) {const m = line.match(/^(\d+)\. (.*)$/); return <View key={i} style={{flexDirection: 'row', gap: 6, marginVertical: 1}}><Text style={{fontSize: 13, color: T.dim, width: 16, textAlign: 'right'}}>{m?.[1]}.</Text><Text style={{fontSize: 13, color: T.dim, flex: 1, lineHeight: 20}}>{renderInline(m?.[2] || '', T)}</Text></View>;}
+  if (line.match(/^[-*] /)) return <View key={i} style={{flexDirection: 'row', gap: 6, marginVertical: 1}}><Text style={{fontSize: fs(13, T), color: T.dim}}>•</Text><Text style={{fontSize: fs(13, T), color: T.dim, flex: 1, lineHeight: 20}}>{renderInline(line.slice(2), T)}</Text></View>;
+  if (line.match(/^\d+\. /)) {const m = line.match(/^(\d+)\. (.*)$/); return <View key={i} style={{flexDirection: 'row', gap: 6, marginVertical: 1}}><Text style={{fontSize: fs(13, T), color: T.dim, width: 16, textAlign: 'right'}}>{m?.[1]}.</Text><Text style={{fontSize: fs(13, T), color: T.dim, flex: 1, lineHeight: 20}}>{renderInline(m?.[2] || '', T)}</Text></View>;}
   if (!line.trim()) return <View key={i} style={{height: 8}} />;
-  return <Text key={i} style={{fontSize: 13, color: T.dim, lineHeight: 20}}>{renderInline(line, T)}</Text>;
+  return <Text key={i} style={{fontSize: fs(13, T), color: T.dim, lineHeight: 20}}>{renderInline(line, T)}</Text>;
 };
 
 export const RichText = ({text, T, numberOfLines}: {text: string; T: any; numberOfLines?: number}) => {

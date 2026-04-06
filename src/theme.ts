@@ -19,6 +19,7 @@ export interface ThemeColors {
   info: string;
   infoBg: string;
   isLight: boolean;
+  textScale: number;
 }
 
 export interface CustomPalette {
@@ -115,6 +116,7 @@ export const deriveTheme = (bg: string, accent: string, text: string, mid: strin
       bgRgb[2] + (infoBgRgb[2] - bgRgb[2]) * opacity,
     ),
     isLight,
+    textScale: 1,
   };
 };
 

@@ -30,6 +30,7 @@ interface Props {
 
 export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props) => {
   const {t} = useTranslation();
+  const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const [activeChannelId, setActiveChannelId] = useState<string | null>(channels.find(c => !c.archived)?.id || null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -214,7 +215,7 @@ export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props)
           <Avatar member={author} size={28} T={T} />
           <View style={{flex: 1}}>
             <View style={{flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 2}}>
-              <Text style={{fontSize: 13, fontWeight: '600', color: author?.color || T.text}}>{author?.name || '?'}</Text>
+              <Text style={{fontSize: fs(13), fontWeight: '600', color: author?.color || T.text}}>{author?.name || '?'}</Text>
               <Text style={{fontSize: 10, color: T.muted}}>{fmtTime(msg.timestamp)}</Text>
             </View>
             {msg.type === 'image' ? (
@@ -244,7 +245,7 @@ export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props)
           <View style={{flexDirection: 'row', gap: 6, marginLeft: 38, marginTop: 4, padding: 6, backgroundColor: T.card, borderRadius: 8, borderWidth: 1, borderColor: T.border}}>
             {EMOJI_QUICK.map(e => (
               <TouchableOpacity key={e} onPress={() => addReaction(msg.id, e)} activeOpacity={0.7}>
-                <Text style={{fontSize: 18}}>{e}</Text>
+                <Text style={{fontSize: fs(18)}}>{e}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -262,16 +263,16 @@ export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props)
             {editChannelId === ch.id ? (
               <View style={{flex: 1, flexDirection: 'row', gap: 6, alignItems: 'center'}}>
                 <TextInput value={editChannelName} onChangeText={setEditChannelName} autoFocus
-                  style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 13}}
+                  style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: fs(13)}}
                   onSubmitEditing={() => renameChannel(ch.id)} returnKeyType="done" />
-                <TouchableOpacity onPress={() => renameChannel(ch.id)}><Text style={{fontSize: 14, color: T.success}}>✓</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => renameChannel(ch.id)}><Text style={{fontSize: fs(14), color: T.success}}>✓</Text></TouchableOpacity>
                 <TouchableOpacity onPress={() => setEditChannelId(null)}><Text style={{fontSize: 12, color: T.dim}}>✕</Text></TouchableOpacity>
               </View>
             ) : (
               <>
                 <TouchableOpacity onPress={() => {setActiveChannelId(ch.id); setShowChannelList(false);}} activeOpacity={0.7}
                   style={{flex: 1, padding: 12, borderRadius: 10, borderWidth: 1, backgroundColor: T.card, borderColor: activeChannelId === ch.id ? `${T.accent}50` : T.border}}>
-                  <Text style={{fontSize: 14, fontWeight: '500', color: T.text}}># {ch.name}</Text>
+                  <Text style={{fontSize: fs(14), fontWeight: '500', color: T.text}}># {ch.name}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => {setEditChannelId(ch.id); setEditChannelName(ch.name);}}><Text style={{fontSize: 12, color: T.dim}}>✎</Text></TouchableOpacity>
                 <TouchableOpacity onPress={() => archiveChannel(ch.id)}><Text style={{fontSize: 12, color: T.info}}>▼</Text></TouchableOpacity>
@@ -284,7 +285,7 @@ export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props)
         {showNewChannel ? (
           <View style={{flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 8}}>
             <TextInput value={newChannelName} onChangeText={setNewChannelName} placeholder={t('chat.channelName')} placeholderTextColor={T.muted}
-              style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, fontSize: 13}}
+              style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, fontSize: fs(13)}}
               onSubmitEditing={createChannel} returnKeyType="done" autoFocus />
             <TouchableOpacity onPress={createChannel} activeOpacity={0.7}
               style={{paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: T.accentBg, borderWidth: 1, borderColor: `${T.accent}40`}}>
@@ -303,7 +304,7 @@ export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props)
             <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 10}}>{t('chat.archivedChannels')}</Text>
             {archivedChannels.map(ch => (
               <View key={ch.id} style={{padding: 12, borderRadius: 10, borderWidth: 1, backgroundColor: T.surface, borderColor: T.border, marginBottom: 6, opacity: 0.6}}>
-                <Text style={{fontSize: 14, color: T.text}}>#{ch.name}</Text>
+                <Text style={{fontSize: fs(14), color: T.text}}>#{ch.name}</Text>
                 <Text style={{fontSize: 11, color: T.muted, marginTop: 2}}>{t('chat.archivedOn', {date: ch.archivedAt ? fmtTime(ch.archivedAt) : '?'})}</Text>
               </View>
             ))}
@@ -317,9 +318,9 @@ export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props)
     <View style={{flex: 1, backgroundColor: T.bg}}>
       <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: T.border}}>
         <TouchableOpacity onPress={() => setShowChannelList(true)} activeOpacity={0.7} style={{marginRight: 10}}>
-          <Text style={{fontSize: 16, color: T.dim}}>☰</Text>
+          <Text style={{fontSize: fs(16), color: T.dim}}>☰</Text>
         </TouchableOpacity>
-        <Text style={{flex: 1, fontSize: 15, fontWeight: '600', color: T.text}}>#{activeChannel?.name || '?'}</Text>
+        <Text style={{flex: 1, fontSize: fs(15), fontWeight: '600', color: T.text}}>#{activeChannel?.name || '?'}</Text>
         <TouchableOpacity onPress={() => setShowMemberPicker(!showMemberPicker)} activeOpacity={0.7}
           style={{flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1,
             backgroundColor: activeMember ? `${activeMember.color}15` : T.surface, borderColor: activeMember ? `${activeMember.color}40` : T.border}}>
@@ -331,7 +332,7 @@ export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props)
       {showMemberPicker && (
         <View style={{paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: T.border, backgroundColor: T.surface}}>
           <TextInput value={memberSearch} onChangeText={setMemberSearch} placeholder={t('chat.searchSpeaker')} placeholderTextColor={T.muted}
-            style={{backgroundColor: T.bg, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7, fontSize: 13, marginBottom: 6}} />
+            style={{backgroundColor: T.bg, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7, fontSize: fs(13), marginBottom: 6}} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={{flexDirection: 'row', gap: 6}}>
               {members.filter(m => !m.archived && (!memberSearch || m.name.toLowerCase().includes(memberSearch.toLowerCase()))).map(m => (
@@ -357,7 +358,7 @@ export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props)
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({animated: false})}
         ListEmptyComponent={
           <View style={{alignItems: 'center', paddingVertical: 48}}>
-            <Text style={{fontSize: 13, color: T.dim}}>{t('chat.noMessages')}</Text>
+            <Text style={{fontSize: fs(13), color: T.dim}}>{t('chat.noMessages')}</Text>
           </View>
         }
       />
@@ -395,17 +396,17 @@ export const ChatScreen = ({theme: T, members, channels, onSaveChannels}: Props)
 
       <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: T.border, backgroundColor: T.surface}}>
         <TouchableOpacity onPress={sendImage} activeOpacity={0.7} style={{padding: 4}}>
-          <Text style={{fontSize: 18, color: T.dim}}>📎</Text>
+          <Text style={{fontSize: fs(18), color: T.dim}}>📎</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setShowFormatBar(!showFormatBar)} activeOpacity={0.7} style={{padding: 4}}>
-          <Text style={{fontSize: 14, fontWeight: '700', color: showFormatBar ? T.accent : T.dim}}>Aa</Text>
+          <Text style={{fontSize: fs(14), fontWeight: '700', color: showFormatBar ? T.accent : T.dim}}>Aa</Text>
         </TouchableOpacity>
         <TextInput value={input} onChangeText={setInput} placeholder={t('chat.typeMessage')} placeholderTextColor={T.muted}
-          style={{flex: 1, backgroundColor: T.bg, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, fontSize: 14}}
+          style={{flex: 1, backgroundColor: T.bg, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, fontSize: fs(14)}}
           onSubmitEditing={sendMessage} returnKeyType="send" />
         <TouchableOpacity onPress={sendMessage} activeOpacity={0.7}
           style={{width: 36, height: 36, borderRadius: 18, backgroundColor: input.trim() ? T.accent : T.toggleOff, alignItems: 'center', justifyContent: 'center'}}>
-          <Text style={{fontSize: 16, color: input.trim() ? T.bg : T.muted}}>↑</Text>
+          <Text style={{fontSize: fs(16), color: input.trim() ? T.bg : T.muted}}>↑</Text>
         </TouchableOpacity>
       </View>
     </View>

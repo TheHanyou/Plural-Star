@@ -40,6 +40,7 @@ interface Props {
 
 export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, onSaveGroups}: Props) => {
   const {t} = useTranslation();
+  const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const [memberTab, setMemberTab] = useState<'active' | 'archived'>('active');
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -94,7 +95,7 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
             <Text style={{fontSize: 12, fontWeight: '500', color: showManageGroups ? T.info : T.dim}}>{t('memberGroups.manage')}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={onAdd} activeOpacity={0.7} style={[s.addBtn, {backgroundColor: T.accentBg, borderColor: `${T.accent}40`}]}>
-            <Text style={{fontSize: 13, fontWeight: '500', color: T.accent}}>{t('members.add')}</Text>
+            <Text style={{fontSize: fs(13), fontWeight: '500', color: T.accent}}>{t('members.add')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -103,7 +104,7 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
         {(['active', 'archived'] as const).map(tab => (
           <TouchableOpacity key={tab} onPress={() => {setMemberTab(tab); setQuery(''); setActiveGroup(null); setActiveTag(null);}} activeOpacity={0.7}
             style={{paddingVertical: 10, paddingHorizontal: 16, borderBottomWidth: 2, borderBottomColor: memberTab === tab ? T.accent : 'transparent'}}>
-            <Text style={{fontSize: 13, color: memberTab === tab ? T.accent : T.dim, fontWeight: memberTab === tab ? '600' : '400'}}>
+            <Text style={{fontSize: fs(13), color: memberTab === tab ? T.accent : T.dim, fontWeight: memberTab === tab ? '600' : '400'}}>
               {tab === 'active' ? t('members.active') : `${t('members.archived')}${archivedCount > 0 ? ` (${archivedCount})` : ''}`}
             </Text>
           </TouchableOpacity>
@@ -119,13 +120,13 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
               <View style={{width: 12, height: 12, borderRadius: 6, backgroundColor: g.color || T.accent}} />
               {editGroupId === g.id ? (
                 <View style={{flex: 1, flexDirection: 'row', gap: 6, alignItems: 'center'}}>
-                  <TextInput value={editGroupName} onChangeText={setEditGroupName} autoFocus style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, fontSize: 13}} onSubmitEditing={() => renameGroup(g.id)} returnKeyType="done" />
-                  <TouchableOpacity onPress={() => renameGroup(g.id)}><Text style={{color: T.success, fontSize: 14}}>✓</Text></TouchableOpacity>
+                  <TextInput value={editGroupName} onChangeText={setEditGroupName} autoFocus style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, fontSize: fs(13)}} onSubmitEditing={() => renameGroup(g.id)} returnKeyType="done" />
+                  <TouchableOpacity onPress={() => renameGroup(g.id)}><Text style={{color: T.success, fontSize: fs(14)}}>✓</Text></TouchableOpacity>
                   <TouchableOpacity onPress={() => setEditGroupId(null)}><Text style={{color: T.dim, fontSize: 12}}>✕</Text></TouchableOpacity>
                 </View>
               ) : (
                 <>
-                  <Text style={{flex: 1, fontSize: 14, color: T.text, fontWeight: '500'}}>{g.name}</Text>
+                  <Text style={{flex: 1, fontSize: fs(14), color: T.text, fontWeight: '500'}}>{g.name}</Text>
                   <Text style={{fontSize: 11, color: T.muted}}>{members.filter(m => (m.groupIds || []).includes(g.id)).length}</Text>
                   <TouchableOpacity onPress={() => {setEditGroupId(g.id); setEditGroupName(g.name);}} style={{padding: 4}}><Text style={{fontSize: 12, color: T.dim}}>✎</Text></TouchableOpacity>
                   <TouchableOpacity onPress={() => deleteGroup(g.id)} style={{padding: 4}}><Text style={{fontSize: 12, color: T.danger}}>✕</Text></TouchableOpacity>
@@ -137,7 +138,7 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
             <TouchableOpacity onPress={() => { const idx = PALETTE.indexOf(newGroupColor); setNewGroupColor(PALETTE[(idx + 1) % PALETTE.length]); }}
               style={{width: 28, height: 28, borderRadius: 14, backgroundColor: newGroupColor, borderWidth: 2, borderColor: 'rgba(255,255,255,0.15)'}} />
             <TextInput value={newGroupName} onChangeText={setNewGroupName} placeholder={t('memberGroups.addPlaceholder')} placeholderTextColor={T.muted}
-              style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7, fontSize: 13}} onSubmitEditing={addGroup} returnKeyType="done" />
+              style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7, fontSize: fs(13)}} onSubmitEditing={addGroup} returnKeyType="done" />
             <TouchableOpacity onPress={addGroup} activeOpacity={0.7} style={{paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`}}>
               <Text style={{fontSize: 12, fontWeight: '500', color: T.accent}}>{t('common.add')}</Text>
             </TouchableOpacity>
@@ -192,11 +193,11 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
 
       {tabMembers.length === 0 ? (
         <View style={s.empty}>
-          <Text style={{fontSize: 36, opacity: 0.4, marginBottom: 12}}>◇</Text>
-          <Text style={{fontSize: 13, color: T.dim, textAlign: 'center', marginBottom: 16}}>{memberTab === 'archived' ? t('members.noArchived') : t('members.noMembers')}</Text>
+          <Text style={{fontSize: fs(36), opacity: 0.4, marginBottom: 12}}>◇</Text>
+          <Text style={{fontSize: fs(13), color: T.dim, textAlign: 'center', marginBottom: 16}}>{memberTab === 'archived' ? t('members.noArchived') : t('members.noMembers')}</Text>
           {memberTab === 'active' && (
             <TouchableOpacity onPress={onAdd} activeOpacity={0.7} style={[s.addBtn, {backgroundColor: T.accentBg, borderColor: `${T.accent}40`}]}>
-              <Text style={{fontSize: 13, fontWeight: '500', color: T.accent}}>{t('members.addMember')}</Text>
+              <Text style={{fontSize: fs(13), fontWeight: '500', color: T.accent}}>{t('members.addMember')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -215,7 +216,7 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
                   <Avatar member={m} size={44} pulse={isFronting} T={T} />
                   <View style={{flex: 1, overflow: 'hidden'}}>
                     <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2}}>
-                      <Text style={{fontSize: 15, fontWeight: '500', color: T.text}}>{m.name}</Text>
+                      <Text style={{fontSize: fs(15), fontWeight: '500', color: T.text}}>{m.name}</Text>
                       {badgeCfg && (<View style={{paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999, backgroundColor: `${badgeColor}18`, borderWidth: 1, borderColor: `${badgeColor}35`}}><Text style={{fontSize: 10, color: badgeColor, fontWeight: '500'}}>{t(badgeCfg.i18nKey)}</Text></View>)}
                     </View>
                     <Text style={{fontSize: 12, color: T.dim}}>{[m.pronouns, m.role].filter(Boolean).join(' · ') || t('members.noDetails')}</Text>
@@ -226,7 +227,7 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
                     )}
                     {m.description && expanded !== m.id ? <Text style={{fontSize: 11, color: T.muted, marginTop: 3}} numberOfLines={1}>{m.description}</Text> : null}
                   </View>
-                  <TouchableOpacity onPress={() => onEdit(m)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}><Text style={{fontSize: 14, color: T.muted}}>✎</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => onEdit(m)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}><Text style={{fontSize: fs(14), color: T.muted}}>✎</Text></TouchableOpacity>
                 </View>
                 {expanded === m.id && (
                   <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: T.border}}>

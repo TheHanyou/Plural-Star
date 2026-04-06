@@ -36,6 +36,7 @@ interface Props {
 
 export const HistoryScreen = ({theme: T, history, journal, getMember, members}: Props) => {
   const {t} = useTranslation();
+  const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const [subTab, setSubTab] = useState<SubTab>('front');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(
     members.length > 0 ? members[0].id : null,
@@ -124,7 +125,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
                 borderBottomColor: subTab === tab ? T.accent : 'transparent',
               }]}>
               <AccentText T={T} style={{
-                fontSize: 13,
+                fontSize: fs(13),
                 fontWeight: subTab === tab ? '600' : '400',
                 color: subTab === tab ? T.accent : T.dim,
               }}>
@@ -140,8 +141,8 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
         <ScrollView style={{flex: 1}} contentContainerStyle={{padding: 16, paddingBottom: 32}}>
           {frontHistory.length === 0 ? (
             <View style={{alignItems: 'center', paddingVertical: 48}}>
-              <Text style={{fontSize: 36, opacity: 0.4, marginBottom: 12}}>◷</Text>
-              <Text style={{fontSize: 13, color: T.dim, textAlign: 'center'}}>
+              <Text style={{fontSize: fs(36), opacity: 0.4, marginBottom: 12}}>◷</Text>
+              <Text style={{fontSize: fs(13), color: T.dim, textAlign: 'center'}}>
                 {t('history.noHistory')}
               </Text>
             </View>
@@ -174,7 +175,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
                               </View>
                             ))}
                           </View>
-                          <Text style={{flex: 1, fontSize: 14, fontWeight: '500', color: T.text}} numberOfLines={1}>
+                          <Text style={{flex: 1, fontSize: fs(14), fontWeight: '500', color: T.text}} numberOfLines={1}>
                             {primaryFronters.map(m => m.name).join(', ') || t('common.unknown')}
                           </Text>
                           <AccentText T={T} style={{fontSize: 12, color: T.accent, fontWeight: '500'}}>
@@ -230,7 +231,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
         <View style={{flex: 1}}>
           {members.length === 0 ? (
             <View style={{alignItems: 'center', paddingVertical: 48}}>
-              <Text style={{fontSize: 13, color: T.dim}}>{t('history.noMembers')}</Text>
+              <Text style={{fontSize: fs(13), color: T.dim}}>{t('history.noMembers')}</Text>
             </View>
           ) : (
             <>
@@ -240,16 +241,16 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
                     backgroundColor: T.card, borderColor: `${selectedMember.color}50`, marginBottom: 8}}>
                     <Avatar member={selectedMember} size={32} T={T} />
                     <View style={{flex: 1}}>
-                      <Text style={{fontSize: 15, fontWeight: '500', color: T.text}}>{selectedMember.name}</Text>
+                      <Text style={{fontSize: fs(15), fontWeight: '500', color: T.text}}>{selectedMember.name}</Text>
                       {selectedMember.pronouns ? <Text style={{fontSize: 11, color: T.dim}}>{selectedMember.pronouns}</Text> : null}
                     </View>
                     <TouchableOpacity onPress={() => {setSelectedMemberId(null); setMemberSearch('');}} activeOpacity={0.7}>
-                      <Text style={{fontSize: 14, color: T.dim}}>✕</Text>
+                      <Text style={{fontSize: fs(14), color: T.dim}}>✕</Text>
                     </TouchableOpacity>
                   </View>
                 )}
                 <TextInput value={memberSearch} onChangeText={setMemberSearch} placeholder={t('history.searchMember')} placeholderTextColor={T.muted}
-                  style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9, fontSize: 13}} />
+                  style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9, fontSize: fs(13)}} />
                 {memberSearch.length > 0 && (
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginTop: 4, maxHeight: 280}}>
                     <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true}>
@@ -261,7 +262,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
                             borderBottomWidth: 1, borderBottomColor: T.border,
                             backgroundColor: selectedMemberId === m.id ? `${m.color}12` : 'transparent'}}>
                           <Avatar member={m} size={28} T={T} />
-                          <Text style={{fontSize: 14, fontWeight: '500', color: T.text}}>{m.name}</Text>
+                          <Text style={{fontSize: fs(14), fontWeight: '500', color: T.text}}>{m.name}</Text>
                           {selectedMemberId === m.id && <Text style={{color: m.color, marginLeft: 'auto'}}>✓</Text>}
                         </TouchableOpacity>
                       ))}
@@ -284,11 +285,11 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
                   <View style={{flexDirection: 'row', gap: 8, margin: 16, marginBottom: 8}}>
                     <View style={[s.stat, {backgroundColor: T.card, borderColor: T.border}]}>
                       <Text style={{fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 3}}>{t('history.totalTime')}</Text>
-                      <AccentText T={T} style={{fontSize: 15, fontWeight: '700', color: T.accent}}>{fmtDur(0, totalMs)}</AccentText>
+                      <AccentText T={T} style={{fontSize: fs(15), fontWeight: '700', color: T.accent}}>{fmtDur(0, totalMs)}</AccentText>
                     </View>
                     <View style={[s.stat, {backgroundColor: T.card, borderColor: T.border}]}>
                       <Text style={{fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 3}}>{t('history.sessions')}</Text>
-                      <Text style={{fontSize: 15, fontWeight: '700', color: T.text}}>{frontE.length}</Text>
+                      <Text style={{fontSize: fs(15), fontWeight: '700', color: T.text}}>{frontE.length}</Text>
                     </View>
                     {topMood && (
                       <View style={[s.stat, {backgroundColor: T.card, borderColor: T.border}]}>
@@ -309,7 +310,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
               <ScrollView style={{flex: 1}} contentContainerStyle={{padding: 16, paddingTop: 8, paddingBottom: 32}}>
                 {allMemberEvents.length === 0 ? (
                   <View style={{alignItems: 'center', paddingVertical: 32}}>
-                    <Text style={{fontSize: 13, color: T.dim, textAlign: 'center'}}>
+                    <Text style={{fontSize: fs(13), color: T.dim, textAlign: 'center'}}>
                       {t('history.noActivity', {name: selectedMember?.name})}
                     </Text>
                   </View>
@@ -376,7 +377,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
 
                           {'journalEntry' in event && event.journalEntry && (
                             <>
-                              <Text style={{fontSize: 14, fontWeight: '500', color: T.text, marginBottom: 2}}>
+                              <Text style={{fontSize: fs(14), fontWeight: '500', color: T.text, marginBottom: 2}}>
                                 {event.journalEntry.title || t('common.untitled')}
                               </Text>
                               {event.journalEntry.body ? (

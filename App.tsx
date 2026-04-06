@@ -98,8 +98,10 @@ function MainAppContent() {
   const C: ThemeColors = useMemo(() => {
     const allPals = [...BUILTIN_PALETTES, ...palettes];
     const pal = allPals.find(p => p.id === activePaletteId) || BUILTIN_PALETTES[0];
-    return deriveTheme(pal.bg, pal.accent, pal.text, pal.mid);
-  }, [activePaletteId, palettes]);
+    const theme = deriveTheme(pal.bg, pal.accent, pal.text, pal.mid);
+    theme.textScale = appSettings.textScale || 1;
+    return theme;
+  }, [activePaletteId, palettes, appSettings.textScale]);
 
   const loadChatMessages = useCallback(async (channels: ChatChannel[]) => {
     const allMsgs: ChatMessage[] = [];

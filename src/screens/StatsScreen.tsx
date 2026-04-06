@@ -22,6 +22,7 @@ interface Props {
 
 export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) => {
   const {t} = useTranslation();
+  const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const [range, setRange] = useState<TimeRange>('all');
   const [customStart, setCustomStart] = useState<number>(Date.now() - 30 * 86400000);
   const [customEnd, setCustomEnd] = useState<number>(Date.now());
@@ -109,7 +110,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
   const StatCard = ({label, value, accent}: {label: string; value: string; accent?: boolean}) => (
     <View style={{flex: 1, backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, padding: 12}}>
       <Text style={{fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 4, fontWeight: '600'}}>{label}</Text>
-      <Text style={{fontSize: 16, fontWeight: '700', color: accent ? T.accent : T.text}}>{value}</Text>
+      <Text style={{fontSize: fs(16), fontWeight: '700', color: accent ? T.accent : T.text}}>{value}</Text>
     </View>
   );
 
@@ -127,7 +128,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
                 borderBottomWidth: isLast ? 0 : 1, borderBottomColor: T.border}}>
                 <Text style={{fontSize: 12, fontWeight: '700', color: T.dim, width: 20, textAlign: 'center'}}>{i + 1}</Text>
                 {member ? <Avatar member={member} size={24} T={T} /> : null}
-                <Text style={{flex: 1, fontSize: 13, color: T.text, fontWeight: '500'}} numberOfLines={1}>
+                <Text style={{flex: 1, fontSize: fs(13), color: T.text, fontWeight: '500'}} numberOfLines={1}>
                   {member ? member.name : key}
                 </Text>
                 <Text style={{fontSize: 12, color: T.accent, fontWeight: '600'}}>{renderValue(value)}</Text>
@@ -154,7 +155,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
                 <Text style={{fontSize: 12, fontWeight: '700', color: T.dim, width: 20, textAlign: 'center'}}>{i + 1}</Text>
                 {member ? <Avatar member={member} size={24} T={T} /> : null}
                 <View style={{flex: 1}}>
-                  <Text style={{fontSize: 13, color: T.text, fontWeight: '500'}} numberOfLines={1}>{member ? member.name : entry.id}</Text>
+                  <Text style={{fontSize: fs(13), color: T.text, fontWeight: '500'}} numberOfLines={1}>{member ? member.name : entry.id}</Text>
                   <Text style={{fontSize: 10, color: T.muted}}>{entry.sessions} {t('stats.sessions').toLowerCase()}</Text>
                 </View>
                 <Text style={{fontSize: 12, color: T.accent, fontWeight: '600'}}>{fmtDur(0, entry.time)}</Text>
