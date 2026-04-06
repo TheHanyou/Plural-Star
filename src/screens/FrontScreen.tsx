@@ -5,7 +5,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Image,
   StyleSheet,
 } from 'react-native';
@@ -114,9 +113,9 @@ const TierCard = ({
   showLocation: boolean;
 }) => {
   const {t} = useTranslation();
+
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
 
-  const [editNote, setEditNote] = useState(false);
   const [note, setNote] = useState(tier.note || '');
 
   useEffect(() => {
@@ -235,9 +234,7 @@ export const FrontScreen = ({
           padding: 16,
           paddingBottom: 140,
           flexGrow: 1,
-        }}
-        showsVerticalScrollIndicator={true}
-        overScrollMode="always">
+        }}>
 
         <View style={s.headerRow}>
           <Text style={[s.heading, {color: T.text}]}>
