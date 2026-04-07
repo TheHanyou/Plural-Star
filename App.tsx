@@ -249,9 +249,22 @@ function MainAppContent() {
   }, [front, members, appSettings.notificationsEnabled, system.name]);
 
   const saveSystem = async (d: SystemInfo) => {setSystem(d); await store.set(KEYS.system, d);};
-  const saveMembers = async (d: Member[]) => {setMembers(d); await store.set(KEYS.members, d);};
-  const saveHistory = async (d: HistoryEntry[]) => {setHistory(d); await store.set(KEYS.history, d);};
-  const saveJournal = async (d: JournalEntry[]) => {setJournal(d); await store.set(KEYS.journal, d);};
+  const saveMembers = async (d: Member[]) => {
+    if (!loaded && d.length === 0) {
+      console.warn('[PS] Blocked pre-load save of empty members');
+      return;
+    }
+    setMembers(d);
+    await store.set(KEYS.members, d);
+  };
+  const saveHistory = async (d: HistoryEntry[]) => {
+    if (!loaded && d.length === 0) return;
+    setHistory(d); await store.set(KEYS.history, d);
+  };
+  const saveJournal = async (d: JournalEntry[]) => {
+    if (!loaded && d.length === 0) return;
+    setJournal(d); await store.set(KEYS.journal, d);
+  };
   const saveShareSettings = async (d: ShareSettings) => {setShareSettings(d); await store.set(KEYS.share, d);};
   const saveGroups = async (d: MemberGroup[]) => {setGroups(d); await store.set(KEYS.groups, d);};
   const savePalettes = async (d: CustomPalette[]) => {setPalettes(d); await store.set(KEYS.palettes, d);};

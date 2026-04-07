@@ -54,11 +54,22 @@ export const store = {
   async get<T>(key: string, fallback: T | null = null): Promise<T | null> {
     try {
       const raw = await AsyncStorage.getItem(key);
-      if (raw !== null) return JSON.parse(raw) as T;
+      if (raw !== null) {
+        const parsed = JSON.parse(raw) as T;
+        if (CRITICAL_KEYS.has(key) && Array.isArray(parsed) && (parsed as any[]).length === 0) {
+          const backup = await readBackup<T>(key);
+          if (backup !== null && Array.isArray(backup) && (backup as any[]).length > 0) {
+            console.warn(`[PS] Recovered ${key} from backup (was empty)`);
+            await AsyncStorage.setItem(key, JSON.stringify(backup));
+            return backup;
+          }
+        }
+        return parsed;
+      }
       if (CRITICAL_KEYS.has(key)) {
         const backup = await readBackup<T>(key);
         if (backup !== null) {
-          console.warn(`[PS] Recovered ${key} from backup`);
+          console.warn(`[PS] Recovered ${key} from backup (was null)`);
           await AsyncStorage.setItem(key, JSON.stringify(backup));
           return backup;
         }
@@ -69,7 +80,10 @@ export const store = {
   async set(key: string, value: unknown): Promise<void> {
     try {
       await AsyncStorage.setItem(key, JSON.stringify(value));
-      if (CRITICAL_KEYS.has(key)) writeBackup(key, value);
+      if (CRITICAL_KEYS.has(key)) {
+        const isEmpty = Array.isArray(value) && (value as any[]).length === 0;
+        if (!isEmpty) writeBackup(key, value);
+      }
     } catch (e) { console.error('Storage write error:', e); }
   },
   async remove(key: string): Promise<void> {
