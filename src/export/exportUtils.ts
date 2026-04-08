@@ -44,11 +44,35 @@ export const buildExportPayload = async (
     }
   }
 
-  // Extract avatars into separate dict for granular import
+  // Extract avatars into a self-contained dict.
+  // After migrateInlineAvatars runs, m.avatar is a local file:// path that only
+  // exists on this device. We read the actual bytes and embed them as data: URIs
+  // so the backup is portable across devices and platforms.
+  // Members are stripped of their avatar field — the avatars dict is authoritative.
   const avatars: Record<string, string> = {};
+  const mimeMap: Record<string, string> = {
+    png: 'image/png', gif: 'image/gif', webp: 'image/webp',
+    jpg: 'image/jpeg', jpeg: 'image/jpeg',
+  };
   for (const m of members) {
-    if (m.avatar) avatars[m.id] = m.avatar;
+    if (!m.avatar) continue;
+    if (m.avatar.startsWith('data:')) {
+      // Already embedded (shouldn't happen post-migration, but handle gracefully)
+      avatars[m.id] = m.avatar;
+    } else {
+      // file:// or bare path — read and embed
+      try {
+        const filePath = m.avatar.replace(/^file:\/\//, '');
+        const b64 = await RNFS.readFile(filePath, 'base64');
+        const ext = filePath.split('.').pop()?.toLowerCase() || 'jpg';
+        avatars[m.id] = `data:${mimeMap[ext] ?? 'image/jpeg'};base64,${b64}`;
+      } catch {
+        // File missing or unreadable — omit rather than export a dead path
+      }
+    }
   }
+  // Strip avatar from member objects so stale local paths never appear in exports
+  const membersForExport = members.map(({avatar: _a, ...rest}) => rest as Member);
 
   return {
     _meta: {
@@ -57,7 +81,7 @@ export const buildExportPayload = async (
       exportedAt: new Date().toISOString(),
     },
     system,
-    members,
+    members: membersForExport,
     frontHistory: history,
     journal,
     groups: groups || [],
