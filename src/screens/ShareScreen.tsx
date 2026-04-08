@@ -79,7 +79,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
       const [res] = await safePick({type: ['application/json']});
       const content = await RNFS.readFile(getPickedFilePath(res), 'utf8');
       const parsed: ExportPayload = JSON.parse(content);
-      if (!parsed._meta || parsed._meta.app !== 'Plural Space') throw new Error(t('share.notValidExport'));
+      if (!parsed._meta || !['Plural Space', 'PluralSpace-Desktop'].includes(parsed._meta.app)) throw new Error(t('share.notValidExport'));
       setRestoreFile(res.name || 'backup.json'); setRestoreData(parsed);
     } catch (e: any) {if (!isPickerCancel(e)) setRestoreError(e.message || 'Could not read file.');}
   };
@@ -91,17 +91,20 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
       {text: t('share.restore'), style: 'destructive', onPress: async () => {
         if (restoreSel.system && restoreData.system) await store.set(KEYS.system, restoreData.system);
         if (restoreSel.members && restoreData.members) {
+          const avatarMap = restoreData.avatars || {};
           const importedMembers = restoreData.members.map(m => {
             if (!restoreSel.avatars) { const {avatar, ...rest} = m as any; return rest; }
-            return m;
+            // Prefer the avatars dict (embedded data: URI) over any inline avatar field
+            const resolvedAvatar = avatarMap[(m as any).id] ?? (m as any).avatar;
+            return resolvedAvatar ? {...m, avatar: resolvedAvatar} : m;
           });
           // If PFPs selected but Members not, overlay avatars onto existing
           await store.set(KEYS.members, importedMembers);
         } else if (restoreSel.avatars && !restoreSel.members) {
           // Overlay PFPs onto existing members
-          const avatarMap = restoreData.avatars || {};
-          // Also extract from members array as fallback
-          for (const m of (restoreData.members || [])) { if ((m as any).avatar && !avatarMap[m.id]) avatarMap[m.id] = (m as any).avatar; }
+          const avatarMap: Record<string, string> = {...(restoreData.avatars || {})};
+          // Also extract from members array as fallback (older backup format)
+          for (const m of (restoreData.members || [])) { if ((m as any).avatar && !avatarMap[(m as any).id]) avatarMap[(m as any).id] = (m as any).avatar; }
           if (Object.keys(avatarMap).length > 0) {
             const existing = await store.get<Member[]>(KEYS.members) || [];
             const updated = existing.map(m => avatarMap[m.id] ? {...m, avatar: avatarMap[m.id]} : m);
