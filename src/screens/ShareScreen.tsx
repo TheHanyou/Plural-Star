@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {safePick, isPickerCancel, getPickedFilePath} from '../utils/safePicker';
 import RNFS from 'react-native-fs';
 import {exportJSON, exportHTML, exportEmail, exportAllJournalJSON, exportAllJournalTxt, exportAllJournalMd} from '../export/exportUtils';
-import {store, KEYS} from '../storage';
+import {store, KEYS, chatMsgKey} from '../storage';
 import {SystemInfo, Member, FrontState, HistoryEntry, JournalEntry, ShareSettings, AppSettings, ExportPayload, uid, allFrontMemberIds, findOpenFrontInHistory} from '../utils';
 
 type Section = 'export' | 'import' | 'shareview';
@@ -25,7 +25,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const [emailAddr, setEmailAddr] = useState('');
   const [restoreFile, setRestoreFile] = useState<string | null>(null);
   const [restoreData, setRestoreData] = useState<ExportPayload | null>(null);
-  const [restoreSel, setRestoreSel] = useState({system: true, members: true, journal: true, frontHistory: true});
+  const [restoreSel, setRestoreSel] = useState({system: true, members: true, avatars: true, journal: true, frontHistory: true, groups: true, chat: true, moods: true, palettes: true, settings: true});
   const [restoreError, setRestoreError] = useState('');
   const [restoreDone, setRestoreDone] = useState(false);
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -90,12 +90,54 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
       {text: t('common.cancel'), style: 'cancel'},
       {text: t('share.restore'), style: 'destructive', onPress: async () => {
         if (restoreSel.system && restoreData.system) await store.set(KEYS.system, restoreData.system);
-        if (restoreSel.members && restoreData.members) await store.set(KEYS.members, restoreData.members);
+        if (restoreSel.members && restoreData.members) {
+          const importedMembers = restoreData.members.map(m => {
+            if (!restoreSel.avatars) { const {avatar, ...rest} = m as any; return rest; }
+            return m;
+          });
+          // If PFPs selected but Members not, overlay avatars onto existing
+          await store.set(KEYS.members, importedMembers);
+        } else if (restoreSel.avatars && !restoreSel.members) {
+          // Overlay PFPs onto existing members
+          const avatarMap = restoreData.avatars || {};
+          // Also extract from members array as fallback
+          for (const m of (restoreData.members || [])) { if ((m as any).avatar && !avatarMap[m.id]) avatarMap[m.id] = (m as any).avatar; }
+          if (Object.keys(avatarMap).length > 0) {
+            const existing = await store.get<Member[]>(KEYS.members) || [];
+            const updated = existing.map(m => avatarMap[m.id] ? {...m, avatar: avatarMap[m.id]} : m);
+            await store.set(KEYS.members, updated);
+          }
+        }
         if (restoreSel.journal && restoreData.journal) await store.set(KEYS.journal, restoreData.journal);
         if (restoreSel.frontHistory && restoreData.frontHistory) {
           await store.set(KEYS.history, restoreData.frontHistory);
           await store.set(KEYS.front, findOpenFrontInHistory(restoreData.frontHistory));
         }
+        if (restoreSel.groups && restoreData.groups) await store.set(KEYS.groups, restoreData.groups);
+        if (restoreSel.chat) {
+          if (restoreData.chatChannels) await store.set(KEYS.chatChannels, restoreData.chatChannels);
+          if (restoreData.chatMessages) {
+            for (const [chId, msgs] of Object.entries(restoreData.chatMessages)) {
+              await store.set(chatMsgKey(chId), msgs);
+            }
+          }
+        }
+        if (restoreSel.settings || restoreSel.moods) {
+          const currentSettings = await store.get<AppSettings>(KEYS.settings) || {} as AppSettings;
+          let newSettings = {...currentSettings};
+          if (restoreSel.settings && restoreData.settings) {
+            newSettings = {...restoreData.settings};
+            // Preserve existing moods unless moods is also selected
+            if (!restoreSel.moods) newSettings.customMoods = currentSettings.customMoods || [];
+          }
+          if (restoreSel.moods) {
+            const importedMoods = restoreData.customMoods || restoreData.settings?.customMoods || [];
+            newSettings.customMoods = importedMoods;
+          }
+          await store.set(KEYS.settings, newSettings);
+        }
+        if (restoreSel.palettes && restoreData.palettes) await store.set(KEYS.palettes, restoreData.palettes);
+        if (restoreData.front !== undefined && restoreSel.frontHistory) await store.set(KEYS.front, restoreData.front);
         setRestoreDone(true); setTimeout(() => onDataImported(), 800);
       }},
     ]);
@@ -491,8 +533,20 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                 <>
                   <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{t('share.restoreCategories')}</Text>
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
-                    {([['system', t('share.systemNameDesc'), !!restoreData.system, null], ['members', t('share.memberProfiles'), !!restoreData.members, restoreData.members?.length], ['journal', t('share.journalEntries'), !!restoreData.journal, restoreData.journal?.length], ['frontHistory', t('share.frontHistory'), !!restoreData.frontHistory, restoreData.frontHistory?.length]] as any[]).map(([k, label, avail, count]) => (
+                    {([
+                      ['system', t('share.systemNameDesc'), !!restoreData.system, null],
+                      ['members', t('share.memberProfiles'), !!restoreData.members, restoreData.members?.length],
+                      ['avatars', t('share.profilePictures'), !!(restoreData.avatars && Object.keys(restoreData.avatars).length > 0) || !!(restoreData.members?.some((m: any) => m.avatar)), restoreData.avatars ? Object.keys(restoreData.avatars).length : restoreData.members?.filter((m: any) => m.avatar).length || 0],
+                      ['frontHistory', t('share.frontHistory'), !!restoreData.frontHistory, restoreData.frontHistory?.length],
+                      ['journal', t('share.journalEntries'), !!restoreData.journal, restoreData.journal?.length],
+                      ['groups', t('share.memberGroups'), !!restoreData.groups, restoreData.groups?.length],
+                      ['chat', t('share.chatData'), !!restoreData.chatChannels, restoreData.chatChannels?.length],
+                      ['moods', t('share.customMoodsLabel'), !!(restoreData.customMoods?.length || restoreData.settings?.customMoods?.length), restoreData.customMoods?.length || restoreData.settings?.customMoods?.length || 0],
+                      ['palettes', t('share.themePalettes'), !!restoreData.palettes?.length, restoreData.palettes?.length],
+                      ['settings', t('share.appSettings'), !!restoreData.settings, null],
+                    ] as any[]).map(([k, label, avail, count]) => (
                       <SectionRow key={k} label={label} sublabel={avail && count !== null ? t('common.records', {count}) : avail ? undefined : t('common.notInExport')} value={restoreSel[k as keyof typeof restoreSel]} onToggle={() => togR(k)} disabled={!avail} />
+                    ))}
                     ))}
                   </View>
                   {restoreDone ? <View style={{backgroundColor: T.successBg, borderWidth: 1, borderColor: `${T.success}30`, borderRadius: 8, padding: 12, alignItems: 'center'}}><Text style={{fontSize: 13, color: T.success, fontWeight: '500'}}>{t('share.restoreComplete')}</Text></View>

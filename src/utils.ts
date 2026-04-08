@@ -97,6 +97,14 @@ export interface ExportPayload {
   members: Member[];
   frontHistory: HistoryEntry[];
   journal: JournalEntry[];
+  groups?: MemberGroup[];
+  chatChannels?: ChatChannel[];
+  chatMessages?: Record<string, ChatMessage[]>;
+  settings?: AppSettings;
+  front?: FrontState | null;
+  palettes?: any[];
+  avatars?: Record<string, string>;
+  customMoods?: string[];
 }
 
 export type ChatMessageType = 'text' | 'image' | 'file' | 'reply' | 'reaction';

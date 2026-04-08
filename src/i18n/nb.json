@@ -204,7 +204,13 @@
     "spFileImport": "Simply Plural filimport",
     "spFileHint": "Importer fra en Simply Plural eksportfil.",
     "pickSPFile": "Velg SP-eksportfil",
-    "notValidSPExport": "Denne filen ser ikke ut til å være en gyldig Simply Plural-eksport."
+    "notValidSPExport": "Denne filen ser ikke ut til å være en gyldig Simply Plural-eksport.",
+    "profilePictures": "Profilbilder",
+    "memberGroups": "Medlemsgrupper",
+    "chatData": "Chat-kanaler og Meldinger",
+    "customMoodsLabel": "Egendefinerte Humør",
+    "themePalettes": "Temapaletter",
+    "appSettings": "Appinnstillinger"
   },
   "hub": {
     "title": "Hub",

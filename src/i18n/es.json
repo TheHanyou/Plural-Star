@@ -204,7 +204,13 @@
     "spFileImport": "Importar Archivo de Simply Plural",
     "spFileHint": "Importar desde un archivo de exportación de Simply Plural.",
     "pickSPFile": "Seleccionar Archivo SP",
-    "notValidSPExport": "Este archivo no parece ser una exportación válida de Simply Plural."
+    "notValidSPExport": "Este archivo no parece ser una exportación válida de Simply Plural.",
+    "profilePictures": "Fotos de Perfil",
+    "memberGroups": "Grupos de Miembros",
+    "chatData": "Canales y Mensajes de Chat",
+    "customMoodsLabel": "Estados de Ánimo Personalizados",
+    "themePalettes": "Paletas de Temas",
+    "appSettings": "Configuración de la App"
   },
   "hub": {
     "title": "Centro",

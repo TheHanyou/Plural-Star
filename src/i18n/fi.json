@@ -204,7 +204,13 @@
     "spFileImport": "Simply Plural -tiedoston tuonti",
     "spFileHint": "Tuo Simply Plural -datan vientitiedostosta.",
     "pickSPFile": "Valitse SP-vientitiedosto",
-    "notValidSPExport": "Tämä tiedosto ei vaikuta olevan kelvollinen Simply Plural -vienti."
+    "notValidSPExport": "Tämä tiedosto ei vaikuta olevan kelvollinen Simply Plural -vienti.",
+    "profilePictures": "Profiilikuvat",
+    "memberGroups": "Jäsenryhmät",
+    "chatData": "Chat-kanavat ja Viestit",
+    "customMoodsLabel": "Omat Mielialat",
+    "themePalettes": "Teemapaletit",
+    "appSettings": "Sovellusasetukset"
   },
   "hub": {
     "title": "Hub",

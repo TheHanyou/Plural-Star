@@ -8,28 +8,68 @@ import {
   HistoryEntry,
   JournalEntry,
   ExportPayload,
+  ChatChannel,
+  ChatMessage,
+  MemberGroup,
+  AppSettings,
+  FrontState,
   fmtTime,
   fmtDur,
 } from '../utils';
+import {store, KEYS, chatMsgKey} from '../storage';
 
 // ── Payload builders ──────────────────────────────────────────────────────────
 
-export const buildExportPayload = (
+export const buildExportPayload = async (
   system: SystemInfo,
   members: Member[],
   history: HistoryEntry[],
   journal: JournalEntry[],
-): ExportPayload => ({
-  _meta: {
-    version: '1.0',
-    app: 'Plural Space',
-    exportedAt: new Date().toISOString(),
-  },
-  system,
-  members,
-  frontHistory: history,
-  journal,
-});
+): Promise<ExportPayload> => {
+  // Load supplementary data from storage
+  const [groups, channels, settings, front, palettes] = await Promise.all([
+    store.get<MemberGroup[]>(KEYS.groups),
+    store.get<ChatChannel[]>(KEYS.chatChannels),
+    store.get<AppSettings>(KEYS.settings),
+    store.get<FrontState>(KEYS.front),
+    store.get<any[]>(KEYS.palettes),
+  ]);
+
+  // Gather chat messages per channel
+  const chatMessages: Record<string, ChatMessage[]> = {};
+  if (channels && channels.length > 0) {
+    for (const ch of channels) {
+      const msgs = await store.get<ChatMessage[]>(chatMsgKey(ch.id));
+      if (msgs && msgs.length > 0) chatMessages[ch.id] = msgs;
+    }
+  }
+
+  // Extract avatars into separate dict for granular import
+  const avatars: Record<string, string> = {};
+  for (const m of members) {
+    if (m.avatar) avatars[m.id] = m.avatar;
+  }
+
+  return {
+    _meta: {
+      version: '1.1',
+      app: 'Plural Space',
+      exportedAt: new Date().toISOString(),
+    },
+    system,
+    members,
+    frontHistory: history,
+    journal,
+    groups: groups || [],
+    chatChannels: channels || [],
+    chatMessages,
+    settings: settings || undefined,
+    front: front || undefined,
+    palettes: palettes || [],
+    avatars,
+    customMoods: settings?.customMoods || [],
+  };
+};
 
 export const buildHtmlExport = (
   system: SystemInfo,
@@ -173,7 +213,7 @@ export const exportJSON = async (
   history: HistoryEntry[],
   journal: JournalEntry[],
 ): Promise<void> => {
-  const payload = buildExportPayload(system, members, history, journal);
+  const payload = await buildExportPayload(system, members, history, journal);
   const slug = system.name.replace(/\s+/g, '-').toLowerCase();
   await saveToDownloads(
     JSON.stringify(payload, null, 2),

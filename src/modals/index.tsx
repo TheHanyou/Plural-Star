@@ -14,6 +14,17 @@ import {RichText as RichDescription} from '../components/MarkdownRenderer';
 import {RichTextEditor} from '../components/RichTextEditor';
 import {saveAvatar, deleteAvatar} from '../utils/mediaUtils';
 
+const HexField = ({label, value, onChange, T}: {label: string; value: string; onChange: (v: string) => void; T: any}) => (
+  <View style={{flex: 1}}>
+    <Text style={{fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 4, fontWeight: '600'}}>{label}</Text>
+    <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+      <View style={{width: 20, height: 20, borderRadius: 4, backgroundColor: isValidHex(normalizeHex(value)) ? normalizeHex(value) : '#333', borderWidth: 1, borderColor: T.border}} />
+      <TextInput value={value} onChangeText={onChange} placeholder="#000000" placeholderTextColor={T.muted} maxLength={7} autoCapitalize="characters"
+        style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: isValidHex(normalizeHex(value)) || value.length < 2 ? T.border : T.danger, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 5, fontSize: 12, fontFamily: 'monospace'}} />
+    </View>
+  </View>
+);
+
 const getInitials = (name: string) => name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
 const Btn = ({children, onPress, variant = 'primary', disabled = false, style = {}, T}: any) => {
@@ -544,16 +555,6 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
     if (activePaletteId === id) onSelectPalette('__dark__');
   };
 
-  const HexField = ({label, value, onChange}: {label: string; value: string; onChange: (v: string) => void}) => (
-    <View style={{flex: 1}}>
-      <Text style={{fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 4, fontWeight: '600'}}>{label}</Text>
-      <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
-        <View style={{width: 20, height: 20, borderRadius: 4, backgroundColor: isValidHex(normalizeHex(value)) ? normalizeHex(value) : '#333', borderWidth: 1, borderColor: T.border}} />
-        <TextInput value={value} onChangeText={onChange} placeholder="#000000" placeholderTextColor={T.muted} maxLength={7} autoCapitalize="characters"
-          style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: isValidHex(normalizeHex(value)) || value.length < 2 ? T.border : T.danger, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 5, fontSize: 12, fontFamily: 'monospace'}} />
-      </View>
-    </View>
-  );
 
   return (
     <Sheet visible={visible} title={t('modal.systemSettings')} theme={T} onClose={onClose} footer={<Btn T={T} onPress={() => {
@@ -600,12 +601,12 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
             <TextInput value={paletteName} onChangeText={setPaletteName} placeholder={t('modal.paletteName')} placeholderTextColor={T.muted}
               style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, fontSize: 13, marginBottom: 10}} />
             <View style={{flexDirection: 'row', gap: 8, marginBottom: 10}}>
-              <HexField label={t('modal.palBg')} value={palBg} onChange={setPalBg} />
-              <HexField label={t('modal.palAccent')} value={palAccent} onChange={setPalAccent} />
+              <HexField label={t('modal.palBg')} value={palBg} onChange={setPalBg} T={T} />
+              <HexField label={t('modal.palAccent')} value={palAccent} onChange={setPalAccent} T={T} />
             </View>
             <View style={{flexDirection: 'row', gap: 8, marginBottom: 10}}>
-              <HexField label={t('modal.palText')} value={palText} onChange={setPalText} />
-              <HexField label={t('modal.palMid')} value={palMid} onChange={setPalMid} />
+              <HexField label={t('modal.palText')} value={palText} onChange={setPalText} T={T} />
+              <HexField label={t('modal.palMid')} value={palMid} onChange={setPalMid} T={T} />
             </View>
             {isValidHex(normalizeHex(palBg)) && isValidHex(normalizeHex(palAccent)) && isValidHex(normalizeHex(palText)) && isValidHex(normalizeHex(palMid)) && (
               <View style={{flexDirection: 'row', gap: 3, marginBottom: 10, padding: 8, borderRadius: 8, backgroundColor: normalizeHex(palBg)}}>
