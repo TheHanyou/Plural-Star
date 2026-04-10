@@ -10,7 +10,7 @@ import {SystemInfo, Member, FrontState, HistoryEntry, JournalEntry, ShareSetting
 type Section = 'export' | 'import' | 'shareview';
 type ImportSource = 'backup' | 'journal' | 'simplyplural' | 'pluralkit' | 'spfile';
 
-import {saveAvatarFromUrl} from '../utils/mediaUtils';
+import {saveAvatarFromUrl, saveAvatar} from '../utils/mediaUtils';
 
 interface Props {
   theme: any; system: SystemInfo; members: Member[]; front: FrontState | null;
@@ -92,14 +92,22 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
         if (restoreSel.system && restoreData.system) await store.set(KEYS.system, restoreData.system);
         if (restoreSel.members && restoreData.members) {
           const avatarMap = restoreData.avatars || {};
-          const importedMembers = restoreData.members.map(m => {
+          // Resolve all avatars to disk-backed file:// paths BEFORE writing members to
+          // AsyncStorage. Old backups (pre-1.2) embed full base64 avatars inline on each
+          // member, making the JSON too large for AsyncStorage — setItem throws silently
+          // and members are never saved. Saving to disk first keeps the members array small.
+          const resolvedMembers: Member[] = await Promise.all(restoreData.members.map(async m => {
             if (!restoreSel.avatars) { const {avatar, ...rest} = m as any; return rest; }
-            // Prefer the avatars dict (embedded data: URI) over any inline avatar field
-            const resolvedAvatar = avatarMap[(m as any).id] ?? (m as any).avatar;
-            return resolvedAvatar ? {...m, avatar: resolvedAvatar} : m;
-          });
-          // If PFPs selected but Members not, overlay avatars onto existing
-          await store.set(KEYS.members, importedMembers);
+            const raw = avatarMap[(m as any).id] ?? (m as any).avatar;
+            if (!raw) return m;
+            if (raw.startsWith('data:')) {
+              const b64 = raw.split(',')[1];
+              const fileUri = await saveAvatar((m as any).id, b64).catch(() => null);
+              return fileUri ? {...m, avatar: fileUri} : {...m, avatar: undefined};
+            }
+            return {...m, avatar: raw};
+          }));
+          await store.set(KEYS.members, resolvedMembers);
         } else if (restoreSel.avatars && !restoreSel.members) {
           // Overlay PFPs onto existing members
           const avatarMap: Record<string, string> = {...(restoreData.avatars || {})};
@@ -255,15 +263,24 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           await store.set(KEYS.system, {...system, name: name || system.name, description: desc});
         }
         if (extSel.members && extPreview.members.length > 0) {
-          const avatarUrls: Record<string, string> = {};
           const newM: Member[] = extPreview.members.map((m: any) => {
             const id = uid();
-            const avatarUrl = isPK ? (m.avatar_url || '') : (m.content?.avatarUrl || m.avatarUrl || '');
-            if (avatarUrl) avatarUrls[id] = avatarUrl;
             return {id, name: isPK ? m.display_name || m.name : (m.content?.name || m.name || 'Unknown'), pronouns: isPK ? (m.pronouns || '') : (m.content?.pronouns || ''), role: isPK ? '' : (m.content?.role || ''), color: isPK ? (m.color ? `#${m.color}` : '#DAA520') : (m.content?.color || '#DAA520'), description: isPK ? (m.description || '') : (m.content?.desc || '')};
           });
           const merged = [...members, ...newM.filter(nm => !members.find(em => em.name.toLowerCase() === nm.name.toLowerCase()))];
           await store.set(KEYS.members, merged);
+          // Build avatarUrls AFTER dedup, keyed by the final ID that ended up in merged.
+          // Doing it before dedup causes avatar lookups to fail for members whose names
+          // already existed locally — their new uid() gets discarded but stays in avatarUrls,
+          // so findIndex never matches and the avatar is silently dropped.
+          const avatarUrls: Record<string, string> = {};
+          extPreview.members.forEach((m: any) => {
+            const avatarUrl = isPK ? (m.avatar_url || '') : (m.content?.avatarUrl || m.avatarUrl || '');
+            if (!avatarUrl) return;
+            const name = isPK ? (m.display_name || m.name || '') : (m.content?.name || m.name || '');
+            const match = merged.find(lm => lm.name.toLowerCase() === name.toLowerCase());
+            if (match) avatarUrls[match.id] = avatarUrl;
+          });
           const avatarEntries = Object.entries(avatarUrls);
           if (avatarEntries.length > 0) {
             const withAvatars = [...merged];
@@ -341,11 +358,8 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           await store.set(KEYS.system, {...system, name: name || system.name, description: desc});
         }
         if (extSel.members && spMembers.length > 0) {
-          const avatarUrls: Record<string, string> = {};
           const newM: Member[] = spMembers.map((m: any) => {
             const id = uid();
-            const avatarUrl = m.avatarUrl || '';
-            if (avatarUrl) avatarUrls[id] = avatarUrl;
             return {
               id,
               name: m.name || 'Unknown',
@@ -358,6 +372,13 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           });
           const merged = [...members, ...newM.filter(nm => !members.find(em => em.name.toLowerCase() === nm.name.toLowerCase()))];
           await store.set(KEYS.members, merged);
+          const avatarUrls: Record<string, string> = {};
+          spMembers.forEach((m: any, i: number) => {
+            const avatarUrl = m.avatarUrl || '';
+            if (!avatarUrl) return;
+            const match = merged.find(lm => lm.name.toLowerCase() === (newM[i]?.name || '').toLowerCase());
+            if (match) avatarUrls[match.id] = avatarUrl;
+          });
           const avatarEntries = Object.entries(avatarUrls);
           if (avatarEntries.length > 0) {
             const withAvatars = [...merged];
@@ -549,6 +570,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                       ['settings', t('share.appSettings'), !!restoreData.settings, null],
                     ] as any[]).map(([k, label, avail, count]) => (
                       <SectionRow key={k} label={label} sublabel={avail && count !== null ? t('common.records', {count}) : avail ? undefined : t('common.notInExport')} value={restoreSel[k as keyof typeof restoreSel]} onToggle={() => togR(k)} disabled={!avail} />
+                    ))}
                     ))}
                   </View>
                   {restoreDone ? <View style={{backgroundColor: T.successBg, borderWidth: 1, borderColor: `${T.success}30`, borderRadius: 8, padding: 12, alignItems: 'center'}}><Text style={{fontSize: 13, color: T.success, fontWeight: '500'}}>{t('share.restoreComplete')}</Text></View>
