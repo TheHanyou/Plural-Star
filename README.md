@@ -35,7 +35,9 @@
 
 ---
 
-Simply Plural is being discontinued. Plural Space is the replacement you own entirely — your data stays on your device.
+Made in part with AI assistance, and is one of the main reasons we went Open Source. So that those wishing to, or those with concerns, could examine the code.
+
+Simply Plural and Octocon are being discontinued. Plural Space is the replacement you own entirely — your data stays on your device.
 
 ## Features
 
