@@ -218,7 +218,7 @@ const getLocale = (): string => {
 export const fmtTime = (ts: number): string =>
   new Date(ts).toLocaleString(getLocale(), {
     month: 'short', day: 'numeric',
-    hour: 'numeric', minute: '2-digit', hour12: getLocale() === 'en-US',
+    hour: 'numeric', minute: '2-digit',
   });
 
 export const fmtDate = (ts: number): string =>
