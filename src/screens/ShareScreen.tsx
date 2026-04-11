@@ -80,6 +80,18 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
       const content = await RNFS.readFile(getPickedFilePath(res), 'utf8');
       const parsed: ExportPayload = JSON.parse(content);
       if (!parsed._meta || !['Plural Space', 'PluralSpace-Desktop'].includes(parsed._meta.app)) throw new Error(t('share.notValidExport'));
+      // Normalize: strip inline base64 avatars from member objects and merge into the
+      // avatars dict. Old backups (pre-1.2) stored full base64 on each member, doubling
+      // memory usage when the parsed object is also held in React state during restore.
+      if (parsed.members) {
+        const avatars: Record<string, string> = {...(parsed.avatars || {})};
+        parsed.members = parsed.members.map((m: any) => {
+          if (m.avatar && !avatars[m.id]) avatars[m.id] = m.avatar;
+          const {avatar, ...rest} = m;
+          return rest;
+        });
+        parsed.avatars = avatars;
+      }
       setRestoreFile(res.name || 'backup.json'); setRestoreData(parsed);
     } catch (e: any) {if (!isPickerCancel(e)) setRestoreError(e.message || 'Could not read file.');}
   };
@@ -117,16 +129,18 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           for (const m of (restoreData.members || [])) { if ((m as any).avatar && !avatarMap[(m as any).id]) avatarMap[(m as any).id] = (m as any).avatar; }
           if (Object.keys(avatarMap).length > 0) {
             const existing = await store.get<Member[]>(KEYS.members) || [];
-            const updated = await Promise.all(existing.map(async m => {
+            const updated: Member[] = [];
+            for (const m of existing) {
               const raw = avatarMap[m.id];
-              if (!raw) return m;
+              if (!raw) { updated.push(m); continue; }
               if (raw.startsWith('data:')) {
                 const b64 = raw.split(',')[1];
                 const fileUri = await saveAvatar(m.id, b64).catch(() => null);
-                return fileUri ? {...m, avatar: fileUri} : {...m, avatar: undefined};
+                updated.push(fileUri ? {...m, avatar: fileUri} : {...m, avatar: undefined});
+              } else {
+                updated.push({...m, avatar: raw});
               }
-              return {...m, avatar: raw};
-            }));
+            }
             await store.set(KEYS.members, updated);
           }
         }
@@ -160,7 +174,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
         }
         if (restoreSel.palettes && restoreData.palettes) await store.set(KEYS.palettes, restoreData.palettes);
         if (restoreData.front !== undefined && restoreSel.frontHistory) await store.set(KEYS.front, restoreData.front);
-        setRestoreDone(true); setTimeout(() => onDataImported(), 800);
+        setRestoreDone(true); setRestoreData(null); setTimeout(() => onDataImported(), 800);
       }},
     ]);
   };
