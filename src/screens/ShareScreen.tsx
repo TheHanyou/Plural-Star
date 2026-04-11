@@ -80,17 +80,22 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
       const content = await RNFS.readFile(getPickedFilePath(res), 'utf8');
       const parsed: ExportPayload = JSON.parse(content);
       if (!parsed._meta || !['Plural Space', 'PluralSpace-Desktop'].includes(parsed._meta.app)) throw new Error(t('share.notValidExport'));
-      // Normalize: strip inline base64 avatars from member objects and merge into the
-      // avatars dict. Old backups (pre-1.2) stored full base64 on each member, doubling
-      // memory usage when the parsed object is also held in React state during restore.
+      // Normalize: if any members have inline base64 avatars (pre-1.2 format), move them
+      // into the avatars dict and strip them from the member objects. Only copy the dict
+      // if there's actually something to migrate — avoid a 6MB+ unnecessary copy otherwise.
       if (parsed.members) {
-        const avatars: Record<string, string> = {...(parsed.avatars || {})};
-        parsed.members = parsed.members.map((m: any) => {
-          if (m.avatar && !avatars[m.id]) avatars[m.id] = m.avatar;
-          const {avatar, ...rest} = m;
-          return rest;
-        });
-        parsed.avatars = avatars;
+        const hasInline = parsed.members.some((m: any) => m.avatar);
+        if (hasInline) {
+          const avatars: Record<string, string> = {...(parsed.avatars || {})};
+          parsed.members = parsed.members.map((m: any) => {
+            if (m.avatar && !avatars[m.id]) avatars[m.id] = m.avatar;
+            const {avatar, ...rest} = m;
+            return rest;
+          });
+          parsed.avatars = avatars;
+        } else {
+          parsed.members = parsed.members.map(({avatar: _a, ...rest}: any) => rest);
+        }
       }
       setRestoreFile(res.name || 'backup.json'); setRestoreData(parsed);
     } catch (e: any) {if (!isPickerCancel(e)) setRestoreError(e.message || 'Could not read file.');}
@@ -104,24 +109,30 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
         if (restoreSel.system && restoreData.system) await store.set(KEYS.system, restoreData.system);
         if (restoreSel.members && restoreData.members) {
           const avatarMap = restoreData.avatars || {};
-          // Resolve all avatars to disk-backed file:// paths BEFORE writing members to
-          // AsyncStorage. Old backups (pre-1.2) embed full base64 avatars inline on each
-          // member, making the JSON too large for AsyncStorage — setItem throws silently
-          // and members are never saved. Saving to disk first keeps the members array small.
-          const resolvedMembers: Member[] = [];
-          for (const m of restoreData.members) {
-            if (!restoreSel.avatars) { const {avatar, ...rest} = m as any; resolvedMembers.push(rest); continue; }
-            const raw = avatarMap[(m as any).id] ?? (m as any).avatar;
-            if (!raw) { resolvedMembers.push(m); continue; }
-            if (raw.startsWith('data:')) {
-              const b64 = raw.split(',')[1];
-              const fileUri = await saveAvatar((m as any).id, b64).catch(() => null);
-              resolvedMembers.push(fileUri ? {...m, avatar: fileUri} : {...m, avatar: undefined});
-            } else {
-              resolvedMembers.push({...m, avatar: raw});
+          // Step 1: store members immediately without avatars so they're safely in
+          // AsyncStorage regardless of what happens during avatar file processing.
+          // Previously we saved avatars first and members after — if saveAvatar hung
+          // or crashed on a large image, members were never written at all.
+          const membersNoAvatars = restoreData.members.map((m: any) => {
+            const {avatar, ...rest} = m; return rest;
+          });
+          await store.set(KEYS.members, membersNoAvatars);
+          // Step 2: save each avatar to disk sequentially and patch storage after.
+          // A failure here loses avatars but members are already safe.
+          if (restoreSel.avatars && Object.keys(avatarMap).length > 0) {
+            const withAvatars: any[] = [...membersNoAvatars];
+            let changed = false;
+            for (let i = 0; i < withAvatars.length; i++) {
+              const raw = avatarMap[withAvatars[i].id];
+              if (!raw) continue;
+              try {
+                const b64 = raw.startsWith('data:') ? raw.split(',')[1] : raw;
+                const fileUri = await saveAvatar(withAvatars[i].id, b64).catch(() => null);
+                if (fileUri) { withAvatars[i] = {...withAvatars[i], avatar: fileUri}; changed = true; }
+              } catch { /* skip — member already saved without avatar */ }
             }
+            if (changed) await store.set(KEYS.members, withAvatars);
           }
-          await store.set(KEYS.members, resolvedMembers);
         } else if (restoreSel.avatars && !restoreSel.members) {
           // Overlay PFPs onto existing members
           const avatarMap: Record<string, string> = {...(restoreData.avatars || {})};
