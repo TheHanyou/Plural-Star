@@ -24,10 +24,12 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const [section, setSection] = useState<Section>('export');
   const [emailAddr, setEmailAddr] = useState('');
   const [restoreFile, setRestoreFile] = useState<string | null>(null);
-  const [restoreData, setRestoreData] = useState<ExportPayload | null>(null);
+  const [restorePath, setRestorePath] = useState<string | null>(null);
+  const [restorePreview, setRestorePreview] = useState<boolean>(false);
   const [restoreSel, setRestoreSel] = useState({system: true, members: true, avatars: true, journal: true, frontHistory: true, groups: true, chat: true, moods: true, palettes: true, settings: true});
   const [restoreError, setRestoreError] = useState('');
   const [restoreDone, setRestoreDone] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [importMsg, setImportMsg] = useState('');
   const [importSource, setImportSource] = useState<ImportSource>('backup');
@@ -74,118 +76,108 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   };
 
   const handlePickBackup = async () => {
-    setRestoreError(''); setRestoreData(null); setRestoreFile(null); setRestoreDone(false);
+    setRestoreError(''); setRestorePreview(false); setRestorePath(null); setRestoreFile(null); setRestoreDone(false);
     try {
       const [res] = await safePick({type: ['application/json']});
-      const content = await RNFS.readFile(getPickedFilePath(res), 'utf8');
-      const parsed: ExportPayload = JSON.parse(content);
-      if (!parsed._meta || !['Plural Space', 'PluralSpace-Desktop'].includes(parsed._meta.app)) throw new Error(t('share.notValidExport'));
-      // Normalize: if any members have inline base64 avatars (pre-1.2 format), move them
-      // into the avatars dict and strip them from the member objects. Only copy the dict
-      // if there's actually something to migrate — avoid a 6MB+ unnecessary copy otherwise.
-      if (parsed.members) {
-        const hasInline = parsed.members.some((m: any) => m.avatar);
-        if (hasInline) {
-          const avatars: Record<string, string> = {...(parsed.avatars || {})};
-          parsed.members = parsed.members.map((m: any) => {
-            if (m.avatar && !avatars[m.id]) avatars[m.id] = m.avatar;
-            const {avatar, ...rest} = m;
-            return rest;
-          });
-          parsed.avatars = avatars;
-        } else {
-          parsed.members = parsed.members.map(({avatar: _a, ...rest}: any) => rest);
-        }
-      }
-      setRestoreFile(res.name || 'backup.json'); setRestoreData(parsed);
+      // Store the path only — do not read or parse the file yet.
+      // The file is only loaded when the user presses Restore, after they've
+      // made their selection choices. This avoids loading large backups into
+      // memory before the user has decided what they actually want to restore.
+      setRestorePath(getPickedFilePath(res));
+      setRestoreFile(res.name || 'backup.json');
+      setRestorePreview(true);
     } catch (e: any) {if (!isPickerCancel(e)) setRestoreError(e.message || 'Could not read file.');}
   };
 
   const handleRestore = () => {
-    if (!restoreData) return;
+    if (!restorePath || !restorePreview) return;
     Alert.alert(t('share.restoreData'), t('share.restoreDataMsg'), [
       {text: t('common.cancel'), style: 'cancel'},
       {text: t('share.restore'), style: 'destructive', onPress: async () => {
-        if (restoreSel.system && restoreData.system) await store.set(KEYS.system, restoreData.system);
-        if (restoreSel.members && restoreData.members) {
-          const avatarMap = restoreData.avatars || {};
-          // Step 1: store members immediately without avatars so they're safely in
-          // AsyncStorage regardless of what happens during avatar file processing.
-          // Previously we saved avatars first and members after — if saveAvatar hung
-          // or crashed on a large image, members were never written at all.
-          const membersNoAvatars = restoreData.members.map((m: any) => {
-            const {avatar, ...rest} = m; return rest;
-          });
-          await store.set(KEYS.members, membersNoAvatars);
-          // Step 2: save each avatar to disk sequentially and patch storage after.
-          // A failure here loses avatars but members are already safe.
-          if (restoreSel.avatars && Object.keys(avatarMap).length > 0) {
-            const withAvatars: any[] = [...membersNoAvatars];
-            let changed = false;
-            for (let i = 0; i < withAvatars.length; i++) {
-              const raw = avatarMap[withAvatars[i].id];
-              if (!raw) continue;
-              try {
-                const b64 = raw.startsWith('data:') ? raw.split(',')[1] : raw;
-                const fileUri = await saveAvatar(withAvatars[i].id, b64).catch(() => null);
-                if (fileUri) { withAvatars[i] = {...withAvatars[i], avatar: fileUri}; changed = true; }
-              } catch { /* skip — member already saved without avatar */ }
-            }
-            if (changed) await store.set(KEYS.members, withAvatars);
+        setRestoring(true);
+        try {
+          // Re-read from disk now — the full payload is only in memory during processing
+          // and is never stored in React state. This avoids holding 6MB+ in the component
+          // tree the entire time the user is viewing the restore UI.
+          const content = await RNFS.readFile(restorePath, 'utf8');
+          const data: ExportPayload = JSON.parse(content);
+          // Normalize inline avatars (pre-1.2 format) into the avatars dict
+          const avatarMap: Record<string, string> = {...(data.avatars || {})};
+          if (data.members) {
+            data.members = data.members.map((m: any) => {
+              if (m.avatar && !avatarMap[m.id]) avatarMap[m.id] = m.avatar;
+              const {avatar, ...rest} = m; return rest;
+            });
           }
-        } else if (restoreSel.avatars && !restoreSel.members) {
-          // Overlay PFPs onto existing members
-          const avatarMap: Record<string, string> = {...(restoreData.avatars || {})};
-          // Also extract from members array as fallback (older backup format)
-          for (const m of (restoreData.members || [])) { if ((m as any).avatar && !avatarMap[(m as any).id]) avatarMap[(m as any).id] = (m as any).avatar; }
-          if (Object.keys(avatarMap).length > 0) {
-            const existing = await store.get<Member[]>(KEYS.members) || [];
-            const updated: Member[] = [];
-            for (const m of existing) {
-              const raw = avatarMap[m.id];
-              if (!raw) { updated.push(m); continue; }
-              if (raw.startsWith('data:')) {
-                const b64 = raw.split(',')[1];
-                const fileUri = await saveAvatar(m.id, b64).catch(() => null);
-                updated.push(fileUri ? {...m, avatar: fileUri} : {...m, avatar: undefined});
-              } else {
-                updated.push({...m, avatar: raw});
+          if (restoreSel.system && data.system) await store.set(KEYS.system, data.system);
+          if (restoreSel.members && data.members) {
+            // Step 1: store members immediately without avatars
+            await store.set(KEYS.members, data.members);
+            // Step 2: save avatars to disk sequentially and patch
+            if (restoreSel.avatars && Object.keys(avatarMap).length > 0) {
+              const withAvatars: any[] = [...data.members];
+              let changed = false;
+              for (let i = 0; i < withAvatars.length; i++) {
+                const raw = avatarMap[withAvatars[i].id];
+                if (!raw) continue;
+                try {
+                  const b64 = raw.startsWith('data:') ? raw.split(',')[1] : raw;
+                  const fileUri = await saveAvatar(withAvatars[i].id, b64).catch(() => null);
+                  if (fileUri) { withAvatars[i] = {...withAvatars[i], avatar: fileUri}; changed = true; }
+                } catch { /* skip — member already saved without avatar */ }
+              }
+              if (changed) await store.set(KEYS.members, withAvatars);
+            }
+          } else if (restoreSel.avatars && !restoreSel.members) {
+            if (Object.keys(avatarMap).length > 0) {
+              const existing = await store.get<Member[]>(KEYS.members) || [];
+              const updated: Member[] = [];
+              for (const m of existing) {
+                const raw = avatarMap[m.id];
+                if (!raw) { updated.push(m); continue; }
+                try {
+                  const b64 = raw.startsWith('data:') ? raw.split(',')[1] : raw;
+                  const fileUri = await saveAvatar(m.id, b64).catch(() => null);
+                  updated.push(fileUri ? {...m, avatar: fileUri} : m);
+                } catch { updated.push(m); }
+              }
+              await store.set(KEYS.members, updated);
+            }
+          }
+          if (restoreSel.journal && data.journal) await store.set(KEYS.journal, data.journal);
+          if (restoreSel.frontHistory && data.frontHistory) {
+            await store.set(KEYS.history, data.frontHistory);
+            await store.set(KEYS.front, findOpenFrontInHistory(data.frontHistory));
+          }
+          if (restoreSel.groups && data.groups) await store.set(KEYS.groups, data.groups);
+          if (restoreSel.chat) {
+            if (data.chatChannels) await store.set(KEYS.chatChannels, data.chatChannels);
+            if (data.chatMessages) {
+              for (const [chId, msgs] of Object.entries(data.chatMessages)) {
+                await store.set(chatMsgKey(chId), msgs);
               }
             }
-            await store.set(KEYS.members, updated);
           }
-        }
-        if (restoreSel.journal && restoreData.journal) await store.set(KEYS.journal, restoreData.journal);
-        if (restoreSel.frontHistory && restoreData.frontHistory) {
-          await store.set(KEYS.history, restoreData.frontHistory);
-          await store.set(KEYS.front, findOpenFrontInHistory(restoreData.frontHistory));
-        }
-        if (restoreSel.groups && restoreData.groups) await store.set(KEYS.groups, restoreData.groups);
-        if (restoreSel.chat) {
-          if (restoreData.chatChannels) await store.set(KEYS.chatChannels, restoreData.chatChannels);
-          if (restoreData.chatMessages) {
-            for (const [chId, msgs] of Object.entries(restoreData.chatMessages)) {
-              await store.set(chatMsgKey(chId), msgs);
+          if (restoreSel.settings || restoreSel.moods) {
+            const currentSettings = await store.get<AppSettings>(KEYS.settings) || {} as AppSettings;
+            let newSettings = {...currentSettings};
+            if (restoreSel.settings && data.settings) {
+              newSettings = {...data.settings};
+              if (!restoreSel.moods) newSettings.customMoods = currentSettings.customMoods || [];
             }
+            if (restoreSel.moods) {
+              newSettings.customMoods = data.customMoods || data.settings?.customMoods || [];
+            }
+            await store.set(KEYS.settings, newSettings);
           }
+          if (restoreSel.palettes && data.palettes) await store.set(KEYS.palettes, data.palettes);
+          if (data.front !== undefined && restoreSel.frontHistory) await store.set(KEYS.front, data.front);
+          setRestoreDone(true); setTimeout(() => onDataImported(), 800);
+        } catch (e: any) {
+          setRestoreError(e.message || 'Restore failed');
+        } finally {
+          setRestoring(false);
         }
-        if (restoreSel.settings || restoreSel.moods) {
-          const currentSettings = await store.get<AppSettings>(KEYS.settings) || {} as AppSettings;
-          let newSettings = {...currentSettings};
-          if (restoreSel.settings && restoreData.settings) {
-            newSettings = {...restoreData.settings};
-            // Preserve existing moods unless moods is also selected
-            if (!restoreSel.moods) newSettings.customMoods = currentSettings.customMoods || [];
-          }
-          if (restoreSel.moods) {
-            const importedMoods = restoreData.customMoods || restoreData.settings?.customMoods || [];
-            newSettings.customMoods = importedMoods;
-          }
-          await store.set(KEYS.settings, newSettings);
-        }
-        if (restoreSel.palettes && restoreData.palettes) await store.set(KEYS.palettes, restoreData.palettes);
-        if (restoreData.front !== undefined && restoreSel.frontHistory) await store.set(KEYS.front, restoreData.front);
-        setRestoreDone(true); setRestoreData(null); setTimeout(() => onDataImported(), 800);
       }},
     ]);
   };
@@ -586,30 +578,30 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
               <TouchableOpacity onPress={handlePickBackup} activeOpacity={0.7} style={{borderWidth: 1.5, borderStyle: 'dashed', borderColor: restoreFile ? T.success : T.border, borderRadius: 10, padding: 22, alignItems: 'center', marginBottom: 14, gap: 6, backgroundColor: restoreFile ? T.successBg : 'transparent'}}>
                 <Text style={{fontSize: 20, color: T.dim}}>↑</Text>
                 <Text style={{fontSize: 13, color: restoreFile ? T.success : T.dim, textAlign: 'center'}}>{restoreFile || t('share.tapToSelect')}</Text>
-                {restoreData && <Text style={{fontSize: 11, color: T.muted}}>{t('share.exported', {date: new Date(restoreData._meta.exportedAt).toLocaleString()})}</Text>}
               </TouchableOpacity>
               {restoreError ? <View style={{backgroundColor: T.dangerBg, borderWidth: 1, borderColor: `${T.danger}30`, borderRadius: 7, padding: 10, marginBottom: 12}}><Text style={{fontSize: 13, color: T.danger}}>⚠ {restoreError}</Text></View> : null}
-              {restoreData && (
+              {restorePreview && (
                 <>
                   <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{t('share.restoreCategories')}</Text>
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
                     {([
-                      ['system', t('share.systemNameDesc'), !!restoreData.system, null],
-                      ['members', t('share.memberProfiles'), !!restoreData.members, restoreData.members?.length],
-                      ['avatars', t('share.profilePictures'), !!(restoreData.avatars && Object.keys(restoreData.avatars).length > 0) || !!(restoreData.members?.some((m: any) => m.avatar)), restoreData.avatars ? Object.keys(restoreData.avatars).length : restoreData.members?.filter((m: any) => m.avatar).length || 0],
-                      ['frontHistory', t('share.frontHistory'), !!restoreData.frontHistory, restoreData.frontHistory?.length],
-                      ['journal', t('share.journalEntries'), !!restoreData.journal, restoreData.journal?.length],
-                      ['groups', t('share.memberGroups'), !!restoreData.groups, restoreData.groups?.length],
-                      ['chat', t('share.chatData'), !!restoreData.chatChannels, restoreData.chatChannels?.length],
-                      ['moods', t('share.customMoodsLabel'), !!(restoreData.customMoods?.length || restoreData.settings?.customMoods?.length), restoreData.customMoods?.length || restoreData.settings?.customMoods?.length || 0],
-                      ['palettes', t('share.themePalettes'), !!restoreData.palettes?.length, restoreData.palettes?.length],
-                      ['settings', t('share.appSettings'), !!restoreData.settings, null],
-                    ] as any[]).map(([k, label, avail, count]) => (
-                      <SectionRow key={k} label={label} sublabel={avail && count !== null ? t('common.records', {count}) : avail ? undefined : t('common.notInExport')} value={restoreSel[k as keyof typeof restoreSel]} onToggle={() => togR(k)} disabled={!avail} />
+                      ['system', t('share.systemNameDesc')],
+                      ['members', t('share.memberProfiles')],
+                      ['avatars', t('share.profilePictures')],
+                      ['frontHistory', t('share.frontHistory')],
+                      ['journal', t('share.journalEntries')],
+                      ['groups', t('share.memberGroups')],
+                      ['chat', t('share.chatData')],
+                      ['moods', t('share.customMoodsLabel')],
+                      ['palettes', t('share.themePalettes')],
+                      ['settings', t('share.appSettings')],
+                    ] as any[]).map(([k, label]) => (
+                      <SectionRow key={k} label={label} value={restoreSel[k as keyof typeof restoreSel]} onToggle={() => togR(k)} />
                     ))}
                     ))}
                   </View>
                   {restoreDone ? <View style={{backgroundColor: T.successBg, borderWidth: 1, borderColor: `${T.success}30`, borderRadius: 8, padding: 12, alignItems: 'center'}}><Text style={{fontSize: 13, color: T.success, fontWeight: '500'}}>{t('share.restoreComplete')}</Text></View>
+                    : restoring ? <View style={{alignItems: 'center', paddingVertical: 16}}><ActivityIndicator color={T.accent} /><Text style={{fontSize: 12, color: T.dim, marginTop: 8}}>{t('share.importing')}</Text></View>
                     : <TouchableOpacity onPress={handleRestore} activeOpacity={0.7} style={{alignItems: 'center', paddingVertical: 11, borderRadius: 8, borderWidth: 1, backgroundColor: T.dangerBg, borderColor: `${T.danger}40`}}><Text style={{fontSize: 14, fontWeight: '500', color: T.danger}}>{t('share.restoreSelectedData')}</Text></TouchableOpacity>}
                 </>
               )}
