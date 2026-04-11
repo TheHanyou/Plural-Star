@@ -96,17 +96,19 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           // AsyncStorage. Old backups (pre-1.2) embed full base64 avatars inline on each
           // member, making the JSON too large for AsyncStorage — setItem throws silently
           // and members are never saved. Saving to disk first keeps the members array small.
-          const resolvedMembers: Member[] = await Promise.all(restoreData.members.map(async m => {
-            if (!restoreSel.avatars) { const {avatar, ...rest} = m as any; return rest; }
+          const resolvedMembers: Member[] = [];
+          for (const m of restoreData.members) {
+            if (!restoreSel.avatars) { const {avatar, ...rest} = m as any; resolvedMembers.push(rest); continue; }
             const raw = avatarMap[(m as any).id] ?? (m as any).avatar;
-            if (!raw) return m;
+            if (!raw) { resolvedMembers.push(m); continue; }
             if (raw.startsWith('data:')) {
               const b64 = raw.split(',')[1];
               const fileUri = await saveAvatar((m as any).id, b64).catch(() => null);
-              return fileUri ? {...m, avatar: fileUri} : {...m, avatar: undefined};
+              resolvedMembers.push(fileUri ? {...m, avatar: fileUri} : {...m, avatar: undefined});
+            } else {
+              resolvedMembers.push({...m, avatar: raw});
             }
-            return {...m, avatar: raw};
-          }));
+          }
           await store.set(KEYS.members, resolvedMembers);
         } else if (restoreSel.avatars && !restoreSel.members) {
           // Overlay PFPs onto existing members
