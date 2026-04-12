@@ -101,11 +101,13 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           // tree the entire time the user is viewing the restore UI.
           const content = await RNFS.readFile(restorePath, 'utf8');
           const data: ExportPayload = JSON.parse(content);
-          // Normalize inline avatars (pre-1.2 format) into the avatars dict
-          const avatarMap: Record<string, string> = {...(data.avatars || {})};
+          // Normalize inline avatars (pre-1.2 format) into the avatars dict.
+          // Use data.avatars directly throughout — never spread/copy it.
+          // A 13MB backup has ~12MB in that dict; copying it doubles peak memory usage.
+          if (!data.avatars) data.avatars = {};
           if (data.members) {
             data.members = data.members.map((m: any) => {
-              if (m.avatar && !avatarMap[m.id]) avatarMap[m.id] = m.avatar;
+              if (m.avatar && !data.avatars![m.id]) data.avatars![m.id] = m.avatar;
               const {avatar, ...rest} = m; return rest;
             });
           }
@@ -113,28 +115,34 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           if (restoreSel.members && data.members) {
             // Step 1: store members immediately without avatars
             await store.set(KEYS.members, data.members);
-            // Step 2: save avatars to disk sequentially and patch
-            if (restoreSel.avatars && Object.keys(avatarMap).length > 0) {
+            // Step 2: save avatars to disk sequentially.
+            // Delete each entry from data.avatars after processing to free that memory
+            // before moving to the next — otherwise all base64 strings stay in the heap
+            // for the entire duration of the loop.
+            if (restoreSel.avatars && data.avatars && Object.keys(data.avatars).length > 0) {
               const withAvatars: any[] = [...data.members];
               let changed = false;
               for (let i = 0; i < withAvatars.length; i++) {
-                const raw = avatarMap[withAvatars[i].id];
+                const memberId = withAvatars[i].id;
+                const raw = data.avatars[memberId];
                 if (!raw) continue;
+                delete data.avatars[memberId]; // free this entry immediately
                 try {
                   const b64 = raw.startsWith('data:') ? raw.split(',')[1] : raw;
-                  const fileUri = await saveAvatar(withAvatars[i].id, b64).catch(() => null);
+                  const fileUri = await saveAvatar(memberId, b64).catch(() => null);
                   if (fileUri) { withAvatars[i] = {...withAvatars[i], avatar: fileUri}; changed = true; }
                 } catch { /* skip — member already saved without avatar */ }
               }
               if (changed) await store.set(KEYS.members, withAvatars);
             }
           } else if (restoreSel.avatars && !restoreSel.members) {
-            if (Object.keys(avatarMap).length > 0) {
+            if (data.avatars && Object.keys(data.avatars).length > 0) {
               const existing = await store.get<Member[]>(KEYS.members) || [];
               const updated: Member[] = [];
               for (const m of existing) {
-                const raw = avatarMap[m.id];
+                const raw = data.avatars[m.id];
                 if (!raw) { updated.push(m); continue; }
+                delete data.avatars[m.id];
                 try {
                   const b64 = raw.startsWith('data:') ? raw.split(',')[1] : raw;
                   const fileUri = await saveAvatar(m.id, b64).catch(() => null);

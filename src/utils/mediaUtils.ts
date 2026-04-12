@@ -12,7 +12,15 @@ const ensureDir = async (dir: string) => {
 export const saveAvatar = async (memberId: string, base64: string): Promise<string> => {
   await ensureDir(AVATAR_DIR);
   const raw = base64.includes(',') ? base64.split(',')[1] : base64;
-  const path = `${AVATAR_DIR}/${memberId}.jpg`;
+  // Detect actual format from the first bytes of the base64 data rather than
+  // trusting the declared MIME type — picked images are often mislabelled as JPEG
+  // when they're actually PNG, leading to files saved with the wrong extension.
+  // Base64 magic byte prefixes: PNG=iVBOR, GIF=R0lGO, WEBP=/9j is JPEG, PNG/WEBP differ
+  let ext = 'jpg';
+  if (raw.startsWith('iVBOR')) ext = 'png';
+  else if (raw.startsWith('R0lGO')) ext = 'gif';
+  else if (raw.startsWith('UklGR')) ext = 'webp';
+  const path = `${AVATAR_DIR}/${memberId}.${ext}`;
   await RNFS.writeFile(path, raw, 'base64');
   return `file://${path}`;
 };
@@ -21,7 +29,9 @@ export const saveAvatarFromUrl = async (memberId: string, url: string): Promise<
   if (!url || !url.startsWith('http')) return undefined;
   try {
     await ensureDir(AVATAR_DIR);
-    const path = `${AVATAR_DIR}/${memberId}.jpg`;
+    const urlExt = url.split('?')[0].split('.').pop()?.toLowerCase() || '';
+    const ext = ['png', 'gif', 'webp'].includes(urlExt) ? urlExt : 'jpg';
+    const path = `${AVATAR_DIR}/${memberId}.${ext}`;
     const result = await RNFS.downloadFile({fromUrl: url, toFile: path}).promise;
     if (result.statusCode === 200) return `file://${path}`;
     return undefined;
@@ -30,9 +40,11 @@ export const saveAvatarFromUrl = async (memberId: string, url: string): Promise<
 
 export const deleteAvatar = async (memberId: string): Promise<void> => {
   try {
-    const path = `${AVATAR_DIR}/${memberId}.jpg`;
-    const exists = await RNFS.exists(path);
-    if (exists) await RNFS.unlink(path);
+    for (const ext of ['jpg', 'png', 'gif', 'webp']) {
+      const path = `${AVATAR_DIR}/${memberId}.${ext}`;
+      const exists = await RNFS.exists(path);
+      if (exists) { await RNFS.unlink(path); break; }
+    }
   } catch {}
 };
 
