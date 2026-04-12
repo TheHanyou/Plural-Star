@@ -50,22 +50,21 @@ export const buildExportPayload = async (
   // so the backup is portable across devices and platforms.
   // Members are stripped of their avatar field — the avatars dict is authoritative.
   const avatars: Record<string, string> = {};
-  const mimeMap: Record<string, string> = {
-    png: 'image/png', gif: 'image/gif', webp: 'image/webp',
-    jpg: 'image/jpeg', jpeg: 'image/jpeg',
-  };
   for (const m of members) {
     if (!m.avatar) continue;
     if (m.avatar.startsWith('data:')) {
-      // Already embedded (shouldn't happen post-migration, but handle gracefully)
       avatars[m.id] = m.avatar;
     } else {
-      // file:// or bare path — read and embed
       try {
         const filePath = m.avatar.replace(/^file:\/\//, '');
         const b64 = await RNFS.readFile(filePath, 'base64');
-        const ext = filePath.split('.').pop()?.toLowerCase() || 'jpg';
-        avatars[m.id] = `data:${mimeMap[ext] ?? 'image/jpeg'};base64,${b64}`;
+        // Detect actual format from base64 magic bytes — files saved pre-fix are all
+        // named .jpg even if they contain PNG/GIF/WEBP bytes, so extension is unreliable.
+        let mime = 'image/jpeg';
+        if (b64.startsWith('iVBOR')) mime = 'image/png';
+        else if (b64.startsWith('R0lGO')) mime = 'image/gif';
+        else if (b64.startsWith('UklGR')) mime = 'image/webp';
+        avatars[m.id] = `data:${mime};base64,${b64}`;
       } catch {
         // File missing or unreadable — omit rather than export a dead path
       }
