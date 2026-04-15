@@ -211,7 +211,8 @@
     "chatData": "Chat-kanaler og Meldinger",
     "customMoodsLabel": "Egendefinerte Humør",
     "themePalettes": "Temapaletter",
-    "appSettings": "Appinnstillinger"
+    "appSettings": "Appinnstillinger",
+    "customizeExport": "Tilpass Eksport"
   },
   "hub": {
     "title": "Hub",
@@ -341,7 +342,9 @@
     "de": "Deutsch",
     "pt": "Português",
     "fi": "Suomi",
-    "nb": "Norsk"
+    "nb": "Norsk",
+    "zh": "中文",
+    "ja": "日本語"
   },
   "memberGroups": {
     "title": "Grupper",

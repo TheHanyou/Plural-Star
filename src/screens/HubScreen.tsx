@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Linking} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {Fonts} from '../theme';
@@ -11,7 +11,7 @@ const Avatar = ({member, size = 26, T}: {member?: Member | null; size?: number; 
   </View>
 );
 
-type HubTile = 'share' | 'retroHistory' | 'statistics' | 'chat' | 'discord';
+type HubTile = 'share' | 'retroHistory' | 'statistics' | 'chat' | 'customFields' | 'polls' | 'discord';
 
 interface Props {
   theme: any;
@@ -23,6 +23,9 @@ interface Props {
   renderShareScreen: () => React.ReactNode;
   renderStatsScreen: () => React.ReactNode;
   renderChatScreen: () => React.ReactNode;
+  renderCustomFieldsScreen: () => React.ReactNode;
+  renderPollsScreen: () => React.ReactNode;
+  resetKey?: number;
 }
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -340,10 +343,12 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
 
 const DISCORD_URL = 'https://discord.gg/FFQw33cu8m';
 
-export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onSetFront, renderShareScreen, renderStatsScreen, renderChatScreen}: Props) => {
+export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onSetFront, renderShareScreen, renderStatsScreen, renderChatScreen, renderCustomFieldsScreen, renderPollsScreen, resetKey}: Props) => {
   const {t} = useTranslation();
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const [activeTile, setActiveTile] = useState<HubTile | null>(null);
+
+  useEffect(() => { setActiveTile(null); }, [resetKey]);
 
   if (activeTile === 'share') {
     return (
@@ -391,11 +396,41 @@ export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onS
     );
   }
 
+  if (activeTile === 'customFields') {
+    return (
+      <View style={{flex: 1, backgroundColor: T.bg}}>
+        <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8}}>
+          <TouchableOpacity onPress={() => setActiveTile(null)} activeOpacity={0.7} style={{padding: 4, marginRight: 12}}>
+            <Text style={{fontSize: fs(18), color: T.dim}}>←</Text>
+          </TouchableOpacity>
+          <Text style={{fontFamily: Fonts.display, fontSize: fs(22), fontWeight: '600', fontStyle: 'italic', color: T.text}}>{t('customFields.title')}</Text>
+        </View>
+        {renderCustomFieldsScreen()}
+      </View>
+    );
+  }
+
+  if (activeTile === 'polls') {
+    return (
+      <View style={{flex: 1, backgroundColor: T.bg}}>
+        <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8}}>
+          <TouchableOpacity onPress={() => setActiveTile(null)} activeOpacity={0.7} style={{padding: 4, marginRight: 12}}>
+            <Text style={{fontSize: fs(18), color: T.dim}}>←</Text>
+          </TouchableOpacity>
+          <Text style={{fontFamily: Fonts.display, fontSize: fs(22), fontWeight: '600', fontStyle: 'italic', color: T.text}}>{t('polls.title')}</Text>
+        </View>
+        {renderPollsScreen()}
+      </View>
+    );
+  }
+
   const tiles: {id: HubTile; icon: string; label: string; external?: boolean}[] = [
     {id: 'share', icon: '⇅', label: t('hub.importExport')},
     {id: 'retroHistory', icon: '◷', label: t('hub.retroHistory')},
     {id: 'statistics', icon: '⊞', label: t('hub.statistics')},
     {id: 'chat', icon: '⌨', label: t('hub.systemChat')},
+    {id: 'customFields', icon: '☰', label: t('customFields.title')},
+    {id: 'polls', icon: '📊', label: t('polls.title')},
     {id: 'discord', icon: '💬', label: t('hub.discord'), external: true},
   ];
 

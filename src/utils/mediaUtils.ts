@@ -22,7 +22,7 @@ export const saveAvatar = async (memberId: string, base64: string): Promise<stri
   else if (raw.startsWith('UklGR')) ext = 'webp';
   const path = `${AVATAR_DIR}/${memberId}.${ext}`;
   await RNFS.writeFile(path, raw, 'base64');
-  return `file://${path}`;
+  return `file://${path}?t=${Date.now()}`;
 };
 
 export const saveAvatarFromUrl = async (memberId: string, url: string): Promise<string | undefined> => {
@@ -33,7 +33,7 @@ export const saveAvatarFromUrl = async (memberId: string, url: string): Promise<
     const ext = ['png', 'gif', 'webp'].includes(urlExt) ? urlExt : 'jpg';
     const path = `${AVATAR_DIR}/${memberId}.${ext}`;
     const result = await RNFS.downloadFile({fromUrl: url, toFile: path}).promise;
-    if (result.statusCode === 200) return `file://${path}`;
+    if (result.statusCode === 200) return `file://${path}?t=${Date.now()}`;
     return undefined;
   } catch { return undefined; }
 };
@@ -54,7 +54,7 @@ export const saveChatMedia = async (messageId: string, base64: string, ext: stri
   const safeExt = ext.replace(/[^a-zA-Z0-9]/g, '') || 'bin';
   const path = `${CHAT_MEDIA_DIR}/${messageId}.${safeExt}`;
   await RNFS.writeFile(path, raw, 'base64');
-  return `file://${path}`;
+  return `file://${path}?t=${Date.now()}`;
 };
 
 export const saveChatFileFromUri = async (messageId: string, sourceUri: string, ext: string = 'bin'): Promise<string> => {
@@ -62,7 +62,7 @@ export const saveChatFileFromUri = async (messageId: string, sourceUri: string, 
   const safeExt = ext.replace(/[^a-zA-Z0-9]/g, '') || 'bin';
   const path = `${CHAT_MEDIA_DIR}/${messageId}.${safeExt}`;
   await RNFS.copyFile(sourceUri.replace('file://', ''), path);
-  return `file://${path}`;
+  return `file://${path}?t=${Date.now()}`;
 };
 
 export const deleteChatMedia = async (messageId: string, ext: string = 'jpg'): Promise<void> => {
@@ -84,7 +84,7 @@ export const saveBioImage = async (
   const safeExt = ext.replace(/[^a-zA-Z0-9]/g, '') || 'bin';
   const path = `${BIO_IMAGE_DIR}/${imageId}.${safeExt}`;
   await RNFS.writeFile(path, raw, 'base64');
-  return `file://${path}`;
+  return `file://${path}?t=${Date.now()}`;
 };
 
 export const migrateInlineImagesInDescriptions = async (

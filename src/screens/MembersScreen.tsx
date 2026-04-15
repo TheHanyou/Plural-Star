@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Image, Alert} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {Fonts, PALETTE} from '../theme';
-import {Member, MemberGroup, FrontState, FrontTierKey, getInitials, allFrontMemberIds, uid, isValidHex, normalizeHex} from '../utils';
+import {Member, MemberGroup, FrontState, FrontTierKey, MemberSortMode, getInitials, allFrontMemberIds, uid, isValidHex, normalizeHex, sortMembers} from '../utils';
 import {RichText} from '../components/MarkdownRenderer';
 
 const Avatar = ({member, size = 40, pulse = false, T}: {member?: Member | null; size?: number; pulse?: boolean; T: any}) => {
@@ -47,6 +47,7 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [showManageGroups, setShowManageGroups] = useState(false);
+  const [sortMode, setSortMode] = useState<MemberSortMode>('alphabetical');
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupColor, setNewGroupColor] = useState(PALETTE[0]);
   const [editGroupId, setEditGroupId] = useState<string | null>(null);
@@ -57,12 +58,12 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
   const allTags = [...new Set(tabMembers.flatMap(m => m.tags || []))].sort();
   const archivedCount = members.filter(m => m.archived).length;
 
-  const filtered = tabMembers.filter(m => {
+  const filtered = sortMembers(tabMembers.filter(m => {
     const nameMatch = !query || m.name.toLowerCase().includes(query.toLowerCase()) || m.role?.toLowerCase().includes(query.toLowerCase());
     const groupMatch = !activeGroup || (m.groupIds || []).includes(activeGroup);
     const tagMatch = !activeTag || (m.tags || []).includes(activeTag);
     return nameMatch && groupMatch && tagMatch;
-  });
+  }), sortMode);
 
   const addGroup = () => {
     const name = newGroupName.trim();
@@ -110,6 +111,22 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* Sort Mode */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom: 10, flexGrow: 0}}>
+        <View style={{flexDirection: 'row', gap: 6, paddingHorizontal: 2}}>
+          {(['alphabetical', 'reverse-alphabetical', 'age', 'color', 'role', 'manual'] as const).map(mode => (
+            <TouchableOpacity key={mode} onPress={() => setSortMode(mode)} activeOpacity={0.7}
+              style={{paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1,
+                backgroundColor: sortMode === mode ? `${T.accent}20` : T.surface,
+                borderColor: sortMode === mode ? `${T.accent}50` : T.border}}>
+              <Text style={{fontSize: fs(11), color: sortMode === mode ? T.accent : T.dim, fontWeight: sortMode === mode ? '600' : '400'}}>
+                {t(`memberSort.${mode}`)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
 
       {/* Manage Groups Section */}
       {showManageGroups && (

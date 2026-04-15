@@ -211,7 +211,8 @@
     "chatData": "Chat-Kanäle & Nachrichten",
     "customMoodsLabel": "Eigene Stimmungen",
     "themePalettes": "Farbpaletten",
-    "appSettings": "App-Einstellungen"
+    "appSettings": "App-Einstellungen",
+    "customizeExport": "Export Anpassen"
   },
   "modal": {
     "updateFront": "Front Aktualisieren",
@@ -322,7 +323,9 @@
     "de": "Deutsch",
     "pt": "Português",
     "fi": "Suomi",
-    "nb": "Norsk"
+    "nb": "Norsk",
+    "zh": "中文",
+    "ja": "日本語"
   },
   "memberGroups": {
     "title": "Gruppen",

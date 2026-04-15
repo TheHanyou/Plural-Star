@@ -94,7 +94,12 @@
     "now": "now",
     "mood": "mood",
     "at": "at",
-    "noHistoryFilter": "No history matches your filters."
+    "noHistoryFilter": "No history matches your filters.",
+    "deleteEntry": "Delete Entry",
+    "deleteEntryMsg": "This will permanently remove this history entry.",
+    "deleteConfirm1": "Are you sure you want to delete this entry?",
+    "deleteConfirm2": "This action cannot be undone. Really delete?",
+    "deleteConfirm3": "Final confirmation: permanently delete this entry?"
   },
   "journal": {
     "title": "Journal",
@@ -211,7 +216,8 @@
     "spFileImport": "Simply Plural File Import",
     "spFileHint": "Import from a Simply Plural data export file.",
     "pickSPFile": "Pick SP Export File",
-    "notValidSPExport": "This file doesn't appear to be a valid Simply Plural export."
+    "notValidSPExport": "This file doesn't appear to be a valid Simply Plural export.",
+    "customizeExport": "Customize Export"
   },
   "hub": {
     "title": "Hub",
@@ -340,7 +346,12 @@
     "coFront": "Co-Front: {{names}}",
     "coConscious": "Co-Conscious: {{names}}",
     "cfShort": "CF: {{names}}",
-    "ccShort": "CC: {{names}}"
+    "ccShort": "CC: {{names}}",
+    "frontCheck": "Front Check",
+    "frontCheckDesc": "Remind me to check who is fronting.",
+    "frontCheckInterval": "Check Interval",
+    "everyNHours": "Every {{count}} hours",
+    "whosFronting": "Who's fronting right now?"
   },
   "language": {
     "en": "English",
@@ -349,7 +360,9 @@
     "de": "Deutsch",
     "pt": "Português",
     "fi": "Suomi",
-    "nb": "Norsk"
+    "nb": "Norsk",
+    "zh": "中文",
+    "ja": "日本語"
   },
   "memberGroups": {
     "title": "Groups",
@@ -371,7 +384,14 @@
     "topCoCon": "Top Co-Conscious",
     "topChatters": "Top Chatters",
     "topMoods": "Top Moods",
-    "topLocations": "Top Locations"
+    "topLocations": "Top Locations",
+    "avgEnergy": "Avg Energy",
+    "peakHours": "Peak Hours",
+    "customRange": "Custom Range",
+    "from": "From",
+    "to": "To",
+    "memberLeaderboard": "When {{name}} Fronts",
+    "topCoMembers": "Top Co-Members"
   },
   "chat": {
     "channels": "Channels",
@@ -395,5 +415,94 @@
     "noMessages": "No messages yet.",
     "typeMessage": "Type a message…",
     "imageFailed": "Image Failed"
+  },
+  "customFields": {
+    "title": "Custom Fields",
+    "addField": "+ Add Field",
+    "fieldName": "Field Name",
+    "fieldType": "Type",
+    "typeText": "Text",
+    "typeMarkdown": "Rich Text",
+    "typeDate": "Date",
+    "typeDateRange": "Date Range",
+    "typeNumber": "Number",
+    "typeToggle": "Toggle",
+    "noFields": "No custom fields defined yet.",
+    "manageFields": "Manage Fields",
+    "deleteField": "Delete Field",
+    "deleteFieldMsg": "This will remove this field from all members.",
+    "startDate": "Start",
+    "endDate": "End",
+    "typeColor": "Color",
+    "typeMonth": "Month",
+    "typeYear": "Year",
+    "typeMonthYear": "Month + Year",
+    "typeTimestamp": "Timestamp",
+    "typeMonthDay": "Month + Day",
+    "editFieldsInfo": "Edit fields info",
+    "noFieldsInfo": "No fields info was filled out for this member",
+    "confirmChanges": "Confirm changes",
+    "reorder": "Reorder"
+  },
+  "noteboard": {
+    "title": "Noteboard",
+    "addNote": "+ Add Note",
+    "noNotes": "No notes yet. Leave a note for this headmate.",
+    "pinned": "Pinned",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "deleteNote": "Delete Note",
+    "deleteNoteMsg": "Remove this note?",
+    "placeholder": "Write a note...",
+    "by": "by {{name}}"
+  },
+  "polls": {
+    "title": "Polls",
+    "createPoll": "+ Create Poll",
+    "question": "Question",
+    "questionPlaceholder": "What do you want to ask?",
+    "addOption": "+ Add Option",
+    "optionPlaceholder": "Option...",
+    "hideVoters": "Hide Voter Names",
+    "vote": "Vote",
+    "votes": "{{count}} votes",
+    "closePoll": "Close Poll",
+    "reopenPoll": "Reopen Poll",
+    "deletePoll": "Delete Poll",
+    "deletePollMsg": "This will permanently remove this poll.",
+    "noPolls": "No polls yet.",
+    "closed": "Closed",
+    "votedBy": "Voted by: {{names}}"
+  },
+  "energy": {
+    "label": "Energy",
+    "level": "Energy Level",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "avgEnergy": "Avg Energy"
+  },
+  "systemProfile": {
+    "title": "System Profile",
+    "avatar": "System Avatar",
+    "banner": "System Banner",
+    "changeAvatar": "Change Avatar",
+    "changeBanner": "Change Banner",
+    "removeAvatar": "Remove Avatar",
+    "removeBanner": "Remove Banner"
+  },
+  "memberSort": {
+    "label": "Sort Members",
+    "alphabetical": "A → Z",
+    "reverse-alphabetical": "Z → A",
+    "age": "Oldest First",
+    "color": "By Color",
+    "role": "By Role",
+    "manual": "Manual Order"
+  },
+  "memberProfile": {
+    "banner": "Banner",
+    "changeBanner": "Change Banner",
+    "removeBanner": "Remove Banner"
   }
 }

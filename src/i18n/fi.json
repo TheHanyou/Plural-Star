@@ -211,7 +211,8 @@
     "chatData": "Chat-kanavat ja Viestit",
     "customMoodsLabel": "Omat Mielialat",
     "themePalettes": "Teemapaletit",
-    "appSettings": "Sovellusasetukset"
+    "appSettings": "Sovellusasetukset",
+    "customizeExport": "Mukauta Vienti"
   },
   "hub": {
     "title": "Hub",
@@ -341,7 +342,9 @@
     "de": "Deutsch",
     "pt": "Português",
     "fi": "Suomi",
-    "nb": "Norsk"
+    "nb": "Norsk",
+    "zh": "中文",
+    "ja": "日本語"
   },
   "memberGroups": {
     "title": "Ryhmät",

@@ -14,6 +14,9 @@ export const KEYS = {
   groups:   'ps:groups',
   palettes: 'ps:palettes',
   chatChannels: 'ps:chatChannels',
+  customFieldDefs: 'ps:customFieldDefs',
+  noteboards: 'ps:noteboards',
+  polls:    'ps:polls',
 };
 
 const CRITICAL_KEYS = new Set([

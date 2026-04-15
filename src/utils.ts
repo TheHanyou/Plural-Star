@@ -5,6 +5,8 @@ export interface SystemInfo {
   name: string;
   description: string;
   journalPassword?: string;
+  avatar?: string;
+  banner?: string;
 }
 
 export interface MemberGroup {
@@ -12,6 +14,59 @@ export interface MemberGroup {
   name: string;
   color?: string;
 }
+
+// ── Custom Fields ──────────────────────────────────────────────────────────
+
+export type CustomFieldType = 'text' | 'markdown' | 'date' | 'dateRange' | 'number' | 'toggle' | 'color' | 'month' | 'year' | 'monthYear' | 'timestamp' | 'monthDay';
+
+export interface CustomFieldDef {
+  id: string;
+  name: string;
+  type: CustomFieldType;
+  sortOrder?: number;
+  markdown?: boolean;
+}
+
+export interface CustomFieldValue {
+  fieldId: string;
+  value: string | number | boolean | null;
+}
+
+// ── Noteboard ─────────────────────────────────────────────────────────────
+
+export interface NoteboardEntry {
+  id: string;
+  memberId: string;
+  authorId: string;
+  content: string;
+  timestamp: number;
+  pinned?: boolean;
+}
+
+// ── Polls ──────────────────────────────────────────────────────────────────
+
+export interface PollOption {
+  id: string;
+  label: string;
+  votes: string[];
+}
+
+export interface MemberPoll {
+  id: string;
+  targetMemberId: string;
+  question: string;
+  options: PollOption[];
+  createdBy: string;
+  createdAt: number;
+  closedAt?: number;
+  hideVoterNames?: boolean;
+}
+
+// ── Member Sorting ────────────────────────────────────────────────────────
+
+export type MemberSortMode = 'alphabetical' | 'reverse-alphabetical' | 'age' | 'color' | 'role' | 'manual';
+
+// ── Member ────────────────────────────────────────────────────────────────
 
 export interface Member {
   id: string;
@@ -24,6 +79,10 @@ export interface Member {
   groupIds?: string[];
   archived?: boolean;
   avatar?: string;
+  banner?: string;
+  customFields?: CustomFieldValue[];
+  sortOrder?: number;
+  createdAt?: number;
 }
 
 export type HistoryChangeType = 'front' | 'mood' | 'location' | 'note';
@@ -34,6 +93,7 @@ export interface FrontTier {
   mood?: string;
   note: string;
   location?: string;
+  energyLevel?: number;
 }
 
 export interface FrontState {
@@ -50,12 +110,15 @@ export interface HistoryEntry {
   note: string;
   mood?: string;
   location?: string;
+  energyLevel?: number;
   coFrontIds?: string[];
   coFrontMood?: string;
   coFrontNote?: string;
+  coFrontEnergy?: number;
   coConsciousIds?: string[];
   coConsciousMood?: string;
   coConsciousNote?: string;
+  coConsciousEnergy?: number;
   changeType?: HistoryChangeType;
   changeTime?: number;
   changeTier?: FrontTierKey;
@@ -89,6 +152,8 @@ export interface AppSettings {
   notificationsEnabled: boolean;
   activePaletteId: string;
   textScale: TextScale;
+  memberSortMode?: MemberSortMode;
+  frontCheckInterval?: number;
 }
 
 export interface ExportPayload {
@@ -105,6 +170,9 @@ export interface ExportPayload {
   palettes?: any[];
   avatars?: Record<string, string>;
   customMoods?: string[];
+  customFieldDefs?: CustomFieldDef[];
+  noteboards?: NoteboardEntry[];
+  polls?: MemberPoll[];
 }
 
 export type ChatMessageType = 'text' | 'image' | 'file' | 'reply' | 'reaction';
@@ -195,12 +263,15 @@ export const frontToHistoryEntry = (f: FrontState, endTime: number | null, chang
   note: f.primary.note,
   mood: f.primary.mood,
   location: f.primary.location,
+  energyLevel: f.primary.energyLevel,
   coFrontIds: f.coFront.memberIds.length > 0 ? f.coFront.memberIds : undefined,
   coFrontMood: f.coFront.mood,
   coFrontNote: f.coFront.note || undefined,
+  coFrontEnergy: f.coFront.energyLevel,
   coConsciousIds: f.coConscious.memberIds.length > 0 ? f.coConscious.memberIds : undefined,
   coConsciousMood: f.coConscious.mood,
   coConsciousNote: f.coConscious.note || undefined,
+  coConsciousEnergy: f.coConscious.energyLevel,
   changeType,
   changeTime: changeType !== 'front' ? Date.now() : undefined,
   changeTier,
@@ -211,7 +282,7 @@ export const uid = (): string =>
 
 const getLocale = (): string => {
   const lang = i18n.language || 'en';
-  const localeMap: Record<string, string> = {en: 'en-US', es: 'es-ES', fr: 'fr-FR', de: 'de-DE', pt: 'pt-BR', fi: 'fi-FI', nb: 'nb-NO'};
+  const localeMap: Record<string, string> = {en: 'en-US', es: 'es-ES', fr: 'fr-FR', de: 'de-DE', pt: 'pt-BR', fi: 'fi-FI', nb: 'nb-NO', zh: 'zh-CN', ja: 'ja-JP'};
   return localeMap[lang] || 'en-US';
 };
 
@@ -243,6 +314,19 @@ export const isValidHex = (hex: string): boolean =>
 
 export const normalizeHex = (input: string): string =>
   (input.startsWith('#') ? input : `#${input}`).toUpperCase();
+
+export const sortMembers = (members: Member[], mode: MemberSortMode = 'alphabetical'): Member[] => {
+  const sorted = [...members];
+  switch (mode) {
+    case 'alphabetical': return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    case 'reverse-alphabetical': return sorted.sort((a, b) => b.name.localeCompare(a.name));
+    case 'age': return sorted.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    case 'color': return sorted.sort((a, b) => a.color.localeCompare(b.color));
+    case 'role': return sorted.sort((a, b) => (a.role || '').localeCompare(b.role || ''));
+    case 'manual': return sorted.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
+    default: return sorted;
+  }
+};
 
 export const TIER_LABELS: Record<FrontTierKey, string> = {
   primary: 'Primary Front',

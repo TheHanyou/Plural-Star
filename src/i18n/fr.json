@@ -211,7 +211,8 @@
     "chatData": "Canaux et Messages de Chat",
     "customMoodsLabel": "Humeurs Personnalisées",
     "themePalettes": "Palettes de Thèmes",
-    "appSettings": "Paramètres de l'App"
+    "appSettings": "Paramètres de l'App",
+    "customizeExport": "Personnaliser l'Export"
   },
   "modal": {
     "updateFront": "Mettre à Jour le Front",
@@ -322,7 +323,9 @@
     "de": "Deutsch",
     "pt": "Português",
     "fi": "Suomi",
-    "nb": "Norsk"
+    "nb": "Norsk",
+    "zh": "中文",
+    "ja": "日本語"
   },
   "memberGroups": {
     "title": "Groupes",

@@ -3,7 +3,7 @@ import {View, Text, ScrollView, TouchableOpacity, TextInput, Alert, StyleSheet, 
 import {useTranslation} from 'react-i18next';
 import {safePick, isPickerCancel, getPickedFilePath} from '../utils/safePicker';
 import RNFS from 'react-native-fs';
-import {exportJSON, exportHTML, exportEmail, exportAllJournalJSON, exportAllJournalTxt, exportAllJournalMd} from '../export/exportUtils';
+import {exportJSON, exportHTML, exportEmail, exportAllJournalJSON, exportAllJournalTxt, exportAllJournalMd, ExportCategories} from '../export/exportUtils';
 import {store, KEYS, chatMsgKey} from '../storage';
 import {SystemInfo, Member, FrontState, HistoryEntry, JournalEntry, ShareSettings, AppSettings, ExportPayload, uid, allFrontMemberIds, findOpenFrontInHistory} from '../utils';
 
@@ -26,7 +26,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const [restoreFile, setRestoreFile] = useState<string | null>(null);
   const [restorePath, setRestorePath] = useState<string | null>(null);
   const [restorePreview, setRestorePreview] = useState<boolean>(false);
-  const [restoreSel, setRestoreSel] = useState({system: true, members: true, avatars: true, journal: true, frontHistory: true, groups: true, chat: true, moods: true, palettes: true, settings: true});
+  const [restoreSel, setRestoreSel] = useState({system: true, members: true, avatars: true, journal: true, frontHistory: true, groups: true, chat: true, moods: true, palettes: true, settings: true, customFields: true, noteboards: true, polls: true});
   const [restoreError, setRestoreError] = useState('');
   const [restoreDone, setRestoreDone] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -36,7 +36,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const [extToken, setExtToken] = useState('');
   const [extLoading, setExtLoading] = useState(false);
   const [extPreview, setExtPreview] = useState<{members: any[]; switches: any[]; system: any} | null>(null);
-  const [extSel, setExtSel] = useState({system: true, members: true, frontHistory: true});
+  const [extSel, setExtSel] = useState({system: true, members: true, avatars: true, frontHistory: true});
 
   const primaryFronters = (front?.primary?.memberIds || []).map(getMember).filter(Boolean) as Member[];
   const coFronters = (front?.coFront?.memberIds || []).map(getMember).filter(Boolean) as Member[];
@@ -46,7 +46,15 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const togR = (k: keyof typeof restoreSel) => setRestoreSel(s => ({...s, [k]: !s[k]}));
   const togE = (k: keyof typeof extSel) => setExtSel(s => ({...s, [k]: !s[k]}));
 
-  const handleJSON = async () => {try {await exportJSON(system, members, history, journal);} catch (e) {Alert.alert(t('share.exportFailed'), String(e));}};
+  const [exportSel, setExportSel] = useState<ExportCategories>({
+    system: true, members: true, avatars: true, frontHistory: true, journal: true,
+    groups: true, chat: true, moods: true, palettes: true, settings: true,
+    customFields: true, noteboards: true, polls: true,
+  });
+  const togExp = (k: keyof ExportCategories) => setExportSel(s => ({...s, [k]: !s[k]}));
+  const [showExportOptions, setShowExportOptions] = useState(false);
+
+  const handleJSON = async () => {try {await exportJSON(system, members, history, journal, showExportOptions ? exportSel : undefined);} catch (e) {Alert.alert(t('share.exportFailed'), String(e));}};
   const handleHTML = async () => {try {await exportHTML(system, members, history, journal);} catch (e) {Alert.alert(t('share.exportFailed'), String(e));}};
   const handleEmail = () => {
     if (!emailAddr.trim() || !emailAddr.includes('@')) {Alert.alert(t('share.invalidEmail'), t('share.invalidEmailMsg')); return;}
@@ -155,7 +163,6 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           if (restoreSel.journal && data.journal) await store.set(KEYS.journal, data.journal);
           if (restoreSel.frontHistory && data.frontHistory) {
             await store.set(KEYS.history, data.frontHistory);
-            await store.set(KEYS.front, findOpenFrontInHistory(data.frontHistory));
           }
           if (restoreSel.groups && data.groups) await store.set(KEYS.groups, data.groups);
           if (restoreSel.chat) {
@@ -179,7 +186,10 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
             await store.set(KEYS.settings, newSettings);
           }
           if (restoreSel.palettes && data.palettes) await store.set(KEYS.palettes, data.palettes);
-          if (data.front !== undefined && restoreSel.frontHistory) await store.set(KEYS.front, data.front);
+          if (restoreSel.frontHistory && data.front !== undefined) await store.set(KEYS.front, data.front);
+          if (restoreSel.customFields && data.customFieldDefs) await store.set(KEYS.customFieldDefs, data.customFieldDefs);
+          if (restoreSel.noteboards && data.noteboards) await store.set(KEYS.noteboards, data.noteboards);
+          if (restoreSel.polls && data.polls) await store.set(KEYS.polls, data.polls);
           setRestoreDone(true); setTimeout(() => onDataImported(), 800);
         } catch (e: any) {
           setRestoreError(e.message || 'Restore failed');
@@ -310,13 +320,15 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           // already existed locally — their new uid() gets discarded but stays in avatarUrls,
           // so findIndex never matches and the avatar is silently dropped.
           const avatarUrls: Record<string, string> = {};
-          extPreview.members.forEach((m: any) => {
-            const avatarUrl = isPK ? (m.avatar_url || '') : (m.content?.avatarUrl || m.avatarUrl || '');
-            if (!avatarUrl) return;
-            const name = isPK ? (m.display_name || m.name || '') : (m.content?.name || m.name || '');
-            const match = merged.find(lm => lm.name.toLowerCase() === name.toLowerCase());
-            if (match) avatarUrls[match.id] = avatarUrl;
-          });
+          if (extSel.avatars) {
+            extPreview.members.forEach((m: any) => {
+              const avatarUrl = isPK ? (m.avatar_url || '') : (m.content?.avatarUrl || m.avatarUrl || '');
+              if (!avatarUrl) return;
+              const name = isPK ? (m.display_name || m.name || '') : (m.content?.name || m.name || '');
+              const match = merged.find(lm => lm.name.toLowerCase() === name.toLowerCase());
+              if (match) avatarUrls[match.id] = avatarUrl;
+            });
+          }
           const avatarEntries = Object.entries(avatarUrls);
           if (avatarEntries.length > 0) {
             const withAvatars = [...merged];
@@ -409,12 +421,14 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           const merged = [...members, ...newM.filter(nm => !members.find(em => em.name.toLowerCase() === nm.name.toLowerCase()))];
           await store.set(KEYS.members, merged);
           const avatarUrls: Record<string, string> = {};
-          spMembers.forEach((m: any, i: number) => {
-            const avatarUrl = m.avatarUrl || '';
-            if (!avatarUrl) return;
-            const match = merged.find(lm => lm.name.toLowerCase() === (newM[i]?.name || '').toLowerCase());
-            if (match) avatarUrls[match.id] = avatarUrl;
-          });
+          if (extSel.avatars) {
+            spMembers.forEach((m: any, i: number) => {
+              const avatarUrl = m.avatarUrl || '';
+              if (!avatarUrl) return;
+              const match = merged.find(lm => lm.name.toLowerCase() === (newM[i]?.name || '').toLowerCase());
+              if (match) avatarUrls[match.id] = avatarUrl;
+            });
+          }
           const avatarEntries = Object.entries(avatarUrls);
           if (avatarEntries.length > 0) {
             const withAvatars = [...merged];
@@ -525,6 +539,35 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
         <View>
           <Divider label={t('share.fullSystemExport')} />
           <Text style={[s.para, {color: T.dim}]}>{t('share.downloadsDirectly')}</Text>
+
+          {/* Export Category Toggle */}
+          <TouchableOpacity onPress={() => setShowExportOptions(!showExportOptions)} activeOpacity={0.7}
+            style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, marginBottom: 8}}>
+            <Text style={{fontSize: 12, color: T.accent, fontWeight: '500'}}>{showExportOptions ? '▾' : '▸'} {t('share.customizeExport')}</Text>
+          </TouchableOpacity>
+
+          {showExportOptions && (
+            <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 12}}>
+              {([
+                ['system', t('share.systemNameDesc')],
+                ['members', t('share.memberProfiles')],
+                ['avatars', t('share.profilePictures')],
+                ['frontHistory', t('share.frontHistory')],
+                ['journal', t('share.journalEntries')],
+                ['groups', t('share.memberGroups')],
+                ['chat', t('share.chatData')],
+                ['moods', t('share.customMoodsLabel')],
+                ['palettes', t('share.themePalettes')],
+                ['settings', t('share.appSettings')],
+                ['customFields', t('customFields.title')],
+                ['noteboards', t('noteboard.title')],
+                ['polls', t('polls.title')],
+              ] as [keyof ExportCategories, string][]).map(([k, label]) => (
+                <SectionRow key={k} label={label} value={!!exportSel[k]} onToggle={() => togExp(k)} />
+              ))}
+            </View>
+          )}
+
           <View style={{flexDirection: 'row', gap: 8, marginBottom: 6}}>
             {[['↓ JSON', handleJSON, T.accentBg, T.accent, `${T.accent}40`], ['↓ HTML', handleHTML, T.infoBg, T.info, `${T.info}40`]].map(([label, fn, bg, color, border]: any) => (
               <TouchableOpacity key={label} onPress={fn} activeOpacity={0.7} style={{flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8, borderWidth: 1, backgroundColor: bg, borderColor: border}}>
@@ -603,9 +646,11 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                       ['moods', t('share.customMoodsLabel')],
                       ['palettes', t('share.themePalettes')],
                       ['settings', t('share.appSettings')],
+                      ['customFields', t('customFields.title')],
+                      ['noteboards', t('noteboard.title')],
+                      ['polls', t('polls.title')],
                     ] as any[]).map(([k, label]) => (
                       <SectionRow key={k} label={label} value={restoreSel[k as keyof typeof restoreSel]} onToggle={() => togR(k)} />
-                    ))}
                     ))}
                   </View>
                   {restoreDone ? <View style={{backgroundColor: T.successBg, borderWidth: 1, borderColor: `${T.success}30`, borderRadius: 8, padding: 12, alignItems: 'center'}}><Text style={{fontSize: 13, color: T.success, fontWeight: '500'}}>{t('share.restoreComplete')}</Text></View>
@@ -641,6 +686,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
                     <SectionRow label={t('share.systemNameDesc')} value={extSel.system} onToggle={() => togE('system')} />
                     <SectionRow label={t('share.memberProfiles')} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
+                    <SectionRow label={t('share.profilePictures')} value={extSel.avatars} onToggle={() => togE('avatars')} />
                     <SectionRow label={t('share.frontHistory')} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
                   </View>
                   <TouchableOpacity onPress={handleExtImport} activeOpacity={0.7} style={{alignItems: 'center', paddingVertical: 11, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`, marginBottom: 10}}>
@@ -668,6 +714,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
                     <SectionRow label={t('share.systemNameDesc')} value={extSel.system} onToggle={() => togE('system')} />
                     <SectionRow label={t('share.memberProfiles')} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
+                    <SectionRow label={t('share.profilePictures')} value={extSel.avatars} onToggle={() => togE('avatars')} />
                     <SectionRow label={t('share.frontHistory')} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
                   </View>
                   <TouchableOpacity onPress={handleSPFileConfirmImport} activeOpacity={0.7} style={{alignItems: 'center', paddingVertical: 11, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`, marginBottom: 10}}>

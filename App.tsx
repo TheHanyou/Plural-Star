@@ -25,6 +25,8 @@ import {ShareScreen} from './src/screens/ShareScreen';
 import {HubScreen} from './src/screens/HubScreen';
 import {StatsScreen} from './src/screens/StatsScreen';
 import {ChatScreen} from './src/screens/ChatScreen';
+import {CustomFieldsScreen} from './src/screens/CustomFieldsScreen';
+import {PollsScreen} from './src/screens/PollsScreen';
 import {SetFrontModal, EditFrontDetailModal, MemberModal, JournalModal, SystemModal} from './src/modals';
 
 type Tab = 'front' | 'members' | 'hub' | 'journal' | 'history';
@@ -72,6 +74,7 @@ function MainAppContent() {
   const [loaded, setLoaded] = useState(false);
   const [firstRun, setFirstRun] = useState(false);
   const [tab, setTab] = useState<Tab>('front');
+  const [hubResetKey, setHubResetKey] = useState(0);
   const [system, setSystem] = useState<SystemInfo>({name: '', description: ''});
   const [members, setMembers] = useState<Member[]>([]);
   const [front, setFront] = useState<FrontState | null>(null);
@@ -325,6 +328,31 @@ function MainAppContent() {
     await store.set(KEYS.front, nf);
     await saveHistory(newHistory);
 
+    if (nf) {
+      const allFrontIds = [...nf.primary.memberIds, ...nf.coFront.memberIds, ...nf.coConscious.memberIds];
+      if (allFrontIds.length > 0) {
+        try {
+          const notes = await store.get<any[]>(KEYS.noteboards) || [];
+          if (notes && notes.length > 0) {
+            const memberNotes: Record<string, number> = {};
+            for (const n of notes) {
+              if (allFrontIds.includes(n.memberId)) {
+                memberNotes[n.memberId] = (memberNotes[n.memberId] || 0) + 1;
+              }
+            }
+            const withNotes = Object.entries(memberNotes);
+            if (withNotes.length > 0) {
+              const names = withNotes.map(([id, count]) => {
+                const m = members.find(mm => mm.id === id);
+                return `${m?.name || '?'} (${count})`;
+              }).join(', ');
+              Alert.alert(t('noteboard.title'), `${names}`);
+            }
+          }
+        } catch {}
+      }
+    }
+
     if (nf && appSettings.gpsEnabled && !primary.location?.trim()) {
       try {
         const gpsLocation = await getGPSLocation();
@@ -430,6 +458,14 @@ function MainAppContent() {
     <ChatScreen theme={C} members={members} channels={chatChannels} onSaveChannels={saveChatChannels} />
   );
 
+  const renderCustomFieldsScreen = () => (
+    <CustomFieldsScreen theme={C} onUpdate={loadAll} />
+  );
+
+  const renderPollsScreen = () => (
+    <PollsScreen theme={C} members={members} />
+  );
+
   const renderScreen = () => {
     switch (tab) {
       case 'front':
@@ -437,11 +473,11 @@ function MainAppContent() {
       case 'members':
         return <MembersScreen theme={C} members={members} front={front} groups={groups} onAdd={() => {setEditMember(null); setShowMember(true);}} onEdit={m => {setEditMember(m); setShowMember(true);}} onSaveGroups={saveGroups} />;
       case 'hub':
-        return <HubScreen theme={C} members={members} history={history} front={front} onSaveHistory={saveHistory} onSetFront={handleHubSetFront} renderShareScreen={renderShareScreen} renderStatsScreen={renderStatsScreen} renderChatScreen={renderChatScreen} />;
+        return <HubScreen theme={C} members={members} history={history} front={front} onSaveHistory={saveHistory} onSetFront={handleHubSetFront} renderShareScreen={renderShareScreen} renderStatsScreen={renderStatsScreen} renderChatScreen={renderChatScreen} renderCustomFieldsScreen={renderCustomFieldsScreen} renderPollsScreen={renderPollsScreen} resetKey={hubResetKey} />;
       case 'journal':
         return <JournalScreen theme={C} journal={journal} members={members} systemJournalPassword={system.journalPassword} onAdd={() => {setEditJournal(null); setShowJournal(true);}} onEdit={e => {setEditJournal(e); setShowJournal(true);}} onDelete={deleteEntry} />;
       case 'history':
-        return <HistoryScreen theme={C} history={history} journal={journal} getMember={getMember} members={members} />;
+        return <HistoryScreen theme={C} history={history} journal={journal} getMember={getMember} members={members} onSaveHistory={saveHistory} />;
     }
   };
 
@@ -461,7 +497,7 @@ function MainAppContent() {
       <View style={styles.content}>{renderScreen()}</View>
       <View style={[styles.tabBar, {backgroundColor: C.surface, borderTopColor: C.border}]}>
         {TAB_IDS.map(id => (
-          <TouchableOpacity key={id} onPress={() => setTab(id)} activeOpacity={0.7} style={[styles.tabBtn, {paddingBottom: 8 + (insets.bottom || 0)}]}>
+          <TouchableOpacity key={id} onPress={() => { if (id === 'hub' && tab === 'hub') setHubResetKey(k => k + 1); setTab(id); }} activeOpacity={0.7} style={[styles.tabBtn, {paddingBottom: 8 + (insets.bottom || 0)}]}>
             <AccentText T={C} style={[styles.tabIcon, {color: tab === id ? C.accent : C.dim}]}>{TAB_ICONS[id]}</AccentText>
             <AccentText T={C} style={[styles.tabLabel, {color: tab === id ? C.accent : C.dim}]}>{t(`tabs.${id}`)}</AccentText>
           </TouchableOpacity>
@@ -478,7 +514,7 @@ function MainAppContent() {
           onSave={async (mood: string, location: string, note: string) => {await updateFrontDetails(editTier, mood, location, note); setShowEditFrontDetail(false);}}
           onClose={() => setShowEditFrontDetail(false)} />
       )}
-      <MemberModal visible={showMember} theme={C} member={editMember} groups={groups}
+      <MemberModal visible={showMember} theme={C} member={editMember} members={members} groups={groups}
         onSave={async (m: Member) => {await saveMember(m); setShowMember(false);}}
         onDelete={async (id: string) => {await deleteMember(id); setShowMember(false);}}
         onClose={() => setShowMember(false)} />

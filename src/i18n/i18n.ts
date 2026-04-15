@@ -9,8 +9,10 @@ import de from './de.json';
 import pt from './pt.json';
 import fi from './fi.json';
 import nb from './nb.json';
+import zh from './zh.json';
+import ja from './ja.json';
 
-export const SUPPORTED_LANGUAGES = ['en', 'es', 'fr', 'de', 'pt', 'fi', 'nb'] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'es', 'fr', 'de', 'pt', 'fi', 'nb', 'zh', 'ja'] as const;
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number];
 
 const getDeviceLanguage = (): SupportedLanguage => {
@@ -28,7 +30,7 @@ const getDeviceLanguage = (): SupportedLanguage => {
 i18n
   .use(initReactI18next)
   .init({
-    resources: {en: {translation: en}, es: {translation: es}, fr: {translation: fr}, de: {translation: de}, pt: {translation: pt}, fi: {translation: fi}, nb: {translation: nb}},
+    resources: {en: {translation: en}, es: {translation: es}, fr: {translation: fr}, de: {translation: de}, pt: {translation: pt}, fi: {translation: fi}, nb: {translation: nb}, zh: {translation: zh}, ja: {translation: ja}},
     lng: getDeviceLanguage(),
     fallbackLng: 'en',
     interpolation: {escapeValue: false},

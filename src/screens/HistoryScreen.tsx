@@ -1,10 +1,11 @@
 // src/screens/HistoryScreen.tsx
 import React, {useState} from 'react';
-import {View, Text, ScrollView, TouchableOpacity, TextInput, Image, StyleSheet} from 'react-native';
+import {View, Text, ScrollView, TouchableOpacity, TextInput, Image, StyleSheet, Alert} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {Fonts} from '../theme';
 import {AccentText} from '../components/AccentText';
 import {HistoryEntry, JournalEntry, Member, FrontTierKey, fmtTime, fmtDate, fmtDur, getInitials, TIER_LABELS} from '../utils';
+import {store, KEYS} from '../storage';
 
 const Avatar = ({member, size = 26, T}: {member?: Member | null; size?: number; T: any}) => {
   if (member?.avatar) {
@@ -32,9 +33,10 @@ interface Props {
   journal: JournalEntry[];
   getMember: (id: string) => Member | undefined;
   members: Member[];
+  onSaveHistory: (h: HistoryEntry[]) => void;
 }
 
-export const HistoryScreen = ({theme: T, history, journal, getMember, members}: Props) => {
+export const HistoryScreen = ({theme: T, history, journal, getMember, members, onSaveHistory}: Props) => {
   const {t} = useTranslation();
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const [subTab, setSubTab] = useState<SubTab>('front');
@@ -42,6 +44,27 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
     members.length > 0 ? members[0].id : null,
   );
   const [memberSearch, setMemberSearch] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+
+  const startDelete = (entryIndex: number) => {
+    Alert.alert(t('history.deleteEntry'), t('history.deleteConfirm1'), [
+      {text: t('common.cancel'), style: 'cancel'},
+      {text: t('common.confirm'), style: 'destructive', onPress: () => {
+        Alert.alert(t('history.deleteEntry'), t('history.deleteConfirm2'), [
+          {text: t('common.cancel'), style: 'cancel'},
+          {text: t('common.confirm'), style: 'destructive', onPress: () => {
+            Alert.alert(t('history.deleteEntry'), t('history.deleteConfirm3'), [
+              {text: t('common.cancel'), style: 'cancel'},
+              {text: t('common.delete'), style: 'destructive', onPress: () => {
+                const updated = history.filter((_, i) => i !== entryIndex);
+                onSaveHistory(updated);
+              }},
+            ]);
+          }},
+        ]);
+      }},
+    ]);
+  };
 
   const selectedMember = members.find(m => m.id === selectedMemberId);
 
@@ -216,6 +239,10 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members}: 
                             <Text style={{fontSize: fs(12), color: T.dim, lineHeight: 18}}>{entry.note}</Text>
                           </View>
                         ) : null}
+                        <TouchableOpacity onPress={() => startDelete(history.indexOf(entry))} activeOpacity={0.7}
+                          style={{alignSelf: 'flex-end', paddingVertical: 2, paddingHorizontal: 6, marginTop: 4}}>
+                          <Text style={{fontSize: fs(10), color: T.danger, opacity: 0.6}}>{t('history.deleteEntry')}</Text>
+                        </TouchableOpacity>
                       </View>
                     </View>
                   );

@@ -20,77 +20,100 @@ import {store, KEYS, chatMsgKey} from '../storage';
 
 // ── Payload builders ──────────────────────────────────────────────────────────
 
+export interface ExportCategories {
+  system?: boolean;
+  members?: boolean;
+  avatars?: boolean;
+  frontHistory?: boolean;
+  journal?: boolean;
+  groups?: boolean;
+  chat?: boolean;
+  moods?: boolean;
+  palettes?: boolean;
+  settings?: boolean;
+  customFields?: boolean;
+  noteboards?: boolean;
+  polls?: boolean;
+}
+
+const ALL_CATEGORIES: ExportCategories = {
+  system: true, members: true, avatars: true, frontHistory: true, journal: true,
+  groups: true, chat: true, moods: true, palettes: true, settings: true,
+  customFields: true, noteboards: true, polls: true,
+};
+
 export const buildExportPayload = async (
   system: SystemInfo,
   members: Member[],
   history: HistoryEntry[],
   journal: JournalEntry[],
+  categories: ExportCategories = ALL_CATEGORIES,
 ): Promise<ExportPayload> => {
+  const cat = { ...ALL_CATEGORIES, ...categories };
   // Load supplementary data from storage
-  const [groups, channels, settings, front, palettes] = await Promise.all([
+  const [groups, channels, settings, front, palettes, customFieldDefs, noteboards, polls] = await Promise.all([
     store.get<MemberGroup[]>(KEYS.groups),
     store.get<ChatChannel[]>(KEYS.chatChannels),
     store.get<AppSettings>(KEYS.settings),
     store.get<FrontState>(KEYS.front),
     store.get<any[]>(KEYS.palettes),
+    store.get<any[]>(KEYS.customFieldDefs),
+    store.get<any[]>(KEYS.noteboards),
+    store.get<any[]>(KEYS.polls),
   ]);
 
-  // Gather chat messages per channel
+  // Gather chat messages per channel (only if chat category selected)
   const chatMessages: Record<string, ChatMessage[]> = {};
-  if (channels && channels.length > 0) {
+  if (cat.chat && channels && channels.length > 0) {
     for (const ch of channels) {
       const msgs = await store.get<ChatMessage[]>(chatMsgKey(ch.id));
       if (msgs && msgs.length > 0) chatMessages[ch.id] = msgs;
     }
   }
 
-  // Extract avatars into a self-contained dict.
-  // After migrateInlineAvatars runs, m.avatar is a local file:// path that only
-  // exists on this device. We read the actual bytes and embed them as data: URIs
-  // so the backup is portable across devices and platforms.
-  // Members are stripped of their avatar field — the avatars dict is authoritative.
+  // Extract avatars (only if avatars category selected)
   const avatars: Record<string, string> = {};
-  for (const m of members) {
-    if (!m.avatar) continue;
-    if (m.avatar.startsWith('data:')) {
-      avatars[m.id] = m.avatar;
-    } else {
-      try {
-        const filePath = m.avatar.replace(/^file:\/\//, '');
-        const b64 = await RNFS.readFile(filePath, 'base64');
-        // Detect actual format from base64 magic bytes — files saved pre-fix are all
-        // named .jpg even if they contain PNG/GIF/WEBP bytes, so extension is unreliable.
-        let mime = 'image/jpeg';
-        if (b64.startsWith('iVBOR')) mime = 'image/png';
-        else if (b64.startsWith('R0lGO')) mime = 'image/gif';
-        else if (b64.startsWith('UklGR')) mime = 'image/webp';
-        avatars[m.id] = `data:${mime};base64,${b64}`;
-      } catch {
-        // File missing or unreadable — omit rather than export a dead path
+  if (cat.avatars) {
+    for (const m of members) {
+      if (!m.avatar) continue;
+      if (m.avatar.startsWith('data:')) {
+        avatars[m.id] = m.avatar;
+      } else {
+        try {
+          const filePath = m.avatar.replace(/\?.*$/, '').replace(/^file:\/\//, '');
+          const b64 = await RNFS.readFile(filePath, 'base64');
+          let mime = 'image/jpeg';
+          if (b64.startsWith('iVBOR')) mime = 'image/png';
+          else if (b64.startsWith('R0lGO')) mime = 'image/gif';
+          else if (b64.startsWith('UklGR')) mime = 'image/webp';
+          avatars[m.id] = `data:${mime};base64,${b64}`;
+        } catch {}
       }
     }
   }
-  // Strip avatar from member objects so stale local paths never appear in exports
   const membersForExport = members.map(({avatar: _a, ...rest}) => rest as Member);
 
   return {
     _meta: {
-      version: '1.1',
+      version: '1.2',
       app: 'Plural Space',
       exportedAt: new Date().toISOString(),
     },
-    system,
-    members: membersForExport,
-    frontHistory: history,
-    journal,
-    groups: groups || [],
-    chatChannels: channels || [],
-    chatMessages,
-    settings: settings || undefined,
-    front: front || undefined,
-    palettes: palettes || [],
-    avatars,
-    customMoods: settings?.customMoods || [],
+    system: cat.system ? system : undefined as any,
+    members: cat.members ? membersForExport : [],
+    frontHistory: cat.frontHistory ? history : [],
+    journal: cat.journal ? journal : [],
+    groups: cat.groups ? (groups || []) : [],
+    chatChannels: cat.chat ? (channels || []) : [],
+    chatMessages: cat.chat ? chatMessages : {},
+    settings: cat.settings ? (settings || undefined) : undefined,
+    front: cat.frontHistory ? (front || undefined) : undefined,
+    palettes: cat.palettes ? (palettes || []) : [],
+    avatars: cat.avatars ? avatars : {},
+    customMoods: cat.moods ? (settings?.customMoods || []) : [],
+    customFieldDefs: cat.customFields ? (customFieldDefs || []) : [],
+    noteboards: cat.noteboards ? (noteboards || []) : [],
+    polls: cat.polls ? (polls || []) : [],
   };
 };
 
@@ -235,8 +258,9 @@ export const exportJSON = async (
   members: Member[],
   history: HistoryEntry[],
   journal: JournalEntry[],
+  categories?: ExportCategories,
 ): Promise<void> => {
-  const payload = await buildExportPayload(system, members, history, journal);
+  const payload = await buildExportPayload(system, members, history, journal, categories);
   const slug = system.name.replace(/\s+/g, '-').toLowerCase();
   await saveToDownloads(
     JSON.stringify(payload, null, 2),
