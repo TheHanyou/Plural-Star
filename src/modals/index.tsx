@@ -26,8 +26,6 @@ const HexField = ({label, value, onChange, T}: {label: string; value: string; on
   </View>
 );
 
-const getInitials = (name: string) => name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-
 const Btn = ({children, onPress, variant = 'primary', disabled = false, style = {}, T}: any) => {
   const variants: any = {primary: {bg: T.accentBg, color: T.accent, border: `${T.accent}40`}, ghost: {bg: 'transparent', color: T.dim, border: T.border}, danger: {bg: T.dangerBg, color: T.danger, border: `${T.danger}40`}, solid: {bg: T.accent, color: '#0a0508', border: T.accent}, info: {bg: T.infoBg, color: T.info, border: `${T.info}40`}};
   const v = variants[variant] || variants.primary;
@@ -731,14 +729,15 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
   const [notifEnabled, setNotifEnabled] = useState<boolean>(settings?.notificationsEnabled ?? true);
   const [frontCheckInterval, setFrontCheckInterval] = useState<number>(settings?.frontCheckInterval || 0);
   const [filesEnabled, setFilesEnabled] = useState<boolean>(settings?.filesEnabled ?? true);
-  const [showLangPicker, setShowLangPicker] = useState(false);
   const [textScale, setTextScale] = useState<TextScale>(settings?.textScale ?? 1.0);
+  const [showLangPicker, setShowLangPicker] = useState(false);
+  const [showFrontCheckPicker, setShowFrontCheckPicker] = useState(false);
   const [editPalette, setEditPalette] = useState<CustomPalette | null>(null);
   const [paletteName, setPaletteName] = useState('');
   const [palBg, setPalBg] = useState(''); const [palAccent, setPalAccent] = useState('');
   const [palText, setPalText] = useState(''); const [palMid, setPalMid] = useState('');
 
-  React.useEffect(() => { if (visible) { setF({...system}); setShowJournalPw(!!system.journalPassword); setLocs(settings?.locations || []); setMoods(settings?.customMoods || []); setNewLocation(''); setNewMood(''); setSelectedLang(settings?.language || 'en'); setNotifEnabled(settings?.notificationsEnabled ?? true); setFilesEnabled(settings?.filesEnabled ?? true); setTextScale(settings?.textScale ?? 1.0); setShowLangPicker(false); setEditPalette(null); setFrontCheckInterval(settings?.frontCheckInterval || 0); } }, [visible, system, settings]);
+  React.useEffect(() => { if (visible) { setF({...system}); setShowJournalPw(!!system.journalPassword); setLocs(settings?.locations || []); setMoods(settings?.customMoods || []); setNewLocation(''); setNewMood(''); setSelectedLang(settings?.language || 'en'); setNotifEnabled(settings?.notificationsEnabled ?? true); setFilesEnabled(settings?.filesEnabled ?? true); setTextScale(settings?.textScale ?? 1.0); setShowLangPicker(false); setShowFrontCheckPicker(false); setEditPalette(null); setFrontCheckInterval(settings?.frontCheckInterval || 0); } }, [visible, system, settings]);
 
   const addLoc = () => {if (newLocation.trim() && !locs.includes(newLocation.trim())) {setLocs([...locs, newLocation.trim()]); setNewLocation('');}};
   const addMood = () => {if (newMood.trim() && !moods.includes(newMood.trim())) {setMoods([...moods, newMood.trim()]); setNewMood('');}};
@@ -902,18 +901,24 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
         <View style={{marginTop: 12}}>
           <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 4}}>{t('notification.frontCheck')}</Text>
           <Text style={{fontSize: 11, color: T.muted, lineHeight: 15, marginBottom: 8}}>{t('notification.frontCheckDesc')}</Text>
-          <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 6}}>
+          <TouchableOpacity onPress={() => setShowFrontCheckPicker(!showFrontCheckPicker)} activeOpacity={0.7}
+            style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, borderWidth: 1, backgroundColor: T.surface, borderColor: showFrontCheckPicker ? `${T.accent}60` : T.border}}>
+            <Text style={{fontSize: 14, color: T.text}}>{frontCheckInterval === 0 ? t('common.close') : t('notification.everyNHours', {count: frontCheckInterval})}</Text>
+            <Text style={{fontSize: 12, color: T.dim}}>{showFrontCheckPicker ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
+          {showFrontCheckPicker && (
+            <View style={{backgroundColor: T.card, borderRadius: 8, borderWidth: 1, borderColor: T.border, marginTop: 4, overflow: 'hidden'}}>
               {[0, 1, 2, 3, 4, 6, 8, 12].map(hours => (
-                <TouchableOpacity key={hours} onPress={() => setFrontCheckInterval(hours)} activeOpacity={0.7}
-                  style={{paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1,
-                    backgroundColor: frontCheckInterval === hours ? `${T.accent}20` : T.surface,
-                    borderColor: frontCheckInterval === hours ? `${T.accent}50` : T.border}}>
-                  <Text style={{fontSize: 12, color: frontCheckInterval === hours ? T.accent : T.dim, fontWeight: frontCheckInterval === hours ? '600' : '400'}}>
+                <TouchableOpacity key={hours} onPress={() => {setFrontCheckInterval(hours); setShowFrontCheckPicker(false);}} activeOpacity={0.7}
+                  style={{paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: T.border,
+                    backgroundColor: frontCheckInterval === hours ? `${T.accent}15` : 'transparent'}}>
+                  <Text style={{fontSize: 14, color: frontCheckInterval === hours ? T.accent : T.text, fontWeight: frontCheckInterval === hours ? '600' : '400'}}>
                     {hours === 0 ? t('common.close') : t('notification.everyNHours', {count: hours})}
                   </Text>
                 </TouchableOpacity>
               ))}
-          </View>
+            </View>
+          )}
         </View>
       </View>
       <View style={{borderTopWidth: 1, borderTopColor: T.border, paddingTop: 14, marginTop: 14}}>
