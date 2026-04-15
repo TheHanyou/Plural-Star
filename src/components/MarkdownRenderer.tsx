@@ -1,7 +1,8 @@
 import React from 'react';
 import {View, Text, Image, Linking} from 'react-native';
 
-const IMAGE_URL_RE = /https?:\/\/\S+\.(?:gif|png|jpe?g|webp)(?:\?\S*)?/gi;
+const IMAGE_URL_RE = /https?:\/\/\S+\.(?:gif|png|pnj|jpe?g|webp|bmp|svg)(?:[?#]\S*)?/gi;
+const MD_IMAGE_RE = /!\[([^\]]*)\]\(([^)]+)\)/;
 
 const fs = (s: number, T: any): number => Math.round(s * (T?.textScale || 1));
 
@@ -113,6 +114,7 @@ const renderInline = (text: string, T: any): React.ReactNode => {
     [/\*(.+?)\*/, m => <Text key={key++} style={{fontStyle: 'italic'}}>{m[1]}</Text>],
     [/~~(.+?)~~/, m => <Text key={key++} style={{textDecorationLine: 'line-through'}}>{m[1]}</Text>],
     [/`(.+?)`/, m => <Text key={key++} style={{fontFamily: 'monospace', backgroundColor: T.surface, paddingHorizontal: 4, borderRadius: 3, fontSize: fs(12, T)}}>{m[1]}</Text>],
+    [/!\[([^\]]*)\]\(([^)]+)\)/, m => <Image key={key++} source={{uri: m[2].replace(/[)]+$/, '')}} style={{width: 200, height: 200, borderRadius: 8}} resizeMode="contain" />],
     [/\[(.+?)\]\((.+?)\)/, m => <Text key={key++} style={{color: T.info, textDecorationLine: 'underline'}} onPress={() => Linking.openURL(m[2])}>{m[1]}</Text>],
   ];
   while (remaining.length > 0) {
@@ -151,6 +153,16 @@ export const RichText = ({text, T, numberOfLines}: {text: string; T: any; number
   const displayLines = numberOfLines ? lines.slice(0, numberOfLines) : lines;
   const elements: React.ReactNode[] = [];
   displayLines.forEach((line, i) => {
+    const mdImgMatch = line.match(MD_IMAGE_RE);
+    if (mdImgMatch && mdImgMatch.index !== undefined) {
+      const before = line.slice(0, mdImgMatch.index).trim();
+      const after = line.slice(mdImgMatch.index + mdImgMatch[0].length).trim();
+      const url = mdImgMatch[2].replace(/[)]+$/, '').replace(/#\d+x\d+$/, '');
+      if (before) elements.push(renderMarkdownLine(before, T, i * 3));
+      elements.push(<Image key={i * 3 + 1} source={{uri: url}} style={{width: '100%', height: 200, borderRadius: 8}} resizeMode="contain" />);
+      if (after) elements.push(renderMarkdownLine(after, T, i * 3 + 2));
+      return;
+    }
     const imgMatch = line.match(IMAGE_URL_RE);
     if (imgMatch) {
       const before = line.slice(0, line.indexOf(imgMatch[0])).trim();

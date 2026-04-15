@@ -613,7 +613,7 @@ export const MemberModal = ({visible, theme: T, member, members, groups, onSave,
           {/* Write note */}
           <View style={{backgroundColor: T.surface, borderRadius: 10, borderWidth: 1, borderColor: T.border, padding: 12, marginTop: 8}}>
             <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8}}>
-              <Text style={{fontSize: fs(11), color: T.dim}}>Writing as:</Text>
+              <Text style={{fontSize: fs(11), color: T.dim}}>{t('noteboard.writingAs')}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{flexGrow: 0}}>
                 <View style={{flexDirection: 'row', gap: 4}}>
                   {activeMembers.map((m: Member) => (

@@ -209,7 +209,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
       <FrontLeaderboard />
       <Leaderboard title={t('stats.topCoFronters')} entries={stats.topCoFronters} renderValue={v => `${v}x`} />
       <Leaderboard title={t('stats.topCoCon')} entries={stats.topCoCon} renderValue={v => `${v}x`} />
-      <Leaderboard title={t('stats.topChatters')} entries={stats.topChatters} renderValue={v => `${v} msgs`} />
+      <Leaderboard title={t('stats.topChatters')} entries={stats.topChatters} renderValue={v => `${v} ${t('stats.msgsSuffix')}`} />
       <Leaderboard title={t('stats.topMoods')} entries={stats.topMoods} renderValue={v => `${v}x`} />
       <Leaderboard title={t('stats.topLocations')} entries={stats.topLocations} renderValue={v => `${v}x`} />
 
@@ -243,7 +243,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
               return (
                 <View key={h} style={{flex: 1, alignItems: 'center'}}>
                   <View style={{width: '100%', height: Math.max((count / max) * 45, 1), backgroundColor: count === max && count > 0 ? T.accent : `${T.dim}40`, borderRadius: 1}} />
-                  <Text style={{fontSize: 7, color: h % 6 === 0 ? T.muted : 'transparent', marginTop: 2}}>{h % 6 === 0 ? h : ''}</Text>
+                  {h % 6 === 0 && <Text style={{fontSize: 7, color: T.muted, marginTop: 2}}>{h}</Text>}
                 </View>
               );
             })}
@@ -292,8 +292,8 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
           return (
             <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, padding: 12}}>
               <View style={{flexDirection: 'row', gap: 16, marginBottom: 10}}>
-                <View><Text style={{fontSize: fs(18), fontWeight: '700', color: sm?.color || T.accent}}>{entries.length}</Text><Text style={{fontSize: fs(10), color: T.muted}}>sessions</Text></View>
-                {avgE !== null && <View><Text style={{fontSize: fs(18), fontWeight: '700', color: sm?.color || T.accent}}>{avgE}</Text><Text style={{fontSize: fs(10), color: T.muted}}>/10 energy</Text></View>}
+                <View><Text style={{fontSize: fs(18), fontWeight: '700', color: sm?.color || T.accent}}>{entries.length}</Text><Text style={{fontSize: fs(10), color: T.muted}}>{t('stats.sessionsSuffix')}</Text></View>
+                {avgE !== null && <View><Text style={{fontSize: fs(18), fontWeight: '700', color: sm?.color || T.accent}}>{avgE}</Text><Text style={{fontSize: fs(10), color: T.muted}}>{t('energy.outOf10')}</Text></View>}
               </View>
               {topCo.length > 0 && (
                 <View style={{marginBottom: 8}}>

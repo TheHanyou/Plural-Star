@@ -69,7 +69,7 @@ export const PollsScreen = ({theme: T, members}: Props) => {
     <View style={{flex: 1}}>
       {/* Voter selector + create */}
       <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 10}}>
-        <Text style={{fontSize: fs(11), color: T.dim}}>Voting as:</Text>
+        <Text style={{fontSize: fs(11), color: T.dim}}>{t('polls.votingAs')}</Text>
         <TouchableOpacity onPress={() => setVoterPickerOpen(!voterPickerOpen)} activeOpacity={0.7}
           style={{backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6}}>
           <Text style={{fontSize: fs(12), color: T.text}}>{getName(voterId)} ▾</Text>

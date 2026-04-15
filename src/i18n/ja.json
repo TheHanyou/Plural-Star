@@ -11,7 +11,8 @@
     "unknown": "不明",
     "untitled": "無題",
     "records": "{{count}} 件",
-    "notInExport": "エクスポートに含まれていません"
+    "notInExport": "エクスポートに含まれていません",
+    "ok": "OK"
   },
   "tabs": {
     "front": "フロント",
@@ -102,7 +103,11 @@
     "deleteEntryMsg": "この履歴エントリを完全に削除します。",
     "deleteConfirm1": "このエントリを削除してよろしいですか？",
     "deleteConfirm2": "この操作は取り消せません。本当に削除しますか？",
-    "deleteConfirm3": "最終確認：このエントリを完全に削除しますか？"
+    "deleteConfirm3": "最終確認：このエントリを完全に削除しますか？",
+    "searchPlaceholder": "履歴を検索...",
+    "allMembers": "全メンバー",
+    "entryCount": "{{count}} 件",
+    "entryCountOne": "1 件"
   },
   "journal": {
     "title": "ジャーナル",
@@ -235,7 +240,11 @@
     "clearAllData": "すべてのデータをクリア",
     "clearAllDataDesc": "このデバイスのすべてのPlural Spaceデータを完全に削除。",
     "clearAllConfirm": "本当によろしいですか？すべてのデータが完全に削除されます。",
-    "customizeExport": "エクスポートをカスタマイズ"
+    "customizeExport": "エクスポートをカスタマイズ",
+    "savedToDownloads": "ダウンロードに保存",
+    "savedToDownloadsMsg": "{{filename}} がダウンロードフォルダに保存されました。",
+    "exportReady": "エクスポート完了",
+    "exportReadyMsg": "{{filename}} が生成されましたが、共有シートを自動で開けませんでした。"
   },
   "hub": {
     "title": "ハブ",
@@ -416,7 +425,11 @@
     "from": "から",
     "to": "まで",
     "memberLeaderboard": "{{name}} がフロント時",
-    "topCoMembers": "トップ共同メンバー"
+    "topCoMembers": "トップ共同メンバー",
+    "energyPerTen": "/10 平均エネルギー",
+    "sessionCount": "セッション",
+    "msgsSuffix": "件",
+    "sessionsSuffix": "セッション"
   },
   "chat": {
     "channels": "チャンネル",
@@ -467,7 +480,10 @@
     "editFieldsInfo": "フィールド情報を編集",
     "noFieldsInfo": "このメンバーのフィールド情報はまだありません",
     "confirmChanges": "変更を確認",
-    "reorder": "並べ替え"
+    "reorder": "並べ替え",
+    "markdownSupport": "Markdownサポート",
+    "markdownLabel": "Markdown",
+    "fieldCount": "{{count}} 件定義済み"
   },
   "noteboard": {
     "title": "ノートボード",
@@ -479,7 +495,9 @@
     "deleteNote": "ノートを削除",
     "deleteNoteMsg": "このノートを削除しますか？",
     "placeholder": "ノートを書く…",
-    "by": "{{name}} より"
+    "by": "{{name}} より",
+    "writingAs": "書き手：",
+    "hasNotes": "{{names}} のノートボードにノートがあります"
   },
   "polls": {
     "title": "投票",
@@ -497,7 +515,11 @@
     "deletePollMsg": "この投票を完全に削除します。",
     "noPolls": "まだ投票がありません。",
     "closed": "終了",
-    "votedBy": "投票者：{{names}}"
+    "votedBy": "投票者：{{names}}",
+    "votingAs": "投票者：",
+    "forMember": "対象メンバー：",
+    "optionsLabel": "選択肢",
+    "activeCount": "{{count}} 件アクティブ"
   },
   "energy": {
     "label": "エネルギー",
@@ -505,7 +527,8 @@
     "low": "低",
     "medium": "中",
     "high": "高",
-    "avgEnergy": "平均エネルギー"
+    "avgEnergy": "平均エネルギー",
+    "outOf10": "/10 エネルギー"
   },
   "systemProfile": {
     "title": "システムプロフィール",
@@ -529,5 +552,11 @@
     "banner": "バナー",
     "changeBanner": "バナーを変更",
     "removeBanner": "バナーを削除"
+  },
+  "tiles": {
+    "activePolls": "{{count}} 件のアクティブな投票",
+    "activePollOne": "1 件のアクティブな投票",
+    "fieldCount": "{{count}} フィールド",
+    "fieldCountOne": "1 フィールド"
   }
 }

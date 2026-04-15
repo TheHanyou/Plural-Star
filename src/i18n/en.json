@@ -11,7 +11,8 @@
     "unknown": "Unknown",
     "untitled": "Untitled",
     "records": "{{count}} records",
-    "notInExport": "Not in export"
+    "notInExport": "Not in export",
+    "ok": "OK"
   },
   "tabs": {
     "front": "Front",
@@ -99,7 +100,11 @@
     "deleteEntryMsg": "This will permanently remove this history entry.",
     "deleteConfirm1": "Are you sure you want to delete this entry?",
     "deleteConfirm2": "This action cannot be undone. Really delete?",
-    "deleteConfirm3": "Final confirmation: permanently delete this entry?"
+    "deleteConfirm3": "Final confirmation: permanently delete this entry?",
+    "searchPlaceholder": "Search history...",
+    "allMembers": "All members",
+    "entryCount": "{{count}} entries",
+    "entryCountOne": "1 entry"
   },
   "journal": {
     "title": "Journal",
@@ -217,7 +222,11 @@
     "spFileHint": "Import from a Simply Plural data export file.",
     "pickSPFile": "Pick SP Export File",
     "notValidSPExport": "This file doesn't appear to be a valid Simply Plural export.",
-    "customizeExport": "Customize Export"
+    "customizeExport": "Customize Export",
+    "savedToDownloads": "Saved to Downloads",
+    "savedToDownloadsMsg": "{{filename}} has been saved to your Downloads folder.",
+    "exportReady": "Export Ready",
+    "exportReadyMsg": "{{filename}} was generated, but the share sheet could not be opened automatically."
   },
   "hub": {
     "title": "Hub",
@@ -391,7 +400,11 @@
     "from": "From",
     "to": "To",
     "memberLeaderboard": "When {{name}} Fronts",
-    "topCoMembers": "Top Co-Members"
+    "topCoMembers": "Top Co-Members",
+    "energyPerTen": "/10 avg energy",
+    "sessionCount": "sessions",
+    "msgsSuffix": "msgs",
+    "sessionsSuffix": "sessions"
   },
   "chat": {
     "channels": "Channels",
@@ -442,7 +455,10 @@
     "editFieldsInfo": "Edit fields info",
     "noFieldsInfo": "No fields info was filled out for this member",
     "confirmChanges": "Confirm changes",
-    "reorder": "Reorder"
+    "reorder": "Reorder",
+    "markdownSupport": "Markdown support",
+    "markdownLabel": "Markdown",
+    "fieldCount": "{{count}} defined"
   },
   "noteboard": {
     "title": "Noteboard",
@@ -454,7 +470,9 @@
     "deleteNote": "Delete Note",
     "deleteNoteMsg": "Remove this note?",
     "placeholder": "Write a note...",
-    "by": "by {{name}}"
+    "by": "by {{name}}",
+    "writingAs": "Writing as:",
+    "hasNotes": "{{names}} have notes on their noteboard"
   },
   "polls": {
     "title": "Polls",
@@ -472,7 +490,11 @@
     "deletePollMsg": "This will permanently remove this poll.",
     "noPolls": "No polls yet.",
     "closed": "Closed",
-    "votedBy": "Voted by: {{names}}"
+    "votedBy": "Voted by: {{names}}",
+    "votingAs": "Voting as:",
+    "forMember": "For member:",
+    "optionsLabel": "Options",
+    "activeCount": "{{count}} active"
   },
   "energy": {
     "label": "Energy",
@@ -480,7 +502,8 @@
     "low": "Low",
     "medium": "Medium",
     "high": "High",
-    "avgEnergy": "Avg Energy"
+    "avgEnergy": "Avg Energy",
+    "outOf10": "/10 energy"
   },
   "systemProfile": {
     "title": "System Profile",
@@ -504,5 +527,11 @@
     "banner": "Banner",
     "changeBanner": "Change Banner",
     "removeBanner": "Remove Banner"
+  },
+  "tiles": {
+    "activePolls": "{{count}} active polls",
+    "activePollOne": "1 active poll",
+    "fieldCount": "{{count}} fields",
+    "fieldCountOne": "1 field"
   }
 }

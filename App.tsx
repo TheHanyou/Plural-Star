@@ -5,7 +5,7 @@ import {useTranslation} from 'react-i18next';
 import notifee from '@notifee/react-native';
 
 import './src/i18n/i18n';
-import {changeLanguage} from './src/i18n/i18n';
+import i18n, {changeLanguage} from './src/i18n/i18n';
 import type {SupportedLanguage} from './src/i18n/i18n';
 
 import {T, TLight, BUILTIN_PALETTES, deriveTheme} from './src/theme';
@@ -44,7 +44,7 @@ const getGPSLocation = (): Promise<string | null> =>
       if (Platform.OS === 'android') {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-          {title: 'Location Permission', message: 'Plural Space wants to tag your approximate location when fronting.', buttonPositive: 'Allow', buttonNegative: 'Deny'},
+          {title: i18n.t('notification.locationPermTitle'), message: i18n.t('notification.locationPermMsg'), buttonPositive: i18n.t('notification.allow'), buttonNegative: i18n.t('notification.deny')},
         );
         if (granted !== PermissionsAndroid.RESULTS.GRANTED) {resolve(null); return;}
       }
@@ -208,7 +208,7 @@ function MainAppContent() {
     try {
       if (appSettings.gpsEnabled) {
         await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-          {title: 'Location', message: 'Allow Plural Space to tag your approximate location when fronting.', buttonPositive: 'Allow', buttonNegative: 'Not now'});
+          {title: t('notification.locationPermTitle'), message: t('notification.locationPermMsg'), buttonPositive: t('notification.allow'), buttonNegative: t('notification.notNow')});
       }
     } catch (e) { console.error('[PS] location permission error:', e); }
   };
@@ -217,7 +217,7 @@ function MainAppContent() {
     if (Platform.OS !== 'android') return;
     try {
       const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-        {title: 'Location', message: 'Allow Plural Space to tag your approximate location when fronting.', buttonPositive: 'Allow', buttonNegative: 'Not now'});
+        {title: t('notification.locationPermTitle'), message: t('notification.locationPermMsg'), buttonPositive: t('notification.allow'), buttonNegative: t('notification.notNow')});
       if (result !== PermissionsAndroid.RESULTS.GRANTED) {
         console.warn('[PS] GPS permission denied:', result);
       }

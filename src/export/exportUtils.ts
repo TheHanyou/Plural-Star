@@ -2,6 +2,7 @@
 import {Alert, Linking, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
+import i18n from '../i18n/i18n';
 import {
   SystemInfo,
   Member,
@@ -227,9 +228,9 @@ const saveToDownloads = async (content: string, filename: string): Promise<void>
   await RNFS.writeFile(path, content, 'utf8');
   if (isAndroid) {
     Alert.alert(
-      'Saved to Downloads',
-      `${filename} has been saved to your Downloads folder.`,
-      [{text: 'OK'}],
+      i18n.t('share.savedToDownloads'),
+      i18n.t('share.savedToDownloadsMsg', {filename}),
+      [{text: i18n.t('common.ok')}],
     );
     return;
   }
@@ -244,9 +245,9 @@ const saveToDownloads = async (content: string, filename: string): Promise<void>
     });
   } catch (e) {
     Alert.alert(
-      'Export Ready',
-      `${filename} was generated, but the iOS share sheet could not be opened automatically.`,
-      [{text: 'OK'}],
+      i18n.t('share.exportReady'),
+      i18n.t('share.exportReadyMsg', {filename}),
+      [{text: i18n.t('common.ok')}],
     );
   }
 };

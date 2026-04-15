@@ -11,7 +11,8 @@
     "unknown": "未知",
     "untitled": "无标题",
     "records": "{{count}} 条记录",
-    "notInExport": "不在导出中"
+    "notInExport": "不在导出中",
+    "ok": "好的"
   },
   "tabs": {
     "front": "前台",
@@ -102,7 +103,11 @@
     "deleteEntryMsg": "这将永久删除此历史条目。",
     "deleteConfirm1": "确定要删除此条目吗？",
     "deleteConfirm2": "此操作无法撤销。确定删除？",
-    "deleteConfirm3": "最终确认：永久删除此条目？"
+    "deleteConfirm3": "最终确认：永久删除此条目？",
+    "searchPlaceholder": "搜索历史...",
+    "allMembers": "所有成员",
+    "entryCount": "{{count}} 条记录",
+    "entryCountOne": "1 条记录"
   },
   "journal": {
     "title": "日记",
@@ -235,7 +240,11 @@
     "clearAllData": "清除所有数据",
     "clearAllDataDesc": "永久删除此设备上所有 Plural Space 数据。",
     "clearAllConfirm": "你绝对确定吗？所有数据将被永久删除。",
-    "customizeExport": "自定义导出"
+    "customizeExport": "自定义导出",
+    "savedToDownloads": "已保存到下载",
+    "savedToDownloadsMsg": "{{filename}} 已保存到下载文件夹。",
+    "exportReady": "导出完成",
+    "exportReadyMsg": "{{filename}} 已生成，但无法自动打开分享界面。"
   },
   "hub": {
     "title": "中心",
@@ -416,7 +425,11 @@
     "from": "从",
     "to": "到",
     "memberLeaderboard": "当 {{name}} 在前台时",
-    "topCoMembers": "最常共同成员"
+    "topCoMembers": "最常共同成员",
+    "energyPerTen": "/10 平均能量",
+    "sessionCount": "会话",
+    "msgsSuffix": "条消息",
+    "sessionsSuffix": "次会话"
   },
   "chat": {
     "channels": "频道",
@@ -467,7 +480,10 @@
     "editFieldsInfo": "编辑字段信息",
     "noFieldsInfo": "此成员没有填写字段信息",
     "confirmChanges": "确认更改",
-    "reorder": "重新排序"
+    "reorder": "重新排序",
+    "markdownSupport": "Markdown 支持",
+    "markdownLabel": "Markdown",
+    "fieldCount": "{{count}} 个已定义"
   },
   "noteboard": {
     "title": "留言板",
@@ -479,7 +495,9 @@
     "deleteNote": "删除留言",
     "deleteNoteMsg": "移除此留言？",
     "placeholder": "写一条留言…",
-    "by": "来自 {{name}}"
+    "by": "来自 {{name}}",
+    "writingAs": "以身份书写：",
+    "hasNotes": "{{names}} 的留言板上有留言"
   },
   "polls": {
     "title": "投票",
@@ -497,7 +515,11 @@
     "deletePollMsg": "这将永久移除此投票。",
     "noPolls": "还没有投票。",
     "closed": "已关闭",
-    "votedBy": "投票者：{{names}}"
+    "votedBy": "投票者：{{names}}",
+    "votingAs": "投票身份：",
+    "forMember": "目标成员：",
+    "optionsLabel": "选项",
+    "activeCount": "{{count}} 个活跃"
   },
   "energy": {
     "label": "能量",
@@ -505,7 +527,8 @@
     "low": "低",
     "medium": "中",
     "high": "高",
-    "avgEnergy": "平均能量"
+    "avgEnergy": "平均能量",
+    "outOf10": "/10 能量"
   },
   "systemProfile": {
     "title": "系统资料",
@@ -529,5 +552,11 @@
     "banner": "横幅",
     "changeBanner": "更改横幅",
     "removeBanner": "移除横幅"
+  },
+  "tiles": {
+    "activePolls": "{{count}} 个活跃投票",
+    "activePollOne": "1 个活跃投票",
+    "fieldCount": "{{count}} 个字段",
+    "fieldCountOne": "1 个字段"
   }
 }

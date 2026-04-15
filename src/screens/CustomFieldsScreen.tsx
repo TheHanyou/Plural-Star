@@ -70,7 +70,7 @@ export const CustomFieldsScreen = ({theme: T, onUpdate}: Props) => {
     save(fields.map(f => f.id === id ? {...f, markdown: !f.markdown} : f));
   };
 
-  const typeLabel = (type: CustomFieldType) => FIELD_TYPES.find(ft => ft.type === type)?.label || type;
+  const typeLabel = (type: CustomFieldType) => t(`customFields.type${type.charAt(0).toUpperCase() + type.slice(1)}` as any);
 
   return (
     <View style={{flex: 1}}>
@@ -116,7 +116,7 @@ export const CustomFieldsScreen = ({theme: T, onUpdate}: Props) => {
             {(fd.type === 'text' || fd.type === 'markdown') && (
               <TouchableOpacity onPress={() => toggleMarkdown(fd.id)} activeOpacity={0.7} style={{flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8}}>
                 <Text style={{fontSize: 16, color: fd.markdown ? T.accent : T.muted}}>{fd.markdown ? '☑' : '☐'}</Text>
-                <Text style={{fontSize: fs(12), color: T.dim}}>Markdown support</Text>
+                <Text style={{fontSize: fs(12), color: T.dim}}>{t('customFields.markdownSupport')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -146,7 +146,7 @@ export const CustomFieldsScreen = ({theme: T, onUpdate}: Props) => {
                 style={{flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: T.border,
                   backgroundColor: newType === ft.type ? `${T.accent}15` : 'transparent'}}>
                 <Text style={{fontSize: 16, width: 24, textAlign: 'center'}}>{ft.icon}</Text>
-                <Text style={{fontSize: fs(13), color: newType === ft.type ? T.accent : T.text, fontWeight: newType === ft.type ? '600' : '400'}}>{ft.label}</Text>
+                <Text style={{fontSize: fs(13), color: newType === ft.type ? T.accent : T.text, fontWeight: newType === ft.type ? '600' : '400'}}>{typeLabel(ft.type)}</Text>
               </TouchableOpacity>
             ))}
           </View>
