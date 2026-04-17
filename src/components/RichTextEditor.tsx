@@ -22,6 +22,7 @@ const MD_TOOLS: {label: string; before: string; after: string; bold?: boolean; i
   {label: 'H2', before: '## ', after: ''},
   {label: 'H3', before: '### ', after: ''},
   {label: '🔗', before: '[', after: '](url)'},
+  {label: '🖼', before: '<img src="', after: '" width="100" height="100">'},
   {label: '•', before: '- ', after: ''},
   {label: '1.', before: '1. ', after: ''},
   {label: '❝', before: '> ', after: ''},
@@ -48,7 +49,8 @@ const MarkdownEditor = ({initialContent, theme: T, onSave, onClose, title}: {ini
   const [isSaving, setIsSaving] = useState(false);
 
   const insertFormat = (before: string, after: string) => {
-    setText(prev => prev + before + (after ? 'text' : '') + after);
+    const placeholder = before.includes('<img') ? 'URL Here' : (after ? 'text' : '');
+    setText(prev => prev + before + placeholder + after);
   };
 
   const handleSave = () => {

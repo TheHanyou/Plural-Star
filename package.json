@@ -1,6 +1,6 @@
 {
   "name": "PluralSpace",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -13,6 +13,7 @@
     "@10play/tentap-editor": "^1.0.1",
     "@notifee/react-native": "^9.1.8",
     "@react-native-async-storage/async-storage": "^1.24.0",
+    "@react-native-community/image-editor": "^4.3.0",
     "@react-native-documents/picker": "^10.1.5",
     "@react-native/gradle-plugin": "^0.77.0",
     "i18next": "^25.10.4",

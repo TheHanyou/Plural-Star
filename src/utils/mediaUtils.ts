@@ -1,8 +1,13 @@
 import RNFS from 'react-native-fs';
+import {Image} from 'react-native';
+import ImageEditor from '@react-native-community/image-editor';
 
 const AVATAR_DIR = `${RNFS.DocumentDirectoryPath}/ps_avatars`;
 const CHAT_MEDIA_DIR = `${RNFS.DocumentDirectoryPath}/ps_chat_media`;
 const BIO_IMAGE_DIR = `${RNFS.DocumentDirectoryPath}/ps_bio_images`;
+
+export const BANNER_WIDTH = 900;
+export const BANNER_HEIGHT = 300;
 
 const ensureDir = async (dir: string) => {
   const exists = await RNFS.exists(dir);
@@ -85,6 +90,46 @@ export const saveBioImage = async (
   const path = `${BIO_IMAGE_DIR}/${imageId}.${safeExt}`;
   await RNFS.writeFile(path, raw, 'base64');
   return `file://${path}?t=${Date.now()}`;
+};
+
+const getImageSize = (uri: string): Promise<{width: number; height: number}> =>
+  new Promise((resolve, reject) => {
+    Image.getSize(uri, (width: number, height: number) => resolve({width, height}), reject);
+  });
+
+export const saveBannerImage = async (
+  imageId: string,
+  sourceUri: string
+): Promise<string> => {
+  await ensureDir(BIO_IMAGE_DIR);
+  const {width: srcW, height: srcH} = await getImageSize(sourceUri);
+  const targetAspect = BANNER_WIDTH / BANNER_HEIGHT;
+  const srcAspect = srcW / srcH;
+  let cropW: number, cropH: number, offsetX: number, offsetY: number;
+  if (srcAspect > targetAspect) {
+    cropH = srcH;
+    cropW = Math.round(srcH * targetAspect);
+    offsetX = Math.round((srcW - cropW) / 2);
+    offsetY = 0;
+  } else {
+    cropW = srcW;
+    cropH = Math.round(srcW / targetAspect);
+    offsetX = 0;
+    offsetY = Math.round((srcH - cropH) / 2);
+  }
+  const cropped = await ImageEditor.cropImage(sourceUri, {
+    offset: {x: offsetX, y: offsetY},
+    size: {width: cropW, height: cropH},
+    displaySize: {width: BANNER_WIDTH, height: BANNER_HEIGHT},
+    resizeMode: 'cover',
+    format: 'png',
+    quality: 0.9,
+  });
+  const destPath = `${BIO_IMAGE_DIR}/${imageId}.png`;
+  try { await RNFS.unlink(destPath); } catch {}
+  await RNFS.copyFile(cropped.uri.replace('file://', ''), destPath);
+  try { await RNFS.unlink(cropped.uri.replace('file://', '')); } catch {}
+  return `file://${destPath}?t=${Date.now()}`;
 };
 
 export const migrateInlineImagesInDescriptions = async (

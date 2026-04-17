@@ -5,7 +5,7 @@ import {safePick, isPickerCancel, getPickedFilePath} from '../utils/safePicker';
 import RNFS from 'react-native-fs';
 import {exportJSON, exportHTML, exportEmail, exportAllJournalJSON, exportAllJournalTxt, exportAllJournalMd, ExportCategories} from '../export/exportUtils';
 import {store, KEYS, chatMsgKey} from '../storage';
-import {SystemInfo, Member, FrontState, HistoryEntry, JournalEntry, ShareSettings, AppSettings, ExportPayload, uid, allFrontMemberIds, findOpenFrontInHistory} from '../utils';
+import {SystemInfo, Member, FrontState, HistoryEntry, JournalEntry, ShareSettings, AppSettings, ExportPayload, CustomFieldDef, CustomFieldType, CustomFieldValue, uid, allFrontMemberIds, findOpenFrontInHistory} from '../utils';
 
 type Section = 'export' | 'import' | 'shareview';
 type ImportSource = 'backup' | 'journal' | 'simplyplural' | 'pluralkit' | 'spfile';
@@ -35,8 +35,8 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const [importSource, setImportSource] = useState<ImportSource>('backup');
   const [extToken, setExtToken] = useState('');
   const [extLoading, setExtLoading] = useState(false);
-  const [extPreview, setExtPreview] = useState<{members: any[]; switches: any[]; system: any} | null>(null);
-  const [extSel, setExtSel] = useState({system: true, members: true, avatars: true, frontHistory: true});
+  const [extPreview, setExtPreview] = useState<{members: any[]; switches: any[]; system: any; customFields?: any[]} | null>(null);
+  const [extSel, setExtSel] = useState({system: true, members: true, avatars: true, frontHistory: true, customFields: true});
 
   const primaryFronters = (front?.primary?.memberIds || []).map(getMember).filter(Boolean) as Member[];
   const coFronters = (front?.coFront?.memberIds || []).map(getMember).filter(Boolean) as Member[];
@@ -209,21 +209,24 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
       if (!meRes.ok) throw new Error(t('share.authFailed', {status: meRes.status}));
       const meData = await meRes.json();
       const userId = meData.id || meData.uid;
-      const [mRes, sRes] = await Promise.all([
+      const [mRes, sRes, cfRes] = await Promise.all([
         fetch(`https://v2.apparyllis.com/v1/members/${userId}`, {headers}),
         fetch(`https://v2.apparyllis.com/v1/frontHistory/${userId}?startTime=0&endTime=${Date.now()}`, {headers}),
+        fetch(`https://v2.apparyllis.com/v1/customFields/${userId}`, {headers}),
       ]);
-      let mData: any = []; let sData: any = [];
+      let mData: any = []; let sData: any = []; let cfData: any = [];
       try { mData = await mRes.json(); } catch { mData = []; }
       try { sData = await sRes.json(); } catch { sData = []; }
+      try { cfData = await cfRes.json(); } catch { cfData = []; }
       const memberList = Array.isArray(mData) ? mData : (mData.members || []);
       const switchList = Array.isArray(sData) ? sData : (sData.switches || sData.frontHistory || []);
+      const customFieldList = Array.isArray(cfData) ? cfData : (cfData.customFields || []);
       const sanitized = memberList.map((m: any) => {
         if (m?.content?.name) m.content.name = String(m.content.name).replace(/[-\u001F\u007F]/g, '').trim();
         if (m?.name) m.name = String(m.name).replace(/[-\u001F\u007F]/g, '').trim();
         return m;
       });
-      setExtPreview({system: meData, members: sanitized, switches: switchList});
+      setExtPreview({system: meData, members: sanitized, switches: switchList, customFields: customFieldList});
     } catch (e: any) {Alert.alert(t('share.importFailed'), e.message || 'Could not connect.');}
     finally {setExtLoading(false);}
   };
@@ -357,6 +360,47 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           }
           const idMap: Record<string, string> = {};
           extPreview.members.forEach((m: any, i: number) => { const eid = isPK ? (m.uuid || m.id) : m.id; const lm = merged.find(l => l.name.toLowerCase() === newM[i]?.name.toLowerCase()); if (eid && lm) idMap[eid] = lm.id; if (isPK && m.id && lm) idMap[m.id] = lm.id; });
+          if (!isPK && extSel.customFields && extPreview.customFields && extPreview.customFields.length > 0) {
+            const SP_TYPE_MAP: Record<string, CustomFieldType> = {'0': 'text', '1': 'number', '2': 'toggle', '3': 'date', '4': 'monthYear', '5': 'month', '6': 'year', 'text': 'text', 'number': 'number', 'checkbox': 'toggle', 'toggle': 'toggle', 'date': 'date', 'markdown': 'markdown'};
+            const existingDefs = await store.get<CustomFieldDef[]>(KEYS.customFieldDefs, []) || [];
+            const fieldIdMap: Record<string, string> = {};
+            const newDefs: CustomFieldDef[] = [];
+            extPreview.customFields.forEach((cf: any, i: number) => {
+              const spId = cf.id || cf.uuid;
+              const spName = cf.content?.name || cf.name || `Field ${i + 1}`;
+              const spType = cf.content?.type ?? cf.type;
+              const existing = existingDefs.find(d => d.name.toLowerCase() === String(spName).toLowerCase());
+              if (existing) {
+                fieldIdMap[spId] = existing.id;
+              } else {
+                const newId = uid();
+                fieldIdMap[spId] = newId;
+                newDefs.push({id: newId, name: String(spName), type: SP_TYPE_MAP[String(spType)] || 'text', sortOrder: cf.content?.order ?? i});
+              }
+            });
+            if (newDefs.length > 0) {
+              await store.set(KEYS.customFieldDefs, [...existingDefs, ...newDefs]);
+            }
+            const currentMembers = await store.get<Member[]>(KEYS.members, []) || [];
+            const updatedMembers = currentMembers.map(lm => {
+              const spMember = extPreview.members.find((sm: any) => idMap[sm.id] === lm.id);
+              if (!spMember) return lm;
+              const info = spMember.content?.info;
+              if (!info || typeof info !== 'object') return lm;
+              const existingCF: CustomFieldValue[] = lm.customFields || [];
+              const newCF: CustomFieldValue[] = [...existingCF];
+              Object.entries(info).forEach(([spFieldId, value]) => {
+                const localFieldId = fieldIdMap[spFieldId];
+                if (!localFieldId) return;
+                const valStr = typeof value === 'object' ? JSON.stringify(value) : value;
+                const existingIdx = newCF.findIndex(cv => cv.fieldId === localFieldId);
+                if (existingIdx >= 0) newCF[existingIdx] = {fieldId: localFieldId, value: valStr as any};
+                else newCF.push({fieldId: localFieldId, value: valStr as any});
+              });
+              return {...lm, customFields: newCF};
+            });
+            await store.set(KEYS.members, updatedMembers);
+          }
           if (extSel.frontHistory && extPreview.switches.length > 0) {
             const newH = isPK ? convertPKSwitches(extPreview.switches, idMap) : convertSPSwitches(extPreview.switches, idMap);
             if (newH.length > 0) {
