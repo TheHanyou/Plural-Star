@@ -514,10 +514,10 @@ function MainAppContent() {
           onSave={async (mood: string, location: string, note: string) => {await updateFrontDetails(editTier, mood, location, note); setShowEditFrontDetail(false);}}
           onClose={() => setShowEditFrontDetail(false)} />
       )}
-      <MemberModal visible={showMember} theme={C} member={editMember} members={members} groups={groups}
-        onSave={async (m: Member) => {await saveMember(m); setShowMember(false);}}
-        onDelete={async (id: string) => {await deleteMember(id); setShowMember(false);}}
-        onClose={() => setShowMember(false)} />
+      <MemberModal key={editMember?.id || 'new-member'} visible={showMember} theme={C} member={editMember} members={members} groups={groups}
+        onSave={async (m: Member) => {await saveMember(m); setShowMember(false); setEditMember(null);}}
+        onDelete={async (id: string) => {await deleteMember(id); setShowMember(false); setEditMember(null);}}
+        onClose={() => {setShowMember(false); setEditMember(null);}} />
       <JournalModal visible={showJournal} theme={C} entry={editJournal} members={members}
         onSave={async (e: JournalEntry) => {await saveEntry(e); setShowJournal(false);}}
         onClose={() => setShowJournal(false)} />

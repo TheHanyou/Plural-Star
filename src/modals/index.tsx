@@ -13,7 +13,7 @@ import type {SupportedLanguage} from '../i18n/i18n';
 
 import {RichText as RichDescription} from '../components/MarkdownRenderer';
 import {RichTextEditor} from '../components/RichTextEditor';
-import {saveAvatar, deleteAvatar, saveBioImage} from '../utils/mediaUtils';
+import {saveAvatar, deleteAvatar, saveBioImage, saveBannerImage} from '../utils/mediaUtils';
 
 const HexField = ({label, value, onChange, T}: {label: string; value: string; onChange: (v: string) => void; T: any}) => (
   <View style={{flex: 1}}>
@@ -351,7 +351,7 @@ export const MemberModal = ({visible, theme: T, member, members, groups, onSave,
     store.get<NoteboardEntry[]>(KEYS.noteboards, []).then(n => setAllNotes(n || []));
   }, []);
 
-  React.useEffect(() => { if (visible) { const fresh = member || {id: uid(), name: '', pronouns: '', role: '', color: PALETTE[0], description: '', tags: [], groupIds: []}; setF({...fresh, tags: fresh.tags || [], groupIds: fresh.groupIds || []}); setHexInput(fresh.color); setHexError(false); setConfirmDel(false); setTagInput(''); setShowDescEditor(false); setMemberTab('main'); setNoteText(''); setNoteAuthorId((members || []).find((m: Member) => !m.archived)?.id || ''); store.get<NoteboardEntry[]>(KEYS.noteboards, []).then(n => setAllNotes(n || [])); } }, [visible, member]);
+  React.useEffect(() => { if (visible) { const fresh = member || {id: uid(), name: '', pronouns: '', role: '', color: PALETTE[0], description: '', tags: [], groupIds: []}; setF({...fresh, tags: fresh.tags || [], groupIds: fresh.groupIds || []}); setHexInput(fresh.color); setHexError(false); setConfirmDel(false); setTagInput(''); setShowDescEditor(false); setMemberTab('main'); setNoteText(''); setNoteAuthorId((members || []).find((m: Member) => !m.archived)?.id || ''); store.get<NoteboardEntry[]>(KEYS.noteboards, []).then(n => setAllNotes(n || [])); } }, [visible, member?.id]);
   const set = (k: keyof Member, v: any) => setF(x => ({...x, [k]: v}));
   const handleHexChange = (val: string) => { setHexInput(val); const n = normalizeHex(val); if (isValidHex(n)) {set('color', n); setHexError(false);} else setHexError(val.length > 1); };
 
@@ -454,13 +454,14 @@ export const MemberModal = ({visible, theme: T, member, members, groups, onSave,
         <TouchableOpacity onPress={async () => {
           try {
             const [res] = await safePick({type: ['image/*']});
-            const raw = await RNFS.readFile(getPickedFilePath(res), 'base64');
-            const uri = await saveBioImage(`banner-${f.id}`, raw, 'png');
+            const srcUri = getPickedFilePath(res);
+            const sourceFileUri = srcUri.startsWith('file://') ? srcUri : `file://${srcUri}`;
+            const uri = await saveBannerImage(`banner-${f.id}`, sourceFileUri);
             set('banner', uri);
           } catch (e: any) { if (!isPickerCancel(e)) Alert.alert(t('modal.pfpFailed')); }
         }} activeOpacity={0.7} style={{marginBottom: 10}}>
-          <View style={{height: 56, borderRadius: 8, borderWidth: 1, borderStyle: 'dashed', borderColor: T.border, overflow: 'hidden', backgroundColor: T.surface, alignItems: 'center', justifyContent: 'center'}}>
-            {f.banner ? <Image source={{uri: f.banner}} style={{width: '100%', height: 56, borderRadius: 8}} resizeMode="cover" /> : <Text style={{fontSize: 11, color: T.dim}}>{t('memberProfile.changeBanner')}</Text>}
+          <View style={{width: '100%', aspectRatio: 3, borderRadius: 8, borderWidth: 1, borderStyle: 'dashed', borderColor: T.border, overflow: 'hidden', backgroundColor: T.surface, alignItems: 'center', justifyContent: 'center'}}>
+            {f.banner ? <Image source={{uri: f.banner}} style={{width: '100%', height: '100%', borderRadius: 8}} resizeMode="cover" /> : <Text style={{fontSize: 11, color: T.dim}}>{t('memberProfile.changeBanner')}</Text>}
           </View>
         </TouchableOpacity>
         {f.banner && <TouchableOpacity onPress={() => set('banner', undefined)} activeOpacity={0.7} style={{marginBottom: 8}}><Text style={{fontSize: 10, color: T.danger}}>{t('memberProfile.removeBanner')}</Text></TouchableOpacity>}
@@ -796,13 +797,14 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
           <TouchableOpacity onPress={async () => {
             try {
               const [res] = await safePick({type: ['image/*']});
-              const raw = await RNFS.readFile(getPickedFilePath(res), 'base64');
-              const uri = await saveBioImage('system-banner', raw, 'png');
+              const srcUri = getPickedFilePath(res);
+              const sourceFileUri = srcUri.startsWith('file://') ? srcUri : `file://${srcUri}`;
+              const uri = await saveBannerImage('system-banner', sourceFileUri);
               setF((x: any) => ({...x, banner: uri}));
             } catch (e: any) { if (!isPickerCancel(e)) Alert.alert(t('modal.pfpFailed')); }
           }} activeOpacity={0.7}>
-            <View style={{height: 56, borderRadius: 8, borderWidth: 1, borderStyle: 'dashed', borderColor: T.border, overflow: 'hidden', backgroundColor: T.surface, alignItems: 'center', justifyContent: 'center'}}>
-              {f.banner ? <Image source={{uri: f.banner}} style={{width: '100%', height: 56, borderRadius: 8}} resizeMode="cover" /> : <Text style={{fontSize: 11, color: T.dim}}>{t('systemProfile.changeBanner')}</Text>}
+            <View style={{width: '100%', aspectRatio: 3, borderRadius: 8, borderWidth: 1, borderStyle: 'dashed', borderColor: T.border, overflow: 'hidden', backgroundColor: T.surface, alignItems: 'center', justifyContent: 'center'}}>
+              {f.banner ? <Image source={{uri: f.banner}} style={{width: '100%', height: '100%', borderRadius: 8}} resizeMode="cover" /> : <Text style={{fontSize: 11, color: T.dim}}>{t('systemProfile.changeBanner')}</Text>}
             </View>
           </TouchableOpacity>
           {f.banner && <TouchableOpacity onPress={() => setF((x: any) => ({...x, banner: undefined}))} activeOpacity={0.7}><Text style={{fontSize: 10, color: T.danger, marginTop: 4}}>{t('systemProfile.removeBanner')}</Text></TouchableOpacity>}
