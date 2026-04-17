@@ -96,7 +96,15 @@
     "mood": "ánimo",
     "at": "en",
     "noHistoryFilter": "Ningún historial coincide con tus filtros.",
-    "allMembers": "Todos los miembros"
+    "allMembers": "Todos los miembros",
+    "deleteConfirm1": "¿Estás seguro de eliminar esta entrada?",
+    "deleteConfirm2": "Esto no se puede deshacer. ¿Eliminar?",
+    "deleteConfirm3": "Confirmación final: ¿eliminar permanentemente?",
+    "deleteEntry": "Eliminar entrada",
+    "deleteEntryMsg": "Esto eliminará permanentemente esta entrada.",
+    "entryCount": "{{count}} entradas",
+    "entryCountOne": "1 entrada",
+    "searchPlaceholder": "Buscar historial..."
   },
   "journal": {
     "title": "Diario",
@@ -350,7 +358,9 @@
     "ccShort": "CC: {{names}}",
     "frontCheck": "Recordatorio de front",
     "frontCheckDesc": "Notificación periódica para verificar quién está al frente.",
-    "everyNHours": "Cada {{count}}h"
+    "everyNHours": "Cada {{count}}h",
+    "frontCheckInterval": "Intervalo",
+    "whosFronting": "¿Quién está al frente ahora?"
   },
   "language": {
     "en": "English",
@@ -388,7 +398,13 @@
     "sessionsSuffix": "sesiones",
     "peakHours": "Horas pico",
     "topCoMembers": "Compañeros más frecuentes",
-    "memberLeaderboard": "Detalles de {{name}}"
+    "memberLeaderboard": "Detalles de {{name}}",
+    "avgEnergy": "Energía media",
+    "customRange": "Rango personalizado",
+    "energyPerTen": "/10 energía media",
+    "from": "Desde",
+    "sessionCount": "sesiones",
+    "to": "Hasta"
   },
   "chat": {
     "channels": "Canales",
@@ -422,7 +438,10 @@
     "deleteNote": "Eliminar nota",
     "deleteNoteMsg": "¿Eliminar esta nota?",
     "writingAs": "Escribiendo como:",
-    "hasNotes": "{{names}} tiene notas en su pizarra"
+    "hasNotes": "{{names}} tiene notas en su pizarra",
+    "addNote": "+ Añadir nota",
+    "by": "por {{name}}",
+    "pinned": "Fijadas"
   },
   "customFields": {
     "title": "Campos personalizados",
@@ -446,7 +465,14 @@
     "typeMonthDay": "Mes + Día",
     "typeDateRange": "Rango de fechas",
     "typeNumber": "Número",
-    "typeToggle": "Interruptor"
+    "typeToggle": "Interruptor",
+    "addField": "+ Añadir campo",
+    "confirmChanges": "Confirmar cambios",
+    "editFieldsInfo": "Editar info de campos",
+    "endDate": "Fin",
+    "manageFields": "Gestionar campos",
+    "reorder": "Reordenar",
+    "startDate": "Inicio"
   },
   "polls": {
     "title": "Encuestas",
@@ -465,10 +491,59 @@
     "votingAs": "Votando como:",
     "forMember": "Para miembro:",
     "optionsLabel": "Opciones",
-    "activeCount": "{{count}} activas"
+    "activeCount": "{{count}} activas",
+    "question": "Pregunta",
+    "vote": "Votar",
+    "votedBy": "Votado por: {{names}}"
   },
   "energy": {
     "outOf10": "/10 energía",
-    "avgEnergy": "Energía promedio"
+    "avgEnergy": "Energía promedio",
+    "high": "Alta",
+    "label": "Energía",
+    "level": "Nivel de energía",
+    "low": "Baja",
+    "medium": "Media"
+  },
+  "memberProfile": {
+    "banner": "Banner",
+    "changeBanner": "Cambiar banner",
+    "removeBanner": "Quitar banner"
+  },
+  "memberSort": {
+    "age": "Más antiguos",
+    "alphabetical": "A → Z",
+    "color": "Por color",
+    "label": "Ordenar miembros",
+    "manual": "Orden manual",
+    "reverse-alphabetical": "Z → A",
+    "role": "Por rol"
+  },
+  "systemProfile": {
+    "avatar": "Avatar del sistema",
+    "banner": "Banner del sistema",
+    "changeAvatar": "Cambiar avatar",
+    "changeBanner": "Cambiar banner",
+    "removeAvatar": "Quitar avatar",
+    "removeBanner": "Quitar banner",
+    "title": "Perfil del sistema"
+  },
+  "tiles": {
+    "activePollOne": "1 encuesta activa",
+    "activePolls": "{{count}} encuestas activas",
+    "fieldCount": "{{count}} campos",
+    "fieldCountOne": "1 campo"
+  },
+  "mood": {
+    "Calm": "Tranquilo",
+    "Happy": "Feliz",
+    "Anxious": "Ansioso",
+    "Tired": "Cansado",
+    "Energetic": "Enérgico",
+    "Dissociated": "Disociado",
+    "Grounded": "Centrado",
+    "Irritable": "Irritable",
+    "Sad": "Triste",
+    "Focused": "Concentrado"
   }
 }

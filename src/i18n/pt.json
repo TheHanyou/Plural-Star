@@ -96,7 +96,15 @@
     "mood": "humor",
     "at": "em",
     "noHistoryFilter": "Nenhum histórico corresponde aos seus filtros.",
-    "allMembers": "Todos os membros"
+    "allMembers": "Todos os membros",
+    "deleteConfirm1": "Tem certeza que deseja excluir esta entrada?",
+    "deleteConfirm2": "Isto não pode ser desfeito. Excluir mesmo?",
+    "deleteConfirm3": "Confirmação final: excluir permanentemente?",
+    "deleteEntry": "Excluir entrada",
+    "deleteEntryMsg": "Isto removerá permanentemente esta entrada.",
+    "entryCount": "{{count}} entradas",
+    "entryCountOne": "1 entrada",
+    "searchPlaceholder": "Buscar histórico..."
   },
   "journal": {
     "title": "Diário",
@@ -350,7 +358,9 @@
     "ccShort": "CC: {{names}}",
     "frontCheck": "Lembrete de front",
     "frontCheckDesc": "Notificação periódica para verificar quem está no front.",
-    "everyNHours": "A cada {{count}}h"
+    "everyNHours": "A cada {{count}}h",
+    "frontCheckInterval": "Intervalo",
+    "whosFronting": "Quem está no front agora?"
   },
   "language": {
     "en": "English",
@@ -388,7 +398,13 @@
     "sessionsSuffix": "sessões",
     "peakHours": "Horários de pico",
     "topCoMembers": "Co-membros frequentes",
-    "memberLeaderboard": "Detalhes de {{name}}"
+    "memberLeaderboard": "Detalhes de {{name}}",
+    "avgEnergy": "Energia média",
+    "customRange": "Intervalo personalizado",
+    "energyPerTen": "/10 energia média",
+    "from": "De",
+    "sessionCount": "sessões",
+    "to": "Até"
   },
   "chat": {
     "channels": "Canais",
@@ -422,7 +438,10 @@
     "deleteNote": "Excluir nota",
     "deleteNoteMsg": "Excluir esta nota?",
     "writingAs": "Escrevendo como:",
-    "hasNotes": "{{names}} tem notas no quadro"
+    "hasNotes": "{{names}} tem notas no quadro",
+    "addNote": "+ Adicionar nota",
+    "by": "por {{name}}",
+    "pinned": "Fixadas"
   },
   "customFields": {
     "title": "Campos personalizados",
@@ -446,7 +465,14 @@
     "typeMonthDay": "Mês + Dia",
     "typeDateRange": "Intervalo de datas",
     "typeNumber": "Número",
-    "typeToggle": "Alternar"
+    "typeToggle": "Alternar",
+    "addField": "+ Adicionar campo",
+    "confirmChanges": "Confirmar alterações",
+    "editFieldsInfo": "Editar info dos campos",
+    "endDate": "Fim",
+    "manageFields": "Gerenciar campos",
+    "reorder": "Reordenar",
+    "startDate": "Início"
   },
   "polls": {
     "title": "Enquetes",
@@ -465,10 +491,59 @@
     "votingAs": "Votando como:",
     "forMember": "Para o membro:",
     "optionsLabel": "Opções",
-    "activeCount": "{{count}} ativas"
+    "activeCount": "{{count}} ativas",
+    "question": "Pergunta",
+    "vote": "Votar",
+    "votedBy": "Votado por: {{names}}"
   },
   "energy": {
     "outOf10": "/10 energia",
-    "avgEnergy": "Energia média"
+    "avgEnergy": "Energia média",
+    "high": "Alta",
+    "label": "Energia",
+    "level": "Nível de energia",
+    "low": "Baixa",
+    "medium": "Média"
+  },
+  "memberProfile": {
+    "banner": "Banner",
+    "changeBanner": "Alterar banner",
+    "removeBanner": "Remover banner"
+  },
+  "memberSort": {
+    "age": "Mais antigos",
+    "alphabetical": "A → Z",
+    "color": "Por cor",
+    "label": "Ordenar membros",
+    "manual": "Ordem manual",
+    "reverse-alphabetical": "Z → A",
+    "role": "Por função"
+  },
+  "systemProfile": {
+    "avatar": "Avatar do sistema",
+    "banner": "Banner do sistema",
+    "changeAvatar": "Alterar avatar",
+    "changeBanner": "Alterar banner",
+    "removeAvatar": "Remover avatar",
+    "removeBanner": "Remover banner",
+    "title": "Perfil do sistema"
+  },
+  "tiles": {
+    "activePollOne": "1 enquete ativa",
+    "activePolls": "{{count}} enquetes ativas",
+    "fieldCount": "{{count}} campos",
+    "fieldCountOne": "1 campo"
+  },
+  "mood": {
+    "Calm": "Calmo",
+    "Happy": "Feliz",
+    "Anxious": "Ansioso",
+    "Tired": "Cansado",
+    "Energetic": "Enérgico",
+    "Dissociated": "Dissociado",
+    "Grounded": "Centrado",
+    "Irritable": "Irritado",
+    "Sad": "Triste",
+    "Focused": "Concentrado"
   }
 }

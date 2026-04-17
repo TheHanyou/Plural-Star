@@ -6,7 +6,7 @@ import {safePick, isPickerCancel, getPickedFilePath} from '../utils/safePicker';
 import {Sheet} from '../components/Sheet';
 import {PALETTE, BUILTIN_PALETTES, deriveTheme} from '../theme';
 import type {CustomPalette} from '../theme';
-import {Member, MemberGroup, JournalEntry, FrontState, FrontTier, FrontTierKey, SystemInfo, AppSettings, TextScale, TEXT_SCALE_OPTIONS, CustomFieldDef, CustomFieldValue, NoteboardEntry, uid, isValidHex, normalizeHex, DEFAULT_MOODS, EMPTY_TIER, TIER_LABELS, fmtTime, getInitials} from '../utils';
+import {Member, MemberGroup, JournalEntry, FrontState, FrontTier, FrontTierKey, SystemInfo, AppSettings, TextScale, TEXT_SCALE_OPTIONS, CustomFieldDef, CustomFieldValue, NoteboardEntry, uid, isValidHex, normalizeHex, DEFAULT_MOODS, EMPTY_TIER, TIER_LABELS, fmtTime, getInitials, translateMood} from '../utils';
 import {store, KEYS} from '../storage';
 import {SUPPORTED_LANGUAGES} from '../i18n/i18n';
 import type {SupportedLanguage} from '../i18n/i18n';
@@ -152,7 +152,7 @@ const MoodPicker = ({mood, setMood, customMood, setCustomMood, showCustom, setSh
         {allMoods.map((m: string) => (
           <TouchableOpacity key={m} onPress={() => {setMood(m); setShowCustom(false);}} activeOpacity={0.7}
             style={{paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1, backgroundColor: mood === m && !showCustom ? `${T.accent}20` : T.surface, borderColor: mood === m && !showCustom ? `${T.accent}60` : T.border}}>
-            <Text style={{fontSize: 11, color: mood === m && !showCustom ? T.accent : T.dim, fontWeight: mood === m && !showCustom ? '600' : '400'}}>{m}</Text>
+            <Text style={{fontSize: 11, color: mood === m && !showCustom ? T.accent : T.dim, fontWeight: mood === m && !showCustom ? '600' : '400'}}>{translateMood(m, t)}</Text>
           </TouchableOpacity>))}
         <TouchableOpacity onPress={() => {setShowCustom(true); setMood('');}} activeOpacity={0.7}
           style={{paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1, backgroundColor: showCustom ? `${T.accent}20` : T.surface, borderColor: showCustom ? `${T.accent}60` : T.border}}>
@@ -314,7 +314,7 @@ export const EditFrontDetailModal = ({visible, theme: T, front, tier, settings, 
       footer={<Btn T={T} onPress={() => {onSave(showCustomMood ? customMood || undefined : mood || undefined, isPrimary ? location || undefined : undefined, note || undefined); onClose();}}>{t('common.save')}</Btn>}>
       <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 8, fontWeight: '600'}}>{t('modal.mood')}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom: 6}}><View style={{flexDirection: 'row', gap: 6}}>
-        {allMoods.map((m: string) => (<TouchableOpacity key={m} onPress={() => {setMood(m); setShowCustomMood(false);}} activeOpacity={0.7} style={{paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1, backgroundColor: mood === m && !showCustomMood ? `${T.accent}20` : T.surface, borderColor: mood === m && !showCustomMood ? `${T.accent}60` : T.border}}><Text style={{fontSize: 12, color: mood === m && !showCustomMood ? T.accent : T.dim}}>{m}</Text></TouchableOpacity>))}
+        {allMoods.map((m: string) => (<TouchableOpacity key={m} onPress={() => {setMood(m); setShowCustomMood(false);}} activeOpacity={0.7} style={{paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1, backgroundColor: mood === m && !showCustomMood ? `${T.accent}20` : T.surface, borderColor: mood === m && !showCustomMood ? `${T.accent}60` : T.border}}><Text style={{fontSize: 12, color: mood === m && !showCustomMood ? T.accent : T.dim}}>{translateMood(m, t)}</Text></TouchableOpacity>))}
         <TouchableOpacity onPress={() => {setShowCustomMood(true); setMood('');}} activeOpacity={0.7} style={{paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1, backgroundColor: showCustomMood ? `${T.accent}20` : T.surface, borderColor: showCustomMood ? `${T.accent}60` : T.border}}><Text style={{fontSize: 12, color: showCustomMood ? T.accent : T.dim}}>{t('modal.custom')}</Text></TouchableOpacity>
       </View></ScrollView>
       {showCustomMood && <TextInput value={customMood} onChangeText={setCustomMood} placeholder={t('modal.enterMood')} placeholderTextColor={T.muted} style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, marginTop: 6}} />}
@@ -624,7 +624,6 @@ export const MemberModal = ({visible, theme: T, member, members, groups, onSave,
                     </TouchableOpacity>
                   ))}
                 </View>
-              </ScrollView>
             </View>
             <View style={{flexDirection: 'row', gap: 8, alignItems: 'flex-end'}}>
               <TextInput value={noteText} onChangeText={setNoteText} placeholder={t('noteboard.placeholder')} placeholderTextColor={T.muted} multiline

@@ -49,6 +49,7 @@ export const Sheet = ({visible, title, theme: T, onClose, children, footer}: She
       useNativeDriver={false}
       useNativeDriverForBackdrop={false}
       avoidKeyboard={Platform.OS === 'ios'}
+      hideModalContentWhileAnimating
       propagateSwipe
       scrollTo={handleScrollTo}
       scrollOffset={scrollOffset}
@@ -70,12 +71,13 @@ export const Sheet = ({visible, title, theme: T, onClose, children, footer}: She
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled
           scrollEventThrottle={16}
-          removeClippedSubviews={Platform.OS === 'ios'}
           bounces={Platform.OS === 'ios'}
           overScrollMode="never"
           onScroll={handleScroll}
         >
-          {children}
+          <View onStartShouldSetResponder={() => true} style={{flex: 1}}>
+            {children}
+          </View>
         </ScrollView>
         {footer && <View style={[s.footer, {borderTopColor: T.border, paddingBottom: 16 + insets.bottom}]}>{footer}</View>}
       </View>

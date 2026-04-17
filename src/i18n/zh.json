@@ -558,5 +558,17 @@
     "activePollOne": "1 个活跃投票",
     "fieldCount": "{{count}} 个字段",
     "fieldCountOne": "1 个字段"
+  },
+  "mood": {
+    "Calm": "平静",
+    "Happy": "开心",
+    "Anxious": "焦虑",
+    "Tired": "疲倦",
+    "Energetic": "精力充沛",
+    "Dissociated": "解离",
+    "Grounded": "踏实",
+    "Irritable": "烦躁",
+    "Sad": "难过",
+    "Focused": "专注"
   }
 }

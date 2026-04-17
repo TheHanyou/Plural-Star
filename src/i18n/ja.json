@@ -558,5 +558,17 @@
     "activePollOne": "1 件のアクティブな投票",
     "fieldCount": "{{count}} フィールド",
     "fieldCountOne": "1 フィールド"
+  },
+  "mood": {
+    "Calm": "穏やか",
+    "Happy": "幸せ",
+    "Anxious": "不安",
+    "Tired": "疲れた",
+    "Energetic": "活発",
+    "Dissociated": "解離",
+    "Grounded": "落ち着き",
+    "Irritable": "イライラ",
+    "Sad": "悲しい",
+    "Focused": "集中"
   }
 }

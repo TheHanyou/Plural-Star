@@ -533,5 +533,17 @@
     "activePollOne": "1 active poll",
     "fieldCount": "{{count}} fields",
     "fieldCountOne": "1 field"
+  },
+  "mood": {
+    "Calm": "Calm",
+    "Happy": "Happy",
+    "Anxious": "Anxious",
+    "Tired": "Tired",
+    "Energetic": "Energetic",
+    "Dissociated": "Dissociated",
+    "Grounded": "Grounded",
+    "Irritable": "Irritable",
+    "Sad": "Sad",
+    "Focused": "Focused"
   }
 }

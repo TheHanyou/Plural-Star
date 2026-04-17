@@ -96,7 +96,15 @@
     "at": "à",
     "searchMember": "Rechercher des membres…",
     "noHistoryFilter": "Aucun historique ne correspond à vos filtres.",
-    "allMembers": "Tous les membres"
+    "allMembers": "Tous les membres",
+    "deleteConfirm1": "Êtes-vous sûr de vouloir supprimer cette entrée ?",
+    "deleteConfirm2": "Cette action est irréversible. Vraiment supprimer ?",
+    "deleteConfirm3": "Confirmation finale : supprimer définitivement ?",
+    "deleteEntry": "Supprimer l'entrée",
+    "deleteEntryMsg": "Cela supprimera définitivement cette entrée d'historique.",
+    "entryCount": "{{count}} entrées",
+    "entryCountOne": "1 entrée",
+    "searchPlaceholder": "Rechercher dans l'historique..."
   },
   "journal": {
     "title": "Journal",
@@ -323,7 +331,9 @@
     "ccShort": "CC : {{names}}",
     "frontCheck": "Rappel de front",
     "frontCheckDesc": "Notification périodique pour vérifier qui est au front.",
-    "everyNHours": "Toutes les {{count}}h"
+    "everyNHours": "Toutes les {{count}}h",
+    "frontCheckInterval": "Intervalle",
+    "whosFronting": "Qui est au front maintenant ?"
   },
   "language": {
     "en": "English",
@@ -388,7 +398,13 @@
     "sessionsSuffix": "sessions",
     "peakHours": "Heures de pointe",
     "topCoMembers": "Co-membres fréquents",
-    "memberLeaderboard": "Détails de {{name}}"
+    "memberLeaderboard": "Détails de {{name}}",
+    "avgEnergy": "Énergie moyenne",
+    "customRange": "Plage personnalisée",
+    "energyPerTen": "/10 énergie moyenne",
+    "from": "De",
+    "sessionCount": "sessions",
+    "to": "À"
   },
   "chat": {
     "channels": "Canaux",
@@ -422,7 +438,10 @@
     "deleteNote": "Supprimer la note",
     "deleteNoteMsg": "Supprimer cette note ?",
     "writingAs": "Écrit par :",
-    "hasNotes": "{{names}} a des notes sur son tableau"
+    "hasNotes": "{{names}} a des notes sur son tableau",
+    "addNote": "+ Ajouter une note",
+    "by": "par {{name}}",
+    "pinned": "Épinglés"
   },
   "customFields": {
     "title": "Champs personnalisés",
@@ -446,7 +465,14 @@
     "typeMonthDay": "Mois + Jour",
     "typeDateRange": "Plage de dates",
     "typeNumber": "Nombre",
-    "typeToggle": "Bascule"
+    "typeToggle": "Bascule",
+    "addField": "+ Ajouter un champ",
+    "confirmChanges": "Confirmer les changements",
+    "editFieldsInfo": "Modifier infos des champs",
+    "endDate": "Fin",
+    "manageFields": "Gérer les champs",
+    "reorder": "Réordonner",
+    "startDate": "Début"
   },
   "polls": {
     "title": "Sondages",
@@ -465,10 +491,59 @@
     "votingAs": "Vote par :",
     "forMember": "Pour le membre :",
     "optionsLabel": "Options",
-    "activeCount": "{{count}} actifs"
+    "activeCount": "{{count}} actifs",
+    "question": "Question",
+    "vote": "Voter",
+    "votedBy": "Voté par : {{names}}"
   },
   "energy": {
     "outOf10": "/10 énergie",
-    "avgEnergy": "Énergie moyenne"
+    "avgEnergy": "Énergie moyenne",
+    "high": "Élevée",
+    "label": "Énergie",
+    "level": "Niveau d'énergie",
+    "low": "Faible",
+    "medium": "Moyenne"
+  },
+  "memberProfile": {
+    "banner": "Bannière",
+    "changeBanner": "Changer la bannière",
+    "removeBanner": "Supprimer la bannière"
+  },
+  "memberSort": {
+    "age": "Plus ancien",
+    "alphabetical": "A → Z",
+    "color": "Par couleur",
+    "label": "Trier les membres",
+    "manual": "Ordre manuel",
+    "reverse-alphabetical": "Z → A",
+    "role": "Par rôle"
+  },
+  "systemProfile": {
+    "avatar": "Avatar système",
+    "banner": "Bannière système",
+    "changeAvatar": "Changer l'avatar",
+    "changeBanner": "Changer la bannière",
+    "removeAvatar": "Supprimer l'avatar",
+    "removeBanner": "Supprimer la bannière",
+    "title": "Profil système"
+  },
+  "tiles": {
+    "activePollOne": "1 sondage actif",
+    "activePolls": "{{count}} sondages actifs",
+    "fieldCount": "{{count}} champs",
+    "fieldCountOne": "1 champ"
+  },
+  "mood": {
+    "Calm": "Calme",
+    "Happy": "Heureux",
+    "Anxious": "Anxieux",
+    "Tired": "Fatigué",
+    "Energetic": "Énergique",
+    "Dissociated": "Dissocié",
+    "Grounded": "Ancré",
+    "Irritable": "Irritable",
+    "Sad": "Triste",
+    "Focused": "Concentré"
   }
 }

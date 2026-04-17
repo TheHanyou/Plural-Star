@@ -96,7 +96,15 @@
     "mood": "mieliala",
     "at": "paikassa",
     "noHistoryFilter": "Mikään historia ei vastaa suodattimiasi.",
-    "allMembers": "Kaikki jäsenet"
+    "allMembers": "Kaikki jäsenet",
+    "deleteConfirm1": "Haluatko varmasti poistaa tämän merkinnän?",
+    "deleteConfirm2": "Tätä ei voi perua. Poistetaanko?",
+    "deleteConfirm3": "Lopullinen vahvistus: poistetaanko pysyvästi?",
+    "deleteEntry": "Poista merkintä",
+    "deleteEntryMsg": "Tämä poistaa merkinnän pysyvästi.",
+    "entryCount": "{{count}} merkintää",
+    "entryCountOne": "1 merkintä",
+    "searchPlaceholder": "Etsi historiasta..."
   },
   "journal": {
     "title": "Päiväkirja",
@@ -342,7 +350,9 @@
     "ccShort": "RT: {{names}}",
     "frontCheck": "Front-muistutus",
     "frontCheckDesc": "Säännöllinen ilmoitus frontin tarkistamiseen.",
-    "everyNHours": "{{count}}h välein"
+    "everyNHours": "{{count}}h välein",
+    "frontCheckInterval": "Väli",
+    "whosFronting": "Kuka on nyt frontissa?"
   },
   "language": {
     "en": "English",
@@ -380,7 +390,13 @@
     "sessionsSuffix": "istuntoa",
     "peakHours": "Huippuajat",
     "topCoMembers": "Yleisimmät kanssajäsenet",
-    "memberLeaderboard": "{{name}} tiedot"
+    "memberLeaderboard": "{{name}} tiedot",
+    "avgEnergy": "Keskim. energia",
+    "customRange": "Mukautettu aikaväli",
+    "energyPerTen": "/10 keskim. energia",
+    "from": "Alkaen",
+    "sessionCount": "istuntoa",
+    "to": "Päättyen"
   },
   "chat": {
     "channels": "Kanavat",
@@ -414,7 +430,10 @@
     "deleteNote": "Poista muistiinpano",
     "deleteNoteMsg": "Poistetaanko tämä muistiinpano?",
     "writingAs": "Kirjoittajana:",
-    "hasNotes": "{{names}} taululla on muistiinpanoja"
+    "hasNotes": "{{names}} taululla on muistiinpanoja",
+    "addNote": "+ Lisää muistiinpano",
+    "by": "kirjoittanut {{name}}",
+    "pinned": "Kiinnitetyt"
   },
   "customFields": {
     "title": "Mukautetut kentät",
@@ -438,7 +457,14 @@
     "typeMonthDay": "Kuukausi + Päivä",
     "typeDateRange": "Päivämääräväli",
     "typeNumber": "Numero",
-    "typeToggle": "Kytkin"
+    "typeToggle": "Kytkin",
+    "addField": "+ Lisää kenttä",
+    "confirmChanges": "Vahvista muutokset",
+    "editFieldsInfo": "Muokkaa kenttätietoja",
+    "endDate": "Loppu",
+    "manageFields": "Hallitse kenttiä",
+    "reorder": "Järjestä",
+    "startDate": "Alku"
   },
   "polls": {
     "title": "Kyselyt",
@@ -457,10 +483,59 @@
     "votingAs": "Äänestäjänä:",
     "forMember": "Jäsenelle:",
     "optionsLabel": "Vaihtoehdot",
-    "activeCount": "{{count}} aktiivista"
+    "activeCount": "{{count}} aktiivista",
+    "question": "Kysymys",
+    "vote": "Äänestä",
+    "votedBy": "Äänestäjät: {{names}}"
   },
   "energy": {
     "outOf10": "/10 energiaa",
-    "avgEnergy": "Keskim. energia"
+    "avgEnergy": "Keskim. energia",
+    "high": "Korkea",
+    "label": "Energia",
+    "level": "Energiataso",
+    "low": "Matala",
+    "medium": "Keskitaso"
+  },
+  "memberProfile": {
+    "banner": "Banneri",
+    "changeBanner": "Vaihda banneri",
+    "removeBanner": "Poista banneri"
+  },
+  "memberSort": {
+    "age": "Vanhimmat ensin",
+    "alphabetical": "A → Z",
+    "color": "Värin mukaan",
+    "label": "Järjestä jäsenet",
+    "manual": "Manuaalinen järjestys",
+    "reverse-alphabetical": "Z → A",
+    "role": "Roolin mukaan"
+  },
+  "systemProfile": {
+    "avatar": "Järjestelmän avatar",
+    "banner": "Järjestelmän banneri",
+    "changeAvatar": "Vaihda avatar",
+    "changeBanner": "Vaihda banneri",
+    "removeAvatar": "Poista avatar",
+    "removeBanner": "Poista banneri",
+    "title": "Järjestelmäprofiili"
+  },
+  "tiles": {
+    "activePollOne": "1 aktiivinen kysely",
+    "activePolls": "{{count}} aktiivista kyselyä",
+    "fieldCount": "{{count}} kenttää",
+    "fieldCountOne": "1 kenttä"
+  },
+  "mood": {
+    "Calm": "Rauhallinen",
+    "Happy": "Onnellinen",
+    "Anxious": "Ahdistunut",
+    "Tired": "Väsynyt",
+    "Energetic": "Energinen",
+    "Dissociated": "Dissosioitunut",
+    "Grounded": "Maadoittunut",
+    "Irritable": "Ärtynyt",
+    "Sad": "Surullinen",
+    "Focused": "Keskittynyt"
   }
 }

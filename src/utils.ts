@@ -207,6 +207,15 @@ export const DEFAULT_MOODS = [
   'Dissociated', 'Grounded', 'Irritable', 'Sad', 'Focused',
 ];
 
+export const translateMood = (mood: string, t: (k: string) => string): string => {
+  if (!mood) return '';
+  if (DEFAULT_MOODS.includes(mood)) {
+    const translated = t(`mood.${mood}`);
+    return translated && translated !== `mood.${mood}` ? translated : mood;
+  }
+  return mood;
+};
+
 export const EMPTY_TIER: FrontTier = {memberIds: [], note: ''};
 
 export const migrateFrontState = (raw: any): FrontState | null => {

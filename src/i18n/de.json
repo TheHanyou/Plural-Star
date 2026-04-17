@@ -96,7 +96,15 @@
     "at": "bei",
     "searchMember": "Mitglieder suchen…",
     "noHistoryFilter": "Kein Verlauf entspricht deinen Filtern.",
-    "allMembers": "Alle Mitglieder"
+    "allMembers": "Alle Mitglieder",
+    "deleteConfirm1": "Diesen Eintrag wirklich löschen?",
+    "deleteConfirm2": "Das kann nicht rückgängig gemacht werden. Wirklich löschen?",
+    "deleteConfirm3": "Letzte Bestätigung: endgültig löschen?",
+    "deleteEntry": "Eintrag löschen",
+    "deleteEntryMsg": "Dies löscht diesen Verlaufseintrag dauerhaft.",
+    "entryCount": "{{count}} Einträge",
+    "entryCountOne": "1 Eintrag",
+    "searchPlaceholder": "Verlauf durchsuchen..."
   },
   "journal": {
     "title": "Tagebuch",
@@ -323,7 +331,9 @@
     "ccShort": "CB: {{names}}",
     "frontCheck": "Front-Erinnerung",
     "frontCheckDesc": "Regelmäßige Benachrichtigung, um den aktuellen Fronter zu prüfen.",
-    "everyNHours": "Alle {{count}}h"
+    "everyNHours": "Alle {{count}}h",
+    "frontCheckInterval": "Intervall",
+    "whosFronting": "Wer ist gerade am Front?"
   },
   "language": {
     "en": "English",
@@ -388,7 +398,13 @@
     "sessionsSuffix": "Sitzungen",
     "peakHours": "Spitzenzeiten",
     "topCoMembers": "Häufige Co-Mitglieder",
-    "memberLeaderboard": "Details von {{name}}"
+    "memberLeaderboard": "Details von {{name}}",
+    "avgEnergy": "Durchschn. Energie",
+    "customRange": "Benutzerdef. Bereich",
+    "energyPerTen": "/10 durchschn. Energie",
+    "from": "Von",
+    "sessionCount": "Sitzungen",
+    "to": "Bis"
   },
   "chat": {
     "channels": "Kanäle",
@@ -422,7 +438,10 @@
     "deleteNote": "Notiz löschen",
     "deleteNoteMsg": "Diese Notiz löschen?",
     "writingAs": "Schreibend als:",
-    "hasNotes": "{{names}} hat Notizen auf der Tafel"
+    "hasNotes": "{{names}} hat Notizen auf der Tafel",
+    "addNote": "+ Notiz hinzufügen",
+    "by": "von {{name}}",
+    "pinned": "Angeheftet"
   },
   "customFields": {
     "title": "Benutzerdefinierte Felder",
@@ -446,7 +465,14 @@
     "typeMonthDay": "Monat + Tag",
     "typeDateRange": "Datumsbereich",
     "typeNumber": "Zahl",
-    "typeToggle": "Schalter"
+    "typeToggle": "Schalter",
+    "addField": "+ Feld hinzufügen",
+    "confirmChanges": "Änderungen bestätigen",
+    "editFieldsInfo": "Feldinfo bearbeiten",
+    "endDate": "Ende",
+    "manageFields": "Felder verwalten",
+    "reorder": "Neu sortieren",
+    "startDate": "Anfang"
   },
   "polls": {
     "title": "Umfragen",
@@ -465,10 +491,59 @@
     "votingAs": "Abstimmend als:",
     "forMember": "Für Mitglied:",
     "optionsLabel": "Optionen",
-    "activeCount": "{{count}} aktiv"
+    "activeCount": "{{count}} aktiv",
+    "question": "Frage",
+    "vote": "Abstimmen",
+    "votedBy": "Abgestimmt von: {{names}}"
   },
   "energy": {
     "outOf10": "/10 Energie",
-    "avgEnergy": "Durchschn. Energie"
+    "avgEnergy": "Durchschn. Energie",
+    "high": "Hoch",
+    "label": "Energie",
+    "level": "Energielevel",
+    "low": "Niedrig",
+    "medium": "Mittel"
+  },
+  "memberProfile": {
+    "banner": "Banner",
+    "changeBanner": "Banner ändern",
+    "removeBanner": "Banner entfernen"
+  },
+  "memberSort": {
+    "age": "Älteste zuerst",
+    "alphabetical": "A → Z",
+    "color": "Nach Farbe",
+    "label": "Mitglieder sortieren",
+    "manual": "Manuelle Reihenfolge",
+    "reverse-alphabetical": "Z → A",
+    "role": "Nach Rolle"
+  },
+  "systemProfile": {
+    "avatar": "System-Avatar",
+    "banner": "System-Banner",
+    "changeAvatar": "Avatar ändern",
+    "changeBanner": "Banner ändern",
+    "removeAvatar": "Avatar entfernen",
+    "removeBanner": "Banner entfernen",
+    "title": "Systemprofil"
+  },
+  "tiles": {
+    "activePollOne": "1 aktive Umfrage",
+    "activePolls": "{{count}} aktive Umfragen",
+    "fieldCount": "{{count}} Felder",
+    "fieldCountOne": "1 Feld"
+  },
+  "mood": {
+    "Calm": "Ruhig",
+    "Happy": "Glücklich",
+    "Anxious": "Ängstlich",
+    "Tired": "Müde",
+    "Energetic": "Energisch",
+    "Dissociated": "Dissoziiert",
+    "Grounded": "Geerdet",
+    "Irritable": "Gereizt",
+    "Sad": "Traurig",
+    "Focused": "Fokussiert"
   }
 }

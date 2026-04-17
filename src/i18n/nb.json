@@ -96,7 +96,15 @@
     "mood": "humør",
     "at": "på",
     "noHistoryFilter": "Ingen historikk samsvarer med filtrene dine.",
-    "allMembers": "Alle medlemmer"
+    "allMembers": "Alle medlemmer",
+    "deleteConfirm1": "Er du sikker på at du vil slette denne oppføringen?",
+    "deleteConfirm2": "Dette kan ikke angres. Slette for alvor?",
+    "deleteConfirm3": "Endelig bekreftelse: slette permanent?",
+    "deleteEntry": "Slett oppføring",
+    "deleteEntryMsg": "Dette fjerner oppføringen permanent.",
+    "entryCount": "{{count}} oppføringer",
+    "entryCountOne": "1 oppføring",
+    "searchPlaceholder": "Søk i historikk..."
   },
   "journal": {
     "title": "Dagbok",
@@ -342,7 +350,9 @@
     "ccShort": "CB: {{names}}",
     "frontCheck": "Front-påminnelse",
     "frontCheckDesc": "Periodisk varsel for å sjekke hvem som fronter.",
-    "everyNHours": "Hver {{count}}.t"
+    "everyNHours": "Hver {{count}}.t",
+    "frontCheckInterval": "Intervall",
+    "whosFronting": "Hvem fronter nå?"
   },
   "language": {
     "en": "English",
@@ -380,7 +390,13 @@
     "sessionsSuffix": "økter",
     "peakHours": "Topptider",
     "topCoMembers": "Hyppige co-medlemmer",
-    "memberLeaderboard": "Detaljer for {{name}}"
+    "memberLeaderboard": "Detaljer for {{name}}",
+    "avgEnergy": "Gj.sn. energi",
+    "customRange": "Tilpasset område",
+    "energyPerTen": "/10 gj.sn. energi",
+    "from": "Fra",
+    "sessionCount": "økter",
+    "to": "Til"
   },
   "chat": {
     "channels": "Kanaler",
@@ -414,7 +430,10 @@
     "deleteNote": "Slett notat",
     "deleteNoteMsg": "Slette dette notatet?",
     "writingAs": "Skriver som:",
-    "hasNotes": "{{names}} har notater på tavla"
+    "hasNotes": "{{names}} har notater på tavla",
+    "addNote": "+ Legg til notat",
+    "by": "av {{name}}",
+    "pinned": "Festet"
   },
   "customFields": {
     "title": "Egendefinerte felt",
@@ -438,7 +457,14 @@
     "typeMonthDay": "Måned + Dag",
     "typeDateRange": "Datointervall",
     "typeNumber": "Tall",
-    "typeToggle": "Bryter"
+    "typeToggle": "Bryter",
+    "addField": "+ Legg til felt",
+    "confirmChanges": "Bekreft endringer",
+    "editFieldsInfo": "Rediger feltinfo",
+    "endDate": "Slutt",
+    "manageFields": "Behandle felt",
+    "reorder": "Omsortér",
+    "startDate": "Start"
   },
   "polls": {
     "title": "Avstemninger",
@@ -457,10 +483,59 @@
     "votingAs": "Stemmer som:",
     "forMember": "For medlem:",
     "optionsLabel": "Alternativer",
-    "activeCount": "{{count}} aktive"
+    "activeCount": "{{count}} aktive",
+    "question": "Spørsmål",
+    "vote": "Stem",
+    "votedBy": "Stemt av: {{names}}"
   },
   "energy": {
     "outOf10": "/10 energi",
-    "avgEnergy": "Gj.sn. energi"
+    "avgEnergy": "Gj.sn. energi",
+    "high": "Høy",
+    "label": "Energi",
+    "level": "Energinivå",
+    "low": "Lav",
+    "medium": "Middels"
+  },
+  "memberProfile": {
+    "banner": "Banner",
+    "changeBanner": "Endre banner",
+    "removeBanner": "Fjern banner"
+  },
+  "memberSort": {
+    "age": "Eldste først",
+    "alphabetical": "A → Z",
+    "color": "Etter farge",
+    "label": "Sorter medlemmer",
+    "manual": "Manuell rekkefølge",
+    "reverse-alphabetical": "Z → A",
+    "role": "Etter rolle"
+  },
+  "systemProfile": {
+    "avatar": "System-avatar",
+    "banner": "System-banner",
+    "changeAvatar": "Endre avatar",
+    "changeBanner": "Endre banner",
+    "removeAvatar": "Fjern avatar",
+    "removeBanner": "Fjern banner",
+    "title": "Systemprofil"
+  },
+  "tiles": {
+    "activePollOne": "1 aktiv avstemning",
+    "activePolls": "{{count}} aktive avstemninger",
+    "fieldCount": "{{count}} felt",
+    "fieldCountOne": "1 felt"
+  },
+  "mood": {
+    "Calm": "Rolig",
+    "Happy": "Glad",
+    "Anxious": "Engstelig",
+    "Tired": "Trøtt",
+    "Energetic": "Energisk",
+    "Dissociated": "Dissosiert",
+    "Grounded": "Jordet",
+    "Irritable": "Irritabel",
+    "Sad": "Trist",
+    "Focused": "Fokusert"
   }
 }

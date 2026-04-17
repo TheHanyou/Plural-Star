@@ -2,7 +2,7 @@ import React, {useState, useMemo} from 'react';
 import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {Fonts} from '../theme';
-import {Member, HistoryEntry, ChatMessage, fmtDur, getInitials} from '../utils';
+import {Member, HistoryEntry, ChatMessage, fmtDur, getInitials, translateMood} from '../utils';
 
 const Avatar = ({member, size = 28, T}: {member?: Member | null; size?: number; T: any}) => (
   <View style={{width: size, height: size, borderRadius: size / 2, backgroundColor: member?.color || T.toggleOff,
@@ -139,7 +139,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
     </View>
   );
 
-  const Leaderboard = ({title, entries, renderValue}: {title: string; entries: [string, number][]; renderValue: (v: number) => string}) => {
+  const Leaderboard = ({title, entries, renderValue, formatKey}: {title: string; entries: [string, number][]; renderValue: (v: number) => string; formatKey?: (k: string) => string}) => {
     if (entries.length === 0) return null;
     return (
       <View style={{marginBottom: 18}}>
@@ -154,7 +154,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
                 <Text style={{fontSize: fs(12), fontWeight: '700', color: T.dim, width: 20, textAlign: 'center'}}>{i + 1}</Text>
                 {member ? <Avatar member={member} size={24} T={T} /> : null}
                 <Text style={{flex: 1, fontSize: fs(13), color: T.text, fontWeight: '500'}} numberOfLines={1}>
-                  {member ? member.name : key}
+                  {member ? member.name : (formatKey ? formatKey(key) : key)}
                 </Text>
                 <Text style={{fontSize: fs(12), color: T.accent, fontWeight: '600'}}>{renderValue(value)}</Text>
               </View>
@@ -210,7 +210,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
       <Leaderboard title={t('stats.topCoFronters')} entries={stats.topCoFronters} renderValue={v => `${v}x`} />
       <Leaderboard title={t('stats.topCoCon')} entries={stats.topCoCon} renderValue={v => `${v}x`} />
       <Leaderboard title={t('stats.topChatters')} entries={stats.topChatters} renderValue={v => `${v} ${t('stats.msgsSuffix')}`} />
-      <Leaderboard title={t('stats.topMoods')} entries={stats.topMoods} renderValue={v => `${v}x`} />
+      <Leaderboard title={t('stats.topMoods')} entries={stats.topMoods} renderValue={v => `${v}x`} formatKey={m => translateMood(m, t)} />
       <Leaderboard title={t('stats.topLocations')} entries={stats.topLocations} renderValue={v => `${v}x`} />
 
       {/* Energy Averages */}
@@ -315,7 +315,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
                   <Text style={{fontSize: fs(9), letterSpacing: 1, textTransform: 'uppercase', color: T.muted, marginBottom: 6}}>{t('stats.topMoods')}</Text>
                   {topMd.map(([mood, count]) => (
                     <View key={mood} style={{flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4}}>
-                      <Text style={{flex: 1, fontSize: fs(12), color: T.text}}>{mood}</Text>
+                      <Text style={{flex: 1, fontSize: fs(12), color: T.text}}>{translateMood(mood, t)}</Text>
                       <Text style={{fontSize: fs(11), color: T.muted}}>{count}x</Text>
                     </View>
                   ))}

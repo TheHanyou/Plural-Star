@@ -4,7 +4,7 @@ import {View, Text, ScrollView, TouchableOpacity, TextInput, Image, StyleSheet, 
 import {useTranslation} from 'react-i18next';
 import {Fonts} from '../theme';
 import {AccentText} from '../components/AccentText';
-import {HistoryEntry, JournalEntry, Member, FrontTierKey, fmtTime, fmtDate, fmtDur, getInitials, TIER_LABELS} from '../utils';
+import {HistoryEntry, JournalEntry, Member, FrontTierKey, fmtTime, fmtDate, fmtDur, getInitials, TIER_LABELS, translateMood} from '../utils';
 import {store, KEYS} from '../storage';
 
 const Avatar = ({member, size = 26, T}: {member?: Member | null; size?: number; T: any}) => {
@@ -223,7 +223,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
                             {entry.mood && (
                               <View style={[s.badge, {backgroundColor: T.surface}]}>
                                 <Text style={{fontSize: fs(10), color: T.dim}}>{t('history.mood')} </Text>
-                                <Text style={{fontSize: fs(11), color: T.text, fontWeight: '500'}}>{entry.mood}</Text>
+                                <Text style={{fontSize: fs(11), color: T.text, fontWeight: '500'}}>{translateMood(entry.mood, t)}</Text>
                               </View>
                             )}
                             {entry.location && (
@@ -382,7 +382,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
                                     {e.mood && (
                                       <View style={[s.badge, {backgroundColor: T.surface}]}>
                                         <Text style={{fontSize: fs(10), color: T.dim}}>{t('history.mood')} </Text>
-                                        <Text style={{fontSize: fs(11), color: T.text, fontWeight: '500'}}>{e.mood}</Text>
+                                        <Text style={{fontSize: fs(11), color: T.text, fontWeight: '500'}}>{translateMood(e.mood, t)}</Text>
                                       </View>
                                     )}
                                     {e.location && (
