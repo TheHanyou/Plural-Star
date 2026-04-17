@@ -3,6 +3,7 @@ import {View, Text, TouchableOpacity, TextInput, StyleSheet, Platform, KeyboardA
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Fonts} from '../theme';
 import type {ThemeColors} from '../theme';
+import i18n from '../i18n/i18n';
 
 interface Props {
   visible: boolean;
@@ -52,12 +53,10 @@ const MarkdownEditor = ({initialContent, theme: T, onSave, onClose, title}: {ini
 
   const handleSave = () => {
     if (isSaving) return;
-    setIsSaving(true);
     try {
       onSave(text);
-      onClose();
-    } finally {
-      setIsSaving(false);
+    } catch (e) {
+      console.error('[PS] save error:', e);
     }
   };
 
@@ -65,11 +64,11 @@ const MarkdownEditor = ({initialContent, theme: T, onSave, onClose, title}: {ini
     <View style={[s.container, {backgroundColor: T.bg, paddingTop: Platform.OS === 'ios' ? insets.top : 0}]}>
       <View style={[s.header, {borderBottomColor: T.border, backgroundColor: T.bg}]}>
         <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={s.headerBtn}>
-          <Text style={{fontSize: 14, color: T.dim}}>Cancel</Text>
+          <Text style={{fontSize: 14, color: T.dim}}>{i18n.t('common.cancel')}</Text>
         </TouchableOpacity>
         <Text style={[s.headerTitle, {color: T.text}]}>{title}</Text>
         <TouchableOpacity onPress={handleSave} disabled={isSaving} activeOpacity={0.7} style={[s.headerBtn, {alignItems: 'flex-end'}]}>
-          <Text style={{fontSize: 14, fontWeight: '600', color: isSaving ? T.dim : T.accent}}>{isSaving ? '…' : 'Done'}</Text>
+          <Text style={{fontSize: 14, fontWeight: '600', color: isSaving ? T.dim : T.accent}}>{isSaving ? '…' : i18n.t('common.save')}</Text>
         </TouchableOpacity>
       </View>
       <MdToolbar onInsert={insertFormat} T={T} />

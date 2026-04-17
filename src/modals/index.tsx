@@ -612,10 +612,9 @@ export const MemberModal = ({visible, theme: T, member, members, groups, onSave,
 
           {/* Write note */}
           <View style={{backgroundColor: T.surface, borderRadius: 10, borderWidth: 1, borderColor: T.border, padding: 12, marginTop: 8}}>
-            <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8}}>
-              <Text style={{fontSize: fs(11), color: T.dim}}>{t('noteboard.writingAs')}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{flexGrow: 0}}>
-                <View style={{flexDirection: 'row', gap: 4}}>
+            <View style={{marginBottom: 8}}>
+              <Text style={{fontSize: fs(11), color: T.dim, marginBottom: 6}}>{t('noteboard.writingAs')}</Text>
+              <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 4}}>
                   {activeMembers.map((m: Member) => (
                     <TouchableOpacity key={m.id} onPress={() => setNoteAuthorId(m.id)} activeOpacity={0.7}
                       style={{paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, borderWidth: 1,

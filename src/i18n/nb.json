@@ -11,7 +11,8 @@
     "unknown": "Ukjent",
     "untitled": "Uten tittel",
     "records": "{{count}} oppføringer",
-    "notInExport": "Ikke i eksport"
+    "notInExport": "Ikke i eksport",
+    "ok": "OK"
   },
   "tabs": {
     "front": "Front",
@@ -42,13 +43,13 @@
     "enter": "Start"
   },
   "front": {
-    "currentlyFronting": "Foran Nå",
+    "currentlyFronting": "Fronter nå",
     "update": "+ Oppdater",
-    "noOneFronting": "Ingen er foran for øyeblikket.",
-    "setFront": "Sett Front",
+    "noOneFronting": "Ingen fronter nå",
+    "setFront": "Sett front",
     "frontingFor": "Foran i",
     "since": "siden",
-    "mood": "HUMØR",
+    "mood": "Stemning",
     "location": "STED",
     "addMoodLocation": "+ Legg til humør / sted",
     "addMood": "+ Legg til humør",
@@ -59,7 +60,7 @@
   "members": {
     "title": "Medlemmer",
     "add": "+ Legg til",
-    "search": "Søk…",
+    "search": "Søk...",
     "noMembers": "Ingen medlemmer ennå. Legg til ditt første.",
     "addMember": "Legg til Medlem",
     "noDetails": "Ingen detaljer satt",
@@ -94,7 +95,8 @@
     "now": "nå",
     "mood": "humør",
     "at": "på",
-    "noHistoryFilter": "Ingen historikk samsvarer med filtrene dine."
+    "noHistoryFilter": "Ingen historikk samsvarer med filtrene dine.",
+    "allMembers": "Alle medlemmer"
   },
   "journal": {
     "title": "Dagbok",
@@ -212,7 +214,11 @@
     "customMoodsLabel": "Egendefinerte Humør",
     "themePalettes": "Temapaletter",
     "appSettings": "Appinnstillinger",
-    "customizeExport": "Tilpass Eksport"
+    "customizeExport": "Tilpass Eksport",
+    "savedToDownloads": "Lagret i Nedlastinger",
+    "savedToDownloadsMsg": "{{filename}} lagret i Nedlastinger.",
+    "exportReady": "Eksport klar",
+    "exportReadyMsg": "{{filename}} ble generert, men deling kunne ikke åpnes."
   },
   "hub": {
     "title": "Hub",
@@ -271,10 +277,10 @@
     "authors": "Forfattere",
     "entryPassword": "Innleggspassord",
     "entryPasswordPlaceholder": "Passord…",
-    "mood": "Humør",
+    "mood": "Stemning",
     "enterMood": "Humør…",
     "location": "Sted",
-    "typeLocation": "Sted…",
+    "typeLocation": "Skriv sted...",
     "note": "Notat",
     "whatHappening": "Hva skjer?",
     "globalJournalPassword": "Dagbokpassord",
@@ -318,10 +324,10 @@
     "textScaleExtraLarge": "Ekstra stor"
   },
   "notification": {
-    "locationPermTitle": "Stedstillatelse",
-    "locationPermMsg": "Plural Space ønsker å merke din omtrentlige plassering.",
+    "locationPermTitle": "Plassering",
+    "locationPermMsg": "Tillat Plural Space å merke omtrentlig plassering når du fronter.",
     "allow": "Tillat",
-    "deny": "Nekt",
+    "deny": "Avslå",
     "notifPermTitle": "Varsler",
     "notifPermMsg": "Tillat Plural Space å vise fronstatusvarsler.",
     "notNow": "Ikke nå",
@@ -333,7 +339,10 @@
     "coFront": "Co-Front: {{names}}",
     "coConscious": "Co-Bevisst: {{names}}",
     "cfShort": "CF: {{names}}",
-    "ccShort": "CB: {{names}}"
+    "ccShort": "CB: {{names}}",
+    "frontCheck": "Front-påminnelse",
+    "frontCheckDesc": "Periodisk varsel for å sjekke hvem som fronter.",
+    "everyNHours": "Hver {{count}}.t"
   },
   "language": {
     "en": "English",
@@ -366,7 +375,12 @@
     "topCoCon": "Mest co-bevisst",
     "topChatters": "Mest aktive",
     "topMoods": "Mest humør",
-    "topLocations": "Mest steder"
+    "topLocations": "Mest steder",
+    "msgsSuffix": "meld.",
+    "sessionsSuffix": "økter",
+    "peakHours": "Topptider",
+    "topCoMembers": "Hyppige co-medlemmer",
+    "memberLeaderboard": "Detaljer for {{name}}"
   },
   "chat": {
     "channels": "Kanaler",
@@ -390,5 +404,63 @@
     "noMessages": "Ingen meldinger ennå.",
     "typeMessage": "Skriv en melding…",
     "imageFailed": "Bilde feilet"
+  },
+  "noteboard": {
+    "title": "Notattavle",
+    "placeholder": "Skriv et notat...",
+    "noNotes": "Ingen notater ennå.",
+    "pin": "Fest",
+    "unpin": "Løsne",
+    "deleteNote": "Slett notat",
+    "deleteNoteMsg": "Slette dette notatet?",
+    "writingAs": "Skriver som:",
+    "hasNotes": "{{names}} har notater på tavla"
+  },
+  "customFields": {
+    "title": "Egendefinerte felt",
+    "noFields": "Ingen felt definert.",
+    "noFieldsInfo": "Ingen egendefinerte felt. Legg til i Hub.",
+    "fieldName": "Feltnavn",
+    "fieldType": "Type",
+    "deleteField": "Slett felt",
+    "deleteFieldMsg": "Dette sletter feltet og verdiene. Fortsette?",
+    "markdownSupport": "Markdown-støtte",
+    "markdownLabel": "Markdown",
+    "fieldCount": "{{count}} definert",
+    "typeText": "Tekst",
+    "typeMarkdown": "Rik tekst",
+    "typeColor": "Farge",
+    "typeDate": "Dato",
+    "typeMonth": "Måned",
+    "typeYear": "År",
+    "typeMonthYear": "Måned + År",
+    "typeTimestamp": "Tidsstempel",
+    "typeMonthDay": "Måned + Dag",
+    "typeDateRange": "Datointervall",
+    "typeNumber": "Tall",
+    "typeToggle": "Bryter"
+  },
+  "polls": {
+    "title": "Avstemninger",
+    "createPoll": "Opprett avstemning",
+    "noPolls": "Ingen avstemninger.",
+    "questionPlaceholder": "Spørsmål...",
+    "optionPlaceholder": "Alternativ",
+    "addOption": "+ Legg til alternativ",
+    "hideVoters": "Skjul stemmegivere",
+    "closed": "Lukket",
+    "closePoll": "Lukk",
+    "reopenPoll": "Åpne igjen",
+    "deletePoll": "Slett avstemning",
+    "deletePollMsg": "Slette denne avstemningen?",
+    "votes": "{{count}} stemmer",
+    "votingAs": "Stemmer som:",
+    "forMember": "For medlem:",
+    "optionsLabel": "Alternativer",
+    "activeCount": "{{count}} aktive"
+  },
+  "energy": {
+    "outOf10": "/10 energi",
+    "avgEnergy": "Gj.sn. energi"
   }
 }

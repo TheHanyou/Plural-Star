@@ -11,7 +11,8 @@
     "unknown": "Inconnu",
     "untitled": "Sans titre",
     "records": "{{count}} enregistrements",
-    "notInExport": "Non inclus dans l'export"
+    "notInExport": "Non inclus dans l'export",
+    "ok": "OK"
   },
   "tabs": {
     "front": "Front",
@@ -42,13 +43,13 @@
     "enter": "Entrer"
   },
   "front": {
-    "currentlyFronting": "Actuellement au Front",
+    "currentlyFronting": "Actuellement au front",
     "update": "+ Mettre à jour",
-    "noOneFronting": "Personne n'est actuellement au front.",
-    "setFront": "Définir le Front",
+    "noOneFronting": "Personne n'est au front",
+    "setFront": "Définir le front",
     "frontingFor": "Au front depuis",
     "since": "depuis",
-    "mood": "HUMEUR",
+    "mood": "Humeur",
     "location": "LIEU",
     "addMoodLocation": "+ Ajouter humeur / lieu",
     "addMood": "+ Ajouter humeur",
@@ -59,7 +60,7 @@
   "members": {
     "title": "Membres",
     "add": "+ Ajouter",
-    "search": "Rechercher…",
+    "search": "Rechercher...",
     "noMembers": "Aucun membre pour l'instant. Ajoutez votre premier compagnon.",
     "addMember": "Ajouter un Membre",
     "noDetails": "Aucun détail défini",
@@ -94,7 +95,8 @@
     "mood": "humeur",
     "at": "à",
     "searchMember": "Rechercher des membres…",
-    "noHistoryFilter": "Aucun historique ne correspond à vos filtres."
+    "noHistoryFilter": "Aucun historique ne correspond à vos filtres.",
+    "allMembers": "Tous les membres"
   },
   "journal": {
     "title": "Journal",
@@ -212,7 +214,11 @@
     "customMoodsLabel": "Humeurs Personnalisées",
     "themePalettes": "Palettes de Thèmes",
     "appSettings": "Paramètres de l'App",
-    "customizeExport": "Personnaliser l'Export"
+    "customizeExport": "Personnaliser l'Export",
+    "savedToDownloads": "Enregistré dans Téléchargements",
+    "savedToDownloadsMsg": "{{filename}} enregistré dans Téléchargements.",
+    "exportReady": "Export prêt",
+    "exportReadyMsg": "{{filename}} généré, mais impossible d'ouvrir le partage."
   },
   "modal": {
     "updateFront": "Mettre à Jour le Front",
@@ -221,9 +227,9 @@
     "custom": "Personnalisé…",
     "enterMood": "Entrez une humeur…",
     "location": "Lieu",
-    "typeLocation": "Ou tapez un lieu…",
+    "typeLocation": "Tapez un lieu...",
     "noteOptional": "Note (facultatif)",
-    "whatHappening": "Que se passe-t-il en ce moment ?",
+    "whatHappening": "Que se passe-t-il ?",
     "editFrontDetails": "Modifier les Détails du Front",
     "note": "Note",
     "addMember": "Ajouter un Membre",
@@ -299,8 +305,8 @@
     "textScaleExtraLarge": "Très Grand"
   },
   "notification": {
-    "locationPermTitle": "Permission de Localisation",
-    "locationPermMsg": "Plural Space souhaite taguer votre localisation approximative lors du front.",
+    "locationPermTitle": "Localisation",
+    "locationPermMsg": "Autoriser Plural Space à marquer votre position approximative au front.",
     "allow": "Autoriser",
     "deny": "Refuser",
     "notifPermTitle": "Notifications",
@@ -314,7 +320,10 @@
     "coFront": "Co-Front : {{names}}",
     "coConscious": "Co-Conscient : {{names}}",
     "cfShort": "CF : {{names}}",
-    "ccShort": "CC : {{names}}"
+    "ccShort": "CC : {{names}}",
+    "frontCheck": "Rappel de front",
+    "frontCheckDesc": "Notification périodique pour vérifier qui est au front.",
+    "everyNHours": "Toutes les {{count}}h"
   },
   "language": {
     "en": "English",
@@ -374,7 +383,12 @@
     "topCoCon": "Top Co-Conscient",
     "topChatters": "Plus Actifs",
     "topMoods": "Humeurs Fréquentes",
-    "topLocations": "Lieux Fréquents"
+    "topLocations": "Lieux Fréquents",
+    "msgsSuffix": "msgs",
+    "sessionsSuffix": "sessions",
+    "peakHours": "Heures de pointe",
+    "topCoMembers": "Co-membres fréquents",
+    "memberLeaderboard": "Détails de {{name}}"
   },
   "chat": {
     "channels": "Canaux",
@@ -398,5 +412,63 @@
     "noMessages": "Pas encore de messages.",
     "typeMessage": "Écrire un message…",
     "imageFailed": "Erreur d'Image"
+  },
+  "noteboard": {
+    "title": "Tableau de notes",
+    "placeholder": "Écrire une note...",
+    "noNotes": "Aucune note.",
+    "pin": "Épingler",
+    "unpin": "Désépingler",
+    "deleteNote": "Supprimer la note",
+    "deleteNoteMsg": "Supprimer cette note ?",
+    "writingAs": "Écrit par :",
+    "hasNotes": "{{names}} a des notes sur son tableau"
+  },
+  "customFields": {
+    "title": "Champs personnalisés",
+    "noFields": "Aucun champ défini.",
+    "noFieldsInfo": "Aucun champ personnalisé. Ajoutez-en depuis le Hub.",
+    "fieldName": "Nom du champ",
+    "fieldType": "Type",
+    "deleteField": "Supprimer le champ",
+    "deleteFieldMsg": "Cela supprimera le champ et ses valeurs. Continuer ?",
+    "markdownSupport": "Support Markdown",
+    "markdownLabel": "Markdown",
+    "fieldCount": "{{count}} définis",
+    "typeText": "Texte",
+    "typeMarkdown": "Texte enrichi",
+    "typeColor": "Couleur",
+    "typeDate": "Date",
+    "typeMonth": "Mois",
+    "typeYear": "Année",
+    "typeMonthYear": "Mois + Année",
+    "typeTimestamp": "Horodatage",
+    "typeMonthDay": "Mois + Jour",
+    "typeDateRange": "Plage de dates",
+    "typeNumber": "Nombre",
+    "typeToggle": "Bascule"
+  },
+  "polls": {
+    "title": "Sondages",
+    "createPoll": "Créer un sondage",
+    "noPolls": "Aucun sondage.",
+    "questionPlaceholder": "Question...",
+    "optionPlaceholder": "Option",
+    "addOption": "+ Ajouter une option",
+    "hideVoters": "Masquer les votants",
+    "closed": "Fermé",
+    "closePoll": "Fermer",
+    "reopenPoll": "Rouvrir",
+    "deletePoll": "Supprimer le sondage",
+    "deletePollMsg": "Supprimer ce sondage ?",
+    "votes": "{{count}} votes",
+    "votingAs": "Vote par :",
+    "forMember": "Pour le membre :",
+    "optionsLabel": "Options",
+    "activeCount": "{{count}} actifs"
+  },
+  "energy": {
+    "outOf10": "/10 énergie",
+    "avgEnergy": "Énergie moyenne"
   }
 }

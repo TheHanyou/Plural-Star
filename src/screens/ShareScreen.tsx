@@ -322,7 +322,21 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           const avatarUrls: Record<string, string> = {};
           if (extSel.avatars) {
             extPreview.members.forEach((m: any) => {
-              const avatarUrl = isPK ? (m.avatar_url || '') : (m.content?.avatarUrl || m.avatarUrl || '');
+              let avatarUrl = '';
+              if (isPK) {
+                avatarUrl = m.avatar_url || '';
+              } else {
+                if (m.content?.avatarUrl) {
+                  avatarUrl = m.content.avatarUrl;
+                } else if (m.content?.avatarUuid) {
+                  const uid = m.content?.uid || m.uid;
+                  avatarUrl = uid
+                    ? `https://spaces.apparyllis.com/avatars/${uid}/${m.content.avatarUuid}`
+                    : `https://spaces.apparyllis.com/avatars/${m.content.avatarUuid}`;
+                } else if (m.avatarUrl) {
+                  avatarUrl = m.avatarUrl;
+                }
+              }
               if (!avatarUrl) return;
               const name = isPK ? (m.display_name || m.name || '') : (m.content?.name || m.name || '');
               const match = merged.find(lm => lm.name.toLowerCase() === name.toLowerCase());
@@ -423,7 +437,13 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           const avatarUrls: Record<string, string> = {};
           if (extSel.avatars) {
             spMembers.forEach((m: any, i: number) => {
-              const avatarUrl = m.avatarUrl || '';
+              let avatarUrl = m.avatarUrl || '';
+              if (!avatarUrl && m.avatarUuid) {
+                const uid = m.uid;
+                avatarUrl = uid
+                  ? `https://spaces.apparyllis.com/avatars/${uid}/${m.avatarUuid}`
+                  : `https://spaces.apparyllis.com/avatars/${m.avatarUuid}`;
+              }
               if (!avatarUrl) return;
               const match = merged.find(lm => lm.name.toLowerCase() === (newM[i]?.name || '').toLowerCase());
               if (match) avatarUrls[match.id] = avatarUrl;

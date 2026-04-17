@@ -199,15 +199,17 @@ const TierCard = ({
           </View>
         )}
 
-        <View style={{borderTopWidth: 1, borderTopColor: T.border, paddingTop: 8}}>
-          <Text style={{fontSize: fs(9), letterSpacing: 1, color: T.dim}}>
-            {t('front.frontNote')}
-          </Text>
-
+        <TouchableOpacity onPress={() => onEditDetails(tierKey)} activeOpacity={0.7} style={{borderTopWidth: 1, borderTopColor: T.border, paddingTop: 8}}>
+          <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+            <Text style={{fontSize: fs(9), letterSpacing: 1, color: T.dim}}>
+              {t('front.frontNote')}
+            </Text>
+            <Text style={{fontSize: fs(12), color: T.accent}}>✎</Text>
+          </View>
           <Text style={{fontSize: fs(12), color: note ? T.text : T.muted, marginTop: 4}}>
             {note || t('front.noNote')}
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -17,21 +17,65 @@ const renderInlineHTML = (html: string, T: any): React.ReactNode => {
   const parts: React.ReactNode[] = [];
   let remaining = html;
   let key = 0;
+  const hasAnyImage = /<img\s/i.test(html);
+  const wrapText = (s: string): React.ReactNode => {
+    if (!s) return null;
+    if (hasAnyImage) return <Text key={key++} style={{fontSize: fs(13, T), color: T.dim, lineHeight: 20}}>{s}</Text>;
+    return s;
+  };
+  const imgRe = /<img\s[^>]*>/i;
   const inlineRe = /<(strong|b|em|i|s|del|code|a)(\s[^>]*)?>(.+?)<\/\1>/;
   while (remaining.length > 0) {
-    const m = remaining.match(inlineRe);
-    if (!m || m.index === undefined) { parts.push(decodeEntities(remaining.replace(/<br\s*\/?>/g, '\n').replace(/<[^>]*>/g, ''))); break; }
-    if (m.index > 0) parts.push(decodeEntities(remaining.slice(0, m.index).replace(/<br\s*\/?>/g, '\n').replace(/<[^>]*>/g, '')));
-    const tag = m[1]; const attrs = m[2] || ''; const inner = m[3];
+    const imgM = remaining.match(imgRe);
+    const inlineM = remaining.match(inlineRe);
+    const imgIdx = imgM?.index ?? Infinity;
+    const inlineIdx = inlineM?.index ?? Infinity;
+
+    if (imgIdx < inlineIdx && imgM && imgM.index !== undefined) {
+      if (imgM.index > 0) {
+        const before = decodeEntities(remaining.slice(0, imgM.index).replace(/<br\s*\/?>/g, '\n').replace(/<[^>]*>/g, '')).trim();
+        const wrapped = wrapText(before);
+        if (wrapped) parts.push(wrapped);
+      }
+      const srcMatch = imgM[0].match(/src=["']([^"']+)["']/);
+      const widthMatch = imgM[0].match(/width=["']?(\d+)["']?/);
+      const heightMatch = imgM[0].match(/height=["']?(\d+)["']?/);
+      if (srcMatch) {
+        const url = srcMatch[1];
+        const isValidUrl = /^https?:\/\//i.test(url) || /^file:\/\//i.test(url) || url.startsWith('data:');
+        const w = widthMatch ? Number(widthMatch[1]) : undefined;
+        const h = heightMatch ? Number(heightMatch[1]) : undefined;
+        if (isValidUrl) {
+          parts.push(<Image key={key++} source={{uri: url}} style={{width: w || 200, height: h || w || 200, borderRadius: 8, marginVertical: 4}} resizeMode="contain" />);
+        } else {
+          parts.push(<Text key={key++} style={{fontSize: fs(11, T), color: T.muted, fontStyle: 'italic'}}>[broken image: {url}]</Text>);
+        }
+      }
+      remaining = remaining.slice(imgM.index + imgM[0].length);
+      continue;
+    }
+
+    if (!inlineM || inlineM.index === undefined) {
+      const tail = decodeEntities(remaining.replace(/<br\s*\/?>/g, '\n').replace(/<img\s[^>]*>/gi, '').replace(/<[^>]*>/g, ''));
+      const wrapped = wrapText(tail);
+      if (wrapped) parts.push(wrapped);
+      break;
+    }
+    if (inlineM.index > 0) {
+      const before = decodeEntities(remaining.slice(0, inlineM.index).replace(/<br\s*\/?>/g, '\n').replace(/<img\s[^>]*>/gi, '').replace(/<[^>]*>/g, ''));
+      const wrapped = wrapText(before);
+      if (wrapped) parts.push(wrapped);
+    }
+    const tag = inlineM[1]; const attrs = inlineM[2] || ''; const inner = inlineM[3];
     switch (tag) {
       case 'strong': case 'b': parts.push(<Text key={key++} style={{fontWeight: '700', color: T.text}}>{renderInlineHTML(inner, T)}</Text>); break;
       case 'em': case 'i': parts.push(<Text key={key++} style={{fontStyle: 'italic'}}>{renderInlineHTML(inner, T)}</Text>); break;
       case 's': case 'del': parts.push(<Text key={key++} style={{textDecorationLine: 'line-through'}}>{renderInlineHTML(inner, T)}</Text>); break;
       case 'code': parts.push(<Text key={key++} style={{fontFamily: 'monospace', backgroundColor: T.surface, paddingHorizontal: 4, borderRadius: 3, fontSize: fs(12, T)}}>{decodeEntities(inner)}</Text>); break;
       case 'a': { const href = (attrs.match(/href=["']([^"']+)["']/) || [])[1] || ''; parts.push(<Text key={key++} style={{color: T.info, textDecorationLine: 'underline'}} onPress={() => href && Linking.openURL(href)}>{renderInlineHTML(inner, T)}</Text>); break; }
-      default: parts.push(decodeEntities(inner));
+      default: { const wrapped = wrapText(decodeEntities(inner)); if (wrapped) parts.push(wrapped); }
     }
-    remaining = remaining.slice(m.index + m[0].length);
+    remaining = remaining.slice(inlineM.index + inlineM[0].length);
   }
   return parts.length === 1 ? parts[0] : <>{parts}</>;
 };
@@ -96,6 +140,10 @@ const renderHTMLBlocks = (html: string, T: any): React.ReactNode => {
           case 'p': default: {
             const content = seg.content.trim();
             if (!content) return <View key={i} style={{height: 4}} />;
+            const hasImage = /<img\s/i.test(content);
+            if (hasImage) {
+              return <View key={i} style={{marginVertical: 2}}>{renderInlineHTML(content, T)}</View>;
+            }
             return <Text key={i} style={{fontSize: fs(13, T), color: T.dim, lineHeight: 20}}>{renderInlineHTML(content, T)}</Text>;
           }
         }

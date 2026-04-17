@@ -11,7 +11,8 @@
     "unknown": "Tuntematon",
     "untitled": "Nimetön",
     "records": "{{count}} tietuetta",
-    "notInExport": "Ei viennissä"
+    "notInExport": "Ei viennissä",
+    "ok": "OK"
   },
   "tabs": {
     "front": "Edessä",
@@ -30,7 +31,7 @@
     "primaryShort": "Ensisijainen",
     "coFrontShort": "Rinnakkais",
     "coConShort": "Rinn-Tiet",
-    "editTier": "Muokkaa {{tier}}"
+    "editTier": "Muokkaa: {{tier}}"
   },
   "setup": {
     "welcome": "Tervetuloa",
@@ -42,13 +43,13 @@
     "enter": "Aloita"
   },
   "front": {
-    "currentlyFronting": "Tällä Hetkellä Edessä",
+    "currentlyFronting": "Parhaillaan frontissa",
     "update": "+ Päivitä",
-    "noOneFronting": "Kukaan ei ole tällä hetkellä edessä.",
-    "setFront": "Aseta Front",
+    "noOneFronting": "Kukaan ei ole frontissa",
+    "setFront": "Aseta front",
     "frontingFor": "Edessä",
     "since": "alkaen",
-    "mood": "MIELIALA",
+    "mood": "Mieliala",
     "location": "SIJAINTI",
     "addMoodLocation": "+ Lisää mieliala / sijainti",
     "addMood": "+ Lisää mieliala",
@@ -59,7 +60,7 @@
   "members": {
     "title": "Jäsenet",
     "add": "+ Lisää",
-    "search": "Hae…",
+    "search": "Hae...",
     "noMembers": "Ei jäseniä vielä. Lisää ensimmäinen.",
     "addMember": "Lisää Jäsen",
     "noDetails": "Ei tietoja",
@@ -94,7 +95,8 @@
     "now": "nyt",
     "mood": "mieliala",
     "at": "paikassa",
-    "noHistoryFilter": "Mikään historia ei vastaa suodattimiasi."
+    "noHistoryFilter": "Mikään historia ei vastaa suodattimiasi.",
+    "allMembers": "Kaikki jäsenet"
   },
   "journal": {
     "title": "Päiväkirja",
@@ -212,7 +214,11 @@
     "customMoodsLabel": "Omat Mielialat",
     "themePalettes": "Teemapaletit",
     "appSettings": "Sovellusasetukset",
-    "customizeExport": "Mukauta Vienti"
+    "customizeExport": "Mukauta Vienti",
+    "savedToDownloads": "Tallennettu Lataukset-kansioon",
+    "savedToDownloadsMsg": "{{filename}} tallennettu Lataukset-kansioon.",
+    "exportReady": "Vienti valmis",
+    "exportReadyMsg": "{{filename}} luotu, mutta jakoa ei voitu avata."
   },
   "hub": {
     "title": "Hub",
@@ -274,7 +280,7 @@
     "mood": "Mieliala",
     "enterMood": "Mieliala…",
     "location": "Sijainti",
-    "typeLocation": "Sijainti…",
+    "typeLocation": "Kirjoita sijainti...",
     "note": "Muistiinpano",
     "whatHappening": "Mitä tapahtuu?",
     "globalJournalPassword": "Päiväkirjan Salasana",
@@ -318,8 +324,8 @@
     "textScaleExtraLarge": "Erittäin suuri"
   },
   "notification": {
-    "locationPermTitle": "Sijaintilupa",
-    "locationPermMsg": "Plural Space haluaa merkitä likimääräisen sijaintisi.",
+    "locationPermTitle": "Sijainti",
+    "locationPermMsg": "Salli Plural Spacen merkitä likimääräinen sijainti frontissa.",
     "allow": "Salli",
     "deny": "Estä",
     "notifPermTitle": "Ilmoitukset",
@@ -333,7 +339,10 @@
     "coFront": "Rinnakkais-Front: {{names}}",
     "coConscious": "Rinnakkais-Tietoinen: {{names}}",
     "cfShort": "RF: {{names}}",
-    "ccShort": "RT: {{names}}"
+    "ccShort": "RT: {{names}}",
+    "frontCheck": "Front-muistutus",
+    "frontCheckDesc": "Säännöllinen ilmoitus frontin tarkistamiseen.",
+    "everyNHours": "{{count}}h välein"
   },
   "language": {
     "en": "English",
@@ -366,7 +375,12 @@
     "topCoCon": "Eniten yhteistietoisia",
     "topChatters": "Eniten viestijät",
     "topMoods": "Yleisimmät mielialat",
-    "topLocations": "Yleisimmät paikat"
+    "topLocations": "Yleisimmät paikat",
+    "msgsSuffix": "viest.",
+    "sessionsSuffix": "istuntoa",
+    "peakHours": "Huippuajat",
+    "topCoMembers": "Yleisimmät kanssajäsenet",
+    "memberLeaderboard": "{{name}} tiedot"
   },
   "chat": {
     "channels": "Kanavat",
@@ -390,5 +404,63 @@
     "noMessages": "Ei viestejä vielä.",
     "typeMessage": "Kirjoita viesti…",
     "imageFailed": "Kuva epäonnistui"
+  },
+  "noteboard": {
+    "title": "Muistitaulu",
+    "placeholder": "Kirjoita muistiinpano...",
+    "noNotes": "Ei muistiinpanoja.",
+    "pin": "Kiinnitä",
+    "unpin": "Poista kiinnitys",
+    "deleteNote": "Poista muistiinpano",
+    "deleteNoteMsg": "Poistetaanko tämä muistiinpano?",
+    "writingAs": "Kirjoittajana:",
+    "hasNotes": "{{names}} taululla on muistiinpanoja"
+  },
+  "customFields": {
+    "title": "Mukautetut kentät",
+    "noFields": "Ei määriteltyjä kenttiä.",
+    "noFieldsInfo": "Ei mukautettuja kenttiä. Lisää Hubista.",
+    "fieldName": "Kentän nimi",
+    "fieldType": "Tyyppi",
+    "deleteField": "Poista kenttä",
+    "deleteFieldMsg": "Tämä poistaa kentän ja arvot. Jatketaanko?",
+    "markdownSupport": "Markdown-tuki",
+    "markdownLabel": "Markdown",
+    "fieldCount": "{{count}} määritelty",
+    "typeText": "Teksti",
+    "typeMarkdown": "Rikas teksti",
+    "typeColor": "Väri",
+    "typeDate": "Päivämäärä",
+    "typeMonth": "Kuukausi",
+    "typeYear": "Vuosi",
+    "typeMonthYear": "Kuukausi + Vuosi",
+    "typeTimestamp": "Aikaleima",
+    "typeMonthDay": "Kuukausi + Päivä",
+    "typeDateRange": "Päivämääräväli",
+    "typeNumber": "Numero",
+    "typeToggle": "Kytkin"
+  },
+  "polls": {
+    "title": "Kyselyt",
+    "createPoll": "Luo kysely",
+    "noPolls": "Ei kyselyjä.",
+    "questionPlaceholder": "Kysymys...",
+    "optionPlaceholder": "Vaihtoehto",
+    "addOption": "+ Lisää vaihtoehto",
+    "hideVoters": "Piilota äänestäjien nimet",
+    "closed": "Suljettu",
+    "closePoll": "Sulje",
+    "reopenPoll": "Avaa uudelleen",
+    "deletePoll": "Poista kysely",
+    "deletePollMsg": "Poistetaanko tämä kysely?",
+    "votes": "{{count}} ääntä",
+    "votingAs": "Äänestäjänä:",
+    "forMember": "Jäsenelle:",
+    "optionsLabel": "Vaihtoehdot",
+    "activeCount": "{{count}} aktiivista"
+  },
+  "energy": {
+    "outOf10": "/10 energiaa",
+    "avgEnergy": "Keskim. energia"
   }
 }
