@@ -1,6 +1,7 @@
 // src/screens/MembersScreen.tsx
 import React, {useState} from 'react';
 import {View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Image, Alert} from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 import {useTranslation} from 'react-i18next';
 import {Fonts, PALETTE} from '../theme';
 import {Member, MemberGroup, FrontState, FrontTierKey, MemberSortMode, getInitials, allFrontMemberIds, uid, isValidHex, normalizeHex, sortMembers} from '../utils';
@@ -86,8 +87,48 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
     setEditGroupId(null); setEditGroupName('');
   };
 
-  return (
-    <ScrollView style={{flex: 1, backgroundColor: T.bg}} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+  const renderMember = ({item: m}: {item: Member}) => {
+    const tier = getMemberTier(m.id, front);
+    const isFronting = allFrontIds.has(m.id);
+    const badgeCfg = tier ? TIER_BADGE_KEY[tier] : null;
+    const badgeColor = badgeCfg ? (T as any)[badgeCfg.colorKey] || T.accent : T.accent;
+    const memberGroups = groups.filter(g => (m.groupIds || []).includes(g.id));
+    return (
+      <TouchableOpacity activeOpacity={0.75} style={[s.card, {backgroundColor: T.card, borderColor: isFronting ? `${m.color}60` : T.border, marginBottom: 8}]}
+        onPress={() => setExpanded(expanded === m.id ? null : m.id)}>
+        <View style={{flexDirection: 'row', alignItems: 'center', gap: 14}}>
+          <Avatar member={m} size={44} pulse={isFronting} T={T} />
+          <View style={{flex: 1, overflow: 'hidden'}}>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2}}>
+              <Text style={{fontSize: fs(15), fontWeight: '500', color: T.text}}>{m.name}</Text>
+              {badgeCfg && (<View style={{paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999, backgroundColor: `${badgeColor}18`, borderWidth: 1, borderColor: `${badgeColor}35`}}><Text style={{fontSize: fs(10), color: badgeColor, fontWeight: '500'}}>{t(badgeCfg.i18nKey)}</Text></View>)}
+            </View>
+            <Text style={{fontSize: fs(12), color: T.dim}}>{[m.pronouns, m.role].filter(Boolean).join(' · ') || t('members.noDetails')}</Text>
+            {memberGroups.length > 0 && (
+              <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4}}>
+                {memberGroups.map(g => (<View key={g.id} style={{flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999, backgroundColor: `${g.color || T.accent}15`}}><View style={{width: 5, height: 5, borderRadius: 2.5, backgroundColor: g.color || T.accent}} /><Text style={{fontSize: fs(10), color: g.color || T.accent}}>{g.name}</Text></View>))}
+              </View>
+            )}
+            {m.description && expanded !== m.id ? <Text style={{fontSize: fs(11), color: T.muted, marginTop: 3}} numberOfLines={1}>{m.description}</Text> : null}
+          </View>
+          <TouchableOpacity onPress={() => onEdit(m)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}><Text style={{fontSize: fs(14), color: T.muted}}>✎</Text></TouchableOpacity>
+        </View>
+        {expanded === m.id && (
+          <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: T.border}}>
+            {(m.tags || []).length > 0 && (
+              <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: m.description ? 10 : 0}}>
+                {(m.tags || []).map(tag => (<View key={tag} style={{paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: `${T.info}12`, borderWidth: 1, borderColor: `${T.info}30`}}><Text style={{fontSize: fs(11), color: T.info}}>{tag}</Text></View>))}
+              </View>
+            )}
+            {m.description ? <RichText text={m.description} T={T} /> : null}
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  const ListHeader = (
+    <View>
       <View style={s.headerRow}>
         <Text style={[s.heading, {color: T.text}]}>{t('members.title')}</Text>
         <View style={{flexDirection: 'row', gap: 6}}>
@@ -207,8 +248,20 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
         <TextInput value={query} onChangeText={setQuery} placeholder={t('members.search')} placeholderTextColor={T.muted}
           style={[s.search, {backgroundColor: T.surface, color: T.text, borderColor: T.border}]} />
       )}
+    </View>
+  );
 
-      {tabMembers.length === 0 ? (
+  return (
+    <FlashList
+      data={filtered}
+      renderItem={renderMember}
+      keyExtractor={(m: Member) => m.id}
+      estimatedItemSize={120}
+      extraData={{expanded, T, front, groups}}
+      contentContainerStyle={{padding: 16, paddingBottom: 32, backgroundColor: T.bg}}
+      keyboardShouldPersistTaps="handled"
+      ListHeaderComponent={ListHeader}
+      ListEmptyComponent={tabMembers.length === 0 ? (
         <View style={s.empty}>
           <Text style={{fontSize: fs(36), opacity: 0.4, marginBottom: 12}}>◇</Text>
           <Text style={{fontSize: fs(13), color: T.dim, textAlign: 'center', marginBottom: 16}}>{memberTab === 'archived' ? t('members.noArchived') : t('members.noMembers')}</Text>
@@ -218,50 +271,8 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
             </TouchableOpacity>
           )}
         </View>
-      ) : (
-        <View style={{gap: 8}}>
-          {filtered.map(m => {
-            const tier = getMemberTier(m.id, front);
-            const isFronting = allFrontIds.has(m.id);
-            const badgeCfg = tier ? TIER_BADGE_KEY[tier] : null;
-            const badgeColor = badgeCfg ? (T as any)[badgeCfg.colorKey] || T.accent : T.accent;
-            const memberGroups = groups.filter(g => (m.groupIds || []).includes(g.id));
-            return (
-              <TouchableOpacity key={m.id} activeOpacity={0.75} style={[s.card, {backgroundColor: T.card, borderColor: isFronting ? `${m.color}60` : T.border}]}
-                onPress={() => setExpanded(expanded === m.id ? null : m.id)}>
-                <View style={{flexDirection: 'row', alignItems: 'center', gap: 14}}>
-                  <Avatar member={m} size={44} pulse={isFronting} T={T} />
-                  <View style={{flex: 1, overflow: 'hidden'}}>
-                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2}}>
-                      <Text style={{fontSize: fs(15), fontWeight: '500', color: T.text}}>{m.name}</Text>
-                      {badgeCfg && (<View style={{paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999, backgroundColor: `${badgeColor}18`, borderWidth: 1, borderColor: `${badgeColor}35`}}><Text style={{fontSize: fs(10), color: badgeColor, fontWeight: '500'}}>{t(badgeCfg.i18nKey)}</Text></View>)}
-                    </View>
-                    <Text style={{fontSize: fs(12), color: T.dim}}>{[m.pronouns, m.role].filter(Boolean).join(' · ') || t('members.noDetails')}</Text>
-                    {memberGroups.length > 0 && (
-                      <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4}}>
-                        {memberGroups.map(g => (<View key={g.id} style={{flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999, backgroundColor: `${g.color || T.accent}15`}}><View style={{width: 5, height: 5, borderRadius: 2.5, backgroundColor: g.color || T.accent}} /><Text style={{fontSize: fs(10), color: g.color || T.accent}}>{g.name}</Text></View>))}
-                      </View>
-                    )}
-                    {m.description && expanded !== m.id ? <Text style={{fontSize: fs(11), color: T.muted, marginTop: 3}} numberOfLines={1}>{m.description}</Text> : null}
-                  </View>
-                  <TouchableOpacity onPress={() => onEdit(m)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}><Text style={{fontSize: fs(14), color: T.muted}}>✎</Text></TouchableOpacity>
-                </View>
-                {expanded === m.id && (
-                  <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: T.border}}>
-                    {(m.tags || []).length > 0 && (
-                      <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: m.description ? 10 : 0}}>
-                        {(m.tags || []).map(tag => (<View key={tag} style={{paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: `${T.info}12`, borderWidth: 1, borderColor: `${T.info}30`}}><Text style={{fontSize: fs(11), color: T.info}}>{tag}</Text></View>))}
-                      </View>
-                    )}
-                    {m.description ? <RichText text={m.description} T={T} /> : null}
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
-    </ScrollView>
+      ) : null}
+    />
   );
 };
 

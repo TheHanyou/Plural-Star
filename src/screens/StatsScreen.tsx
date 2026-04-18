@@ -241,12 +241,18 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
             {stats.peakHours.map((count: number, h: number) => {
               const max = Math.max(...stats.peakHours as number[], 1);
               return (
-                <View key={h} style={{flex: 1, alignItems: 'center'}}>
+                <View key={h} style={{flex: 1, justifyContent: 'flex-end', height: '100%'}}>
                   <View style={{width: '100%', height: Math.max((count / max) * 45, 1), backgroundColor: count === max && count > 0 ? T.accent : `${T.dim}40`, borderRadius: 1}} />
-                  {h % 6 === 0 && <Text style={{fontSize: 7, color: T.muted, marginTop: 2}}>{h}</Text>}
                 </View>
               );
             })}
+          </View>
+          <View style={{flexDirection: 'row', gap: 1, marginTop: 2}}>
+            {stats.peakHours.map((_: number, h: number) => (
+              <View key={h} style={{flex: 1, alignItems: 'center'}}>
+                <Text style={{fontSize: 7, color: T.muted}}>{h % 6 === 0 ? h : ''}</Text>
+              </View>
+            ))}
           </View>
         </View>
       )}

@@ -138,9 +138,8 @@ const TierMemberPicker = ({tierKey, label, color, selected, setSelected, members
       <TextInput value={search} onChangeText={setSearch} placeholder={t('members.searchToAdd')} placeholderTextColor={T.muted}
         style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, fontSize: fs(13), marginBottom: 4}} />
       {search.length > 0 && (
-        <View style={{backgroundColor: T.card, borderRadius: 8, borderWidth: 1, borderColor: T.border, maxHeight: 160, overflow: 'hidden'}}>
-          <ScrollView nestedScrollEnabled>
-            {filtered.map(m => {
+        <View style={{backgroundColor: T.card, borderRadius: 8, borderWidth: 1, borderColor: T.border, overflow: 'hidden'}}>
+          {filtered.slice(0, 6).map(m => {
               const inThis = selected.includes(m.id);
               const otherTier = Object.entries(allSelected).find(([tk, ids]) => tk !== tierKey && (ids as string[]).includes(m.id));
               const otherLabel = otherTier ? otherTiers[otherTier[0] as FrontTierKey] : null;
@@ -155,7 +154,11 @@ const TierMemberPicker = ({tierKey, label, color, selected, setSelected, members
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
+          {filtered.length > 6 && (
+            <View style={{padding: 8, alignItems: 'center'}}>
+              <Text style={{fontSize: fs(11), color: T.muted, fontStyle: 'italic'}}>{t('members.refineSearch', {count: filtered.length - 6, defaultValue: `+${filtered.length - 6} more — refine search`})}</Text>
+            </View>
+          )}
         </View>
       )}
     </View>
