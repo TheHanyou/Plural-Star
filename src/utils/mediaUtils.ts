@@ -1,6 +1,12 @@
 import RNFS from 'react-native-fs';
 import {Image} from 'react-native';
-import ImageEditor from '@react-native-community/image-editor';
+
+let ImageEditor: any = null;
+try {
+  ImageEditor = require('@react-native-community/image-editor').default || require('@react-native-community/image-editor');
+} catch {
+  ImageEditor = null;
+}
 
 const AVATAR_DIR = `${RNFS.DocumentDirectoryPath}/ps_avatars`;
 const CHAT_MEDIA_DIR = `${RNFS.DocumentDirectoryPath}/ps_chat_media`;
@@ -102,34 +108,43 @@ export const saveBannerImage = async (
   sourceUri: string
 ): Promise<string> => {
   await ensureDir(BIO_IMAGE_DIR);
-  const {width: srcW, height: srcH} = await getImageSize(sourceUri);
-  const targetAspect = BANNER_WIDTH / BANNER_HEIGHT;
-  const srcAspect = srcW / srcH;
-  let cropW: number, cropH: number, offsetX: number, offsetY: number;
-  if (srcAspect > targetAspect) {
-    cropH = srcH;
-    cropW = Math.round(srcH * targetAspect);
-    offsetX = Math.round((srcW - cropW) / 2);
-    offsetY = 0;
-  } else {
-    cropW = srcW;
-    cropH = Math.round(srcW / targetAspect);
-    offsetX = 0;
-    offsetY = Math.round((srcH - cropH) / 2);
-  }
-  const cropped = await ImageEditor.cropImage(sourceUri, {
-    offset: {x: offsetX, y: offsetY},
-    size: {width: cropW, height: cropH},
-    displaySize: {width: BANNER_WIDTH, height: BANNER_HEIGHT},
-    resizeMode: 'cover',
-    format: 'png',
-    quality: 0.9,
-  });
   const destPath = `${BIO_IMAGE_DIR}/${imageId}.png`;
   try { await RNFS.unlink(destPath); } catch {}
-  await RNFS.copyFile(cropped.uri.replace('file://', ''), destPath);
-  try { await RNFS.unlink(cropped.uri.replace('file://', '')); } catch {}
-  return `file://${destPath}?t=${Date.now()}`;
+  try {
+    if (!ImageEditor || !ImageEditor.cropImage) throw new Error('ImageEditor unavailable');
+    const {width: srcW, height: srcH} = await getImageSize(sourceUri);
+    const targetAspect = BANNER_WIDTH / BANNER_HEIGHT;
+    const srcAspect = srcW / srcH;
+    let cropW: number, cropH: number, offsetX: number, offsetY: number;
+    if (srcAspect > targetAspect) {
+      cropH = srcH;
+      cropW = Math.round(srcH * targetAspect);
+      offsetX = Math.round((srcW - cropW) / 2);
+      offsetY = 0;
+    } else {
+      cropW = srcW;
+      cropH = Math.round(srcW / targetAspect);
+      offsetX = 0;
+      offsetY = Math.round((srcH - cropH) / 2);
+    }
+    const cropped = await ImageEditor.cropImage(sourceUri, {
+      offset: {x: offsetX, y: offsetY},
+      size: {width: cropW, height: cropH},
+      displaySize: {width: BANNER_WIDTH, height: BANNER_HEIGHT},
+      resizeMode: 'cover',
+      format: 'png',
+      quality: 0.9,
+    });
+    const croppedPath = (cropped as any).uri ? (cropped as any).uri.replace('file://', '') : String(cropped).replace('file://', '');
+    await RNFS.copyFile(croppedPath, destPath);
+    try { await RNFS.unlink(croppedPath); } catch {}
+    return `file://${destPath}?t=${Date.now()}`;
+  } catch {
+    const readPath = sourceUri.replace('file://', '');
+    const raw = await RNFS.readFile(readPath, 'base64');
+    await RNFS.writeFile(destPath, raw, 'base64');
+    return `file://${destPath}?t=${Date.now()}`;
+  }
 };
 
 export const migrateInlineImagesInDescriptions = async (

@@ -362,43 +362,90 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           extPreview.members.forEach((m: any, i: number) => { const eid = isPK ? (m.uuid || m.id) : m.id; const lm = merged.find(l => l.name.toLowerCase() === newM[i]?.name.toLowerCase()); if (eid && lm) idMap[eid] = lm.id; if (isPK && m.id && lm) idMap[m.id] = lm.id; });
           if (!isPK && extSel.customFields && extPreview.customFields && extPreview.customFields.length > 0) {
             const SP_TYPE_MAP: Record<string, CustomFieldType> = {'0': 'text', '1': 'number', '2': 'toggle', '3': 'date', '4': 'monthYear', '5': 'month', '6': 'year', 'text': 'text', 'number': 'number', 'checkbox': 'toggle', 'toggle': 'toggle', 'date': 'date', 'markdown': 'markdown'};
+            const normId = (raw: any): string => {
+              if (raw == null) return '';
+              if (typeof raw === 'string') return raw;
+              if (typeof raw === 'number') return String(raw);
+              if (typeof raw === 'object') {
+                if (typeof raw.$oid === 'string') return raw.$oid;
+                if (typeof raw._id === 'string') return raw._id;
+                if (typeof raw.id === 'string') return raw.id;
+                if (typeof raw.toString === 'function') {
+                  const s = raw.toString();
+                  if (s && s !== '[object Object]') return s;
+                }
+              }
+              return '';
+            };
             const existingDefs = await store.get<CustomFieldDef[]>(KEYS.customFieldDefs, []) || [];
             const fieldIdMap: Record<string, string> = {};
             const newDefs: CustomFieldDef[] = [];
+            const cfIdDiag: string[] = [];
             extPreview.customFields.forEach((cf: any, i: number) => {
-              const spId = cf.id || cf.uuid;
+              const candidates = [cf.id, cf.uuid, cf._id, cf.content?._id, cf.content?.id, cf.content?.uuid];
+              const spIds = candidates.map(normId).filter(Boolean);
               const spName = cf.content?.name || cf.name || `Field ${i + 1}`;
               const spType = cf.content?.type ?? cf.type;
               const existing = existingDefs.find(d => d.name.toLowerCase() === String(spName).toLowerCase());
+              let localId: string;
               if (existing) {
-                fieldIdMap[spId] = existing.id;
+                localId = existing.id;
               } else {
-                const newId = uid();
-                fieldIdMap[spId] = newId;
-                newDefs.push({id: newId, name: String(spName), type: SP_TYPE_MAP[String(spType)] || 'text', sortOrder: cf.content?.order ?? i});
+                localId = uid();
+                newDefs.push({id: localId, name: String(spName), type: SP_TYPE_MAP[String(spType)] || 'text', sortOrder: cf.content?.order ?? i});
               }
+              spIds.forEach(k => { fieldIdMap[k] = localId; });
+              cfIdDiag.push(`${spName}:[${spIds.join('|')}]`);
             });
             if (newDefs.length > 0) {
               await store.set(KEYS.customFieldDefs, [...existingDefs, ...newDefs]);
             }
             const currentMembers = await store.get<Member[]>(KEYS.members, []) || [];
+            let diagLogged = 0;
+            let wroteCount = 0;
             const updatedMembers = currentMembers.map(lm => {
-              const spMember = extPreview.members.find((sm: any) => idMap[sm.id] === lm.id);
+              let spMember = extPreview.members.find((sm: any) => idMap[normId(sm.id)] === lm.id);
+              if (!spMember) {
+                const lmNameNorm = (lm.name || '').trim().toLowerCase();
+                spMember = extPreview.members.find((sm: any) => {
+                  const n = (sm.content?.name || sm.name || '').trim().toLowerCase();
+                  return n && n === lmNameNorm;
+                });
+              }
               if (!spMember) return lm;
-              const info = spMember.content?.info;
+              const info = spMember.content?.info || spMember.info;
               if (!info || typeof info !== 'object') return lm;
               const existingCF: CustomFieldValue[] = lm.customFields || [];
               const newCF: CustomFieldValue[] = [...existingCF];
-              Object.entries(info).forEach(([spFieldId, value]) => {
-                const localFieldId = fieldIdMap[spFieldId];
+              const entries = Object.entries(info);
+              if (diagLogged < 2) {
+                const memberName = spMember.content?.name || spMember.name || '(unknown)';
+                const infoKeys = entries.map(([k]) => k);
+                const infoShapes = entries.slice(0, 3).map(([k, v]) => `${k}=${typeof v}${v && typeof v === 'object' ? `(keys:${Object.keys(v as any).join(',')})` : ''}`);
+                console.log(`[CF-IMPORT] member="${memberName}" infoKeys=[${infoKeys.join(',')}] shapes=[${infoShapes.join(' ')}] cfMap=[${cfIdDiag.join(' ')}]`);
+                diagLogged++;
+              }
+              let localWrote = 0;
+              entries.forEach(([spFieldId, rawValue]) => {
+                const localFieldId = fieldIdMap[normId(spFieldId)] || fieldIdMap[spFieldId];
                 if (!localFieldId) return;
-                const valStr = typeof value === 'object' ? JSON.stringify(value) : value;
+                let value: any = rawValue;
+                if (value && typeof value === 'object' && !Array.isArray(value)) {
+                  if ('value' in value) value = (value as any).value;
+                  else if ('content' in value && typeof (value as any).content === 'object' && 'value' in (value as any).content) value = (value as any).content.value;
+                }
+                if (value == null) return;
+                const valStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
+                if (valStr === '') return;
                 const existingIdx = newCF.findIndex(cv => cv.fieldId === localFieldId);
                 if (existingIdx >= 0) newCF[existingIdx] = {fieldId: localFieldId, value: valStr as any};
                 else newCF.push({fieldId: localFieldId, value: valStr as any});
+                localWrote++;
               });
+              if (localWrote > 0) wroteCount++;
               return {...lm, customFields: newCF};
             });
+            console.log(`[CF-IMPORT] wrote CF values to ${wroteCount}/${currentMembers.length} members`);
             await store.set(KEYS.members, updatedMembers);
           }
           if (extSel.frontHistory && extPreview.switches.length > 0) {
