@@ -70,6 +70,16 @@ export const CustomFieldsScreen = ({theme: T, onUpdate}: Props) => {
     save(fields.map(f => f.id === id ? {...f, markdown: !f.markdown} : f));
   };
 
+  const moveField = (id: string, direction: 'up' | 'down') => {
+    const idx = fields.findIndex(f => f.id === id);
+    if (direction === 'up' && idx === 0) return;
+    if (direction === 'down' && idx === fields.length - 1) return;
+    const updated = [...fields];
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    [updated[idx], updated[swapIdx]] = [updated[swapIdx], updated[idx]];
+    save(updated.map((f, i) => ({...f, sortOrder: i})));
+  };
+
   const typeLabel = (type: CustomFieldType) => t(`customFields.type${type.charAt(0).toUpperCase() + type.slice(1)}` as any);
 
   return (
@@ -84,7 +94,24 @@ export const CustomFieldsScreen = ({theme: T, onUpdate}: Props) => {
         {fields.map((fd, i) => (
           <View key={fd.id} style={{backgroundColor: T.card, borderRadius: 12, borderWidth: 1, borderColor: T.border, padding: 14, marginBottom: 10}}>
             <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-              <Text style={{fontSize: 16, color: T.muted}}>⋮⋮</Text>
+              <View style={{alignItems: 'center', gap: 2}}>
+                <TouchableOpacity
+                  onPress={() => moveField(fd.id, 'up')}
+                  disabled={i === 0}
+                  hitSlop={{top: 10, bottom: 6, left: 12, right: 12}}
+                  activeOpacity={0.6}
+                  style={{padding: 3}}>
+                  <Text style={{fontSize: 14, color: i === 0 ? T.border : T.muted, lineHeight: 14}}>▲</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => moveField(fd.id, 'down')}
+                  disabled={i === fields.length - 1}
+                  hitSlop={{top: 6, bottom: 10, left: 12, right: 12}}
+                  activeOpacity={0.6}
+                  style={{padding: 3}}>
+                  <Text style={{fontSize: 14, color: i === fields.length - 1 ? T.border : T.muted, lineHeight: 14}}>▼</Text>
+                </TouchableOpacity>
+              </View>
               <View style={{flex: 1}}>
                 {editId === fd.id ? (
                   <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>

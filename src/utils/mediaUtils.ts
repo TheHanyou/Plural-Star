@@ -36,6 +36,22 @@ export const saveAvatar = async (memberId: string, base64: string): Promise<stri
   return `file://${path}?t=${Date.now()}`;
 };
 
+// Save a base64-encoded banner image (used during restore). Mirrors saveAvatar — no
+// crop/resize is applied here; the banner is written as-is under its original format.
+// The exporter already ran saveBannerImage which cropped to 900x300, so the base64
+// payload in the export is already banner-sized. On import we just rehydrate it.
+export const saveBannerFromBase64 = async (memberId: string, base64: string): Promise<string> => {
+  await ensureDir(BIO_IMAGE_DIR);
+  const raw = base64.includes(',') ? base64.split(',')[1] : base64;
+  let ext = 'png';
+  if (raw.startsWith('/9j/')) ext = 'jpg';
+  else if (raw.startsWith('R0lGO')) ext = 'gif';
+  else if (raw.startsWith('UklGR')) ext = 'webp';
+  const path = `${BIO_IMAGE_DIR}/banner-${memberId}.${ext}`;
+  await RNFS.writeFile(path, raw, 'base64');
+  return `file://${path}?t=${Date.now()}`;
+};
+
 export const saveAvatarFromUrl = async (memberId: string, url: string): Promise<string | undefined> => {
   if (!url || !url.startsWith('http')) return undefined;
   try {

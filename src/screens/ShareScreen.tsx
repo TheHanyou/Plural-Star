@@ -10,7 +10,7 @@ import {SystemInfo, Member, FrontState, HistoryEntry, JournalEntry, ShareSetting
 type Section = 'export' | 'import' | 'shareview';
 type ImportSource = 'backup' | 'journal' | 'simplyplural' | 'pluralkit' | 'spfile';
 
-import {saveAvatarFromUrl, saveAvatar} from '../utils/mediaUtils';
+import {saveAvatarFromUrl, saveAvatar, saveBannerFromBase64} from '../utils/mediaUtils';
 
 interface Props {
   theme: any; system: SystemInfo; members: Member[]; front: FrontState | null;
@@ -26,7 +26,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const [restoreFile, setRestoreFile] = useState<string | null>(null);
   const [restorePath, setRestorePath] = useState<string | null>(null);
   const [restorePreview, setRestorePreview] = useState<boolean>(false);
-  const [restoreSel, setRestoreSel] = useState({system: true, members: true, avatars: true, journal: true, frontHistory: true, groups: true, chat: true, moods: true, palettes: true, settings: true, customFields: true, noteboards: true, polls: true});
+  const [restoreSel, setRestoreSel] = useState({system: true, members: true, avatars: true, banners: true, journal: true, frontHistory: true, groups: true, chat: true, moods: true, palettes: true, settings: true, customFields: true, noteboards: true, polls: true});
   const [restoreError, setRestoreError] = useState('');
   const [restoreDone, setRestoreDone] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -47,7 +47,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const togE = (k: keyof typeof extSel) => setExtSel(s => ({...s, [k]: !s[k]}));
 
   const [exportSel, setExportSel] = useState<ExportCategories>({
-    system: true, members: true, avatars: true, frontHistory: true, journal: true,
+    system: true, members: true, avatars: true, banners: true, frontHistory: true, journal: true,
     groups: true, chat: true, moods: true, palettes: true, settings: true,
     customFields: true, noteboards: true, polls: true,
   });
@@ -108,7 +108,118 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           // and is never stored in React state. This avoids holding 6MB+ in the component
           // tree the entire time the user is viewing the restore UI.
           const content = await RNFS.readFile(restorePath, 'utf8');
-          const data: ExportPayload = JSON.parse(content);
+          const rawData: any = JSON.parse(content);
+
+          // Detect Simply Plural JSON export shape and route through SP pipeline if so.
+          // SP exports are raw Mongo dumps: top-level keys are collection names, member
+          // docs have `_id` and `info`, and there is a `customFields` collection array.
+          // Plural-Space exports have `_meta.app === 'Plural Space'` and use `customFieldDefs`.
+          const looksLikeSP = !rawData._meta && Array.isArray(rawData.members) && rawData.members.length > 0
+            && rawData.members[0]._id !== undefined && Array.isArray(rawData.customFields);
+          if (looksLikeSP) {
+            console.log(`[SP-JSON] detected SP export: members=${rawData.members.length} customFields=${rawData.customFields.length}`);
+            const normId = (raw: any): string => {
+              if (raw == null) return '';
+              if (typeof raw === 'string') return raw;
+              if (typeof raw === 'number') return String(raw);
+              if (typeof raw === 'object') {
+                if (typeof raw.$oid === 'string') return raw.$oid;
+                if (typeof raw._id === 'string') return raw._id;
+                if (typeof raw.id === 'string') return raw.id;
+                if (typeof raw.toString === 'function') { const s = raw.toString(); if (s && s !== '[object Object]') return s; }
+              }
+              return '';
+            };
+            const SP_TYPE_MAP: Record<string, CustomFieldType> = {'0': 'text', '1': 'number', '2': 'toggle', '3': 'date', '4': 'monthYear', '5': 'month', '6': 'year', 'text': 'text', 'number': 'number', 'checkbox': 'toggle', 'toggle': 'toggle', 'date': 'date', 'markdown': 'markdown'};
+            const existingMembers = await store.get<Member[]>(KEYS.members, []) || [];
+            const byNameLower: Record<string, Member> = {};
+            existingMembers.forEach(lm => { const n = (lm.name || '').trim().toLowerCase(); if (n) byNameLower[n] = lm; });
+            // Build local members list from SP members, reusing ids for name matches so CF values land on the right records.
+            const newMembers: Member[] = rawData.members.map((sp: any) => {
+              const spName = String(sp.name || '').trim();
+              const nameLower = spName.toLowerCase();
+              const existing = byNameLower[nameLower];
+              const id = existing ? existing.id : uid();
+              return {
+                id,
+                name: spName || 'Unknown',
+                pronouns: String(sp.pronouns || ''),
+                role: '',
+                color: String(sp.color || '#DAA520'),
+                description: String(sp.desc || ''),
+                archived: !!sp.archived,
+                customFields: existing?.customFields || [],
+                groupIds: existing?.groupIds || [],
+                tags: existing?.tags || [],
+                avatar: existing?.avatar,
+              } as Member;
+            });
+            if (restoreSel.members) await store.set(KEYS.members, newMembers);
+            // Build idMap SP_id -> local id
+            const idMap: Record<string, string> = {};
+            rawData.members.forEach((sp: any, i: number) => { const sid = normId(sp._id); if (sid) idMap[sid] = newMembers[i].id; });
+            // Merge custom field defs
+            if (restoreSel.customFields && rawData.customFields.length > 0) {
+              const existingDefs = await store.get<CustomFieldDef[]>(KEYS.customFieldDefs, []) || [];
+              const fieldIdMap: Record<string, string> = {};
+              const newDefs: CustomFieldDef[] = [];
+              rawData.customFields.forEach((cf: any, i: number) => {
+                const candidates = [cf._id, cf.id, cf.uuid].map(normId).filter(Boolean);
+                const spName = String(cf.name || `Field ${i + 1}`);
+                const spType = cf.type;
+                const existing = existingDefs.find(d => d.name.toLowerCase() === spName.toLowerCase());
+                let localId: string;
+                if (existing) { localId = existing.id; } else {
+                  localId = uid();
+                  newDefs.push({id: localId, name: spName, type: SP_TYPE_MAP[String(spType)] || 'text', sortOrder: cf.order ?? i});
+                }
+                candidates.forEach(k => { fieldIdMap[k] = localId; });
+              });
+              if (newDefs.length > 0) await store.set(KEYS.customFieldDefs, [...existingDefs, ...newDefs]);
+              // Write per-member CF values
+              const membersForUpdate = await store.get<Member[]>(KEYS.members, []) || [];
+              const updatedMembers = membersForUpdate.map(lm => {
+                const spMember = rawData.members.find((sp: any) => idMap[normId(sp._id)] === lm.id);
+                if (!spMember) return lm;
+                const info = spMember.info;
+                if (!info || typeof info !== 'object') return lm;
+                const existingCF: CustomFieldValue[] = lm.customFields || [];
+                const newCF: CustomFieldValue[] = [...existingCF];
+                Object.entries(info).forEach(([spFieldId, rawValue]: [string, any]) => {
+                  const localFieldId = fieldIdMap[normId(spFieldId)] || fieldIdMap[spFieldId];
+                  if (!localFieldId) return;
+                  let value: any = rawValue;
+                  if (value && typeof value === 'object' && !Array.isArray(value)) {
+                    if ('value' in value) value = value.value;
+                    else if ('content' in value && typeof value.content === 'object' && 'value' in value.content) value = value.content.value;
+                  }
+                  if (value == null) return;
+                  const valStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
+                  if (valStr === '') return;
+                  const existingIdx = newCF.findIndex(cv => cv.fieldId === localFieldId);
+                  if (existingIdx >= 0) newCF[existingIdx] = {fieldId: localFieldId, value: valStr as any};
+                  else newCF.push({fieldId: localFieldId, value: valStr as any});
+                });
+                return {...lm, customFields: newCF};
+              });
+              await store.set(KEYS.members, updatedMembers);
+            }
+            // Front history
+            if (restoreSel.frontHistory && Array.isArray(rawData.frontHistory) && rawData.frontHistory.length > 0) {
+              const sp_switches = rawData.frontHistory.map((s: any) => ({id: normId(s._id), content: s}));
+              const newH = convertSPSwitches(sp_switches, idMap);
+              if (newH.length > 0) {
+                const merged = [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000);
+                await store.set(KEYS.history, merged);
+                const importedOpenFront = findOpenFrontInHistory(merged);
+                if (importedOpenFront) await store.set(KEYS.front, importedOpenFront);
+              }
+            }
+            setRestoreDone(true); setRestoring(false);
+            return;
+          }
+          // Plural Space native JSON export path below.
+          const data: ExportPayload = rawData;
           // Normalize inline avatars (pre-1.2 format) into the avatars dict.
           // Use data.avatars directly throughout — never spread/copy it.
           // A 13MB backup has ~12MB in that dict; copying it doubles peak memory usage.
@@ -159,6 +270,27 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
               }
               await store.set(KEYS.members, updated);
             }
+          }
+          // Banner restore: same pattern as avatars. Banners were stripped from member records
+          // on export and shipped in data.banners as base64. Rehydrate each one onto a local
+          // banner- path and patch the member record's banner field. If banners is missing or
+          // unselected, member records simply have no banner field (no stale broken file:// URIs).
+          if (restoreSel.banners && data.banners && Object.keys(data.banners).length > 0) {
+            const currentMembers = await store.get<Member[]>(KEYS.members) || [];
+            const withBanners: Member[] = [...currentMembers];
+            let changed = false;
+            for (let i = 0; i < withBanners.length; i++) {
+              const memberId = withBanners[i].id;
+              const raw = data.banners[memberId];
+              if (!raw) continue;
+              delete data.banners[memberId];
+              try {
+                const b64 = raw.startsWith('data:') ? raw.split(',')[1] : raw;
+                const fileUri = await saveBannerFromBase64(memberId, b64).catch(() => null);
+                if (fileUri) { withBanners[i] = {...withBanners[i], banner: fileUri}; changed = true; }
+              } catch { /* skip — member keeps no banner */ }
+            }
+            if (changed) await store.set(KEYS.members, withBanners);
           }
           if (restoreSel.journal && data.journal) await store.set(KEYS.journal, data.journal);
           if (restoreSel.frontHistory && data.frontHistory) {
@@ -663,6 +795,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                 ['system', t('share.systemNameDesc')],
                 ['members', t('share.memberProfiles')],
                 ['avatars', t('share.profilePictures')],
+                ['banners', t('share.banners', {defaultValue: 'Banners'})],
                 ['frontHistory', t('share.frontHistory')],
                 ['journal', t('share.journalEntries')],
                 ['groups', t('share.memberGroups')],
@@ -750,6 +883,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                       ['system', t('share.systemNameDesc')],
                       ['members', t('share.memberProfiles')],
                       ['avatars', t('share.profilePictures')],
+                      ['banners', t('share.banners', {defaultValue: 'Banners'})],
                       ['frontHistory', t('share.frontHistory')],
                       ['journal', t('share.journalEntries')],
                       ['groups', t('share.memberGroups')],

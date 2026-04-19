@@ -413,6 +413,7 @@ export const MemberModal = ({visible, theme: T, member, members, groups, onSave,
     <Sheet visible={visible} title={isNew ? t('modal.addMember') : t('modal.editMember')} theme={T} onClose={onClose} footer={<>
       {!isNew && !confirmDel && <Btn variant="danger" T={T} onPress={() => setConfirmDel(true)}>{t('common.delete')}</Btn>}
       {confirmDel && (<><Btn variant="danger" T={T} onPress={() => {onDelete(member.id); onClose();}}>{t('modal.confirmDelete')}</Btn><Btn variant="ghost" T={T} onPress={() => setConfirmDel(false)}>{t('common.cancel')}</Btn></>)}
+      {!confirmDel && <Btn variant="ghost" T={T} onPress={onClose}>{t('common.cancel')}</Btn>}
       {!confirmDel && <Btn T={T} onPress={() => {if (f.name.trim()) {onSave(f); onClose();}}}>{t('common.save')}</Btn>}</>}>
 
       {/* Sub-tabs */}

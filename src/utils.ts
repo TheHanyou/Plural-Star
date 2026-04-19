@@ -169,6 +169,7 @@ export interface ExportPayload {
   front?: FrontState | null;
   palettes?: any[];
   avatars?: Record<string, string>;
+  banners?: Record<string, string>;
   customMoods?: string[];
   customFieldDefs?: CustomFieldDef[];
   noteboards?: NoteboardEntry[];

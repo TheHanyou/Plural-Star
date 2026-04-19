@@ -21,6 +21,7 @@ export const PollsScreen = ({theme: T, members}: Props) => {
   const [hideVoters, setHideVoters] = useState(false);
   const [voterId, setVoterId] = useState(activeMembers[0]?.id || '');
   const [voterPickerOpen, setVoterPickerOpen] = useState(false);
+  const [voterSearch, setVoterSearch] = useState('');
 
   useEffect(() => {
     store.get<MemberPoll[]>(KEYS.polls, []).then(p => setPolls(p || []));
@@ -83,13 +84,30 @@ export const PollsScreen = ({theme: T, members}: Props) => {
 
       {voterPickerOpen && (
         <View style={{marginHorizontal: 16, backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, marginBottom: 8}}>
-          {activeMembers.map(m => (
-            <TouchableOpacity key={m.id} onPress={() => {setVoterId(m.id); setVoterPickerOpen(false);}} activeOpacity={0.7}
-              style={{paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: T.border,
-                backgroundColor: voterId === m.id ? `${T.accent}15` : 'transparent'}}>
-              <Text style={{fontSize: fs(13), color: voterId === m.id ? T.accent : T.text}}>{m.name}</Text>
-            </TouchableOpacity>
-          ))}
+          <TextInput
+            value={voterSearch}
+            onChangeText={setVoterSearch}
+            placeholder={t('common.search') || 'Search…'}
+            placeholderTextColor={T.muted}
+            autoFocus
+            style={{
+              backgroundColor: T.surface, color: T.text, fontSize: fs(13),
+              paddingHorizontal: 12, paddingVertical: 8,
+              borderBottomWidth: 1, borderBottomColor: T.border,
+              borderTopLeftRadius: 10, borderTopRightRadius: 10,
+            }}
+          />
+          <ScrollView style={{maxHeight: 220}} keyboardShouldPersistTaps="handled">
+            {activeMembers
+              .filter(m => !voterSearch.trim() || m.name.toLowerCase().includes(voterSearch.trim().toLowerCase()))
+              .map(m => (
+                <TouchableOpacity key={m.id} onPress={() => {setVoterId(m.id); setVoterPickerOpen(false); setVoterSearch('');}} activeOpacity={0.7}
+                  style={{paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: T.border,
+                    backgroundColor: voterId === m.id ? `${T.accent}15` : 'transparent'}}>
+                  <Text style={{fontSize: fs(13), color: voterId === m.id ? T.accent : T.text}}>{m.name}</Text>
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
         </View>
       )}
 

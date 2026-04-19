@@ -25,6 +25,7 @@ export interface ExportCategories {
   system?: boolean;
   members?: boolean;
   avatars?: boolean;
+  banners?: boolean;
   frontHistory?: boolean;
   journal?: boolean;
   groups?: boolean;
@@ -38,7 +39,7 @@ export interface ExportCategories {
 }
 
 const ALL_CATEGORIES: ExportCategories = {
-  system: true, members: true, avatars: true, frontHistory: true, journal: true,
+  system: true, members: true, avatars: true, banners: true, frontHistory: true, journal: true,
   groups: true, chat: true, moods: true, palettes: true, settings: true,
   customFields: true, noteboards: true, polls: true,
 };
@@ -92,7 +93,30 @@ export const buildExportPayload = async (
       }
     }
   }
-  const membersForExport = members.map(({avatar: _a, ...rest}) => rest as Member);
+  // Extract banners (only if banners category selected) — same pattern as avatars
+  const banners: Record<string, string> = {};
+  if (cat.banners) {
+    for (const m of members) {
+      if (!m.banner) continue;
+      if (m.banner.startsWith('data:')) {
+        banners[m.id] = m.banner;
+      } else {
+        try {
+          const filePath = m.banner.replace(/\?.*$/, '').replace(/^file:\/\//, '');
+          const b64 = await RNFS.readFile(filePath, 'base64');
+          let mime = 'image/png';
+          if (b64.startsWith('/9j/')) mime = 'image/jpeg';
+          else if (b64.startsWith('R0lGO')) mime = 'image/gif';
+          else if (b64.startsWith('UklGR')) mime = 'image/webp';
+          banners[m.id] = `data:${mime};base64,${b64}`;
+        } catch {}
+      }
+    }
+  }
+  // Strip avatar AND banner file paths from exported member records — they are device-local
+  // file:// URIs that do not resolve on other devices. The image data travels in the
+  // `avatars` and `banners` dicts (when selected), and restore rebuilds the file path.
+  const membersForExport = members.map(({avatar: _a, banner: _b, ...rest}) => rest as Member);
 
   return {
     _meta: {
@@ -111,6 +135,7 @@ export const buildExportPayload = async (
     front: cat.frontHistory ? (front || undefined) : undefined,
     palettes: cat.palettes ? (palettes || []) : [],
     avatars: cat.avatars ? avatars : {},
+    banners: cat.banners ? banners : {},
     customMoods: cat.moods ? (settings?.customMoods || []) : [],
     customFieldDefs: cat.customFields ? (customFieldDefs || []) : [],
     noteboards: cat.noteboards ? (noteboards || []) : [],
