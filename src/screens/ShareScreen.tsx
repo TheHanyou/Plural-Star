@@ -86,12 +86,37 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const handlePickBackup = async () => {
     setRestoreError(''); setRestorePreview(false); setRestorePath(null); setRestoreFile(null); setRestoreDone(false);
     try {
-      const [res] = await safePick({type: ['application/json']});
-      // Store the path only — do not read or parse the file yet.
-      // The file is only loaded when the user presses Restore, after they've
-      // made their selection choices. This avoids loading large backups into
-      // memory before the user has decided what they actually want to restore.
-      setRestorePath(getPickedFilePath(res));
+      // Accept application/json and text/plain — many Android file managers tag
+      // .json files as text/plain, which would hide the file from a strict filter.
+      const [res] = await safePick({type: ['application/json', 'text/plain']});
+      // Read the file immediately while the document picker's temp copy is still
+      // valid. On some Android devices (Motorola in particular) fileCopyUri can
+      // be null, leaving getPickedFilePath returning a raw content:// URI that
+      // RNFS may not be able to read later from handleRestore. Reading eagerly
+      // avoids that race and also avoids a stale-temp-file crash on those devices.
+      const pickedPath = getPickedFilePath(res);
+      let content: string;
+      try {
+        content = await RNFS.readFile(pickedPath, 'utf8');
+      } catch {
+        // Last-resort: try the original uri in case getPickedFilePath lost something.
+        content = await RNFS.readFile(res.uri || res.fileCopyUri || pickedPath, 'utf8');
+      }
+      // Quick sanity check — confirm it's a Plural Space backup before proceeding.
+      let parsed: any;
+      try { parsed = JSON.parse(content); } catch {
+        setRestoreError('File is not valid JSON. Please pick a Plural Space backup (.json) file.');
+        return;
+      }
+      if (!parsed._meta || parsed._meta.app !== 'Plural Space') {
+        setRestoreError('This does not look like a Plural Space backup. Use the Simply Plural option for SP exports.');
+        return;
+      }
+      // Copy into a reliable app-internal temp path so handleRestore can always
+      // read it regardless of what the OS does with the document picker's copy.
+      const safeTempPath = `${RNFS.TemporaryDirectoryPath}/ps_restore_pending.json`;
+      await RNFS.writeFile(safeTempPath, content, 'utf8');
+      setRestorePath(safeTempPath);
       setRestoreFile(res.name || 'backup.json');
       setRestorePreview(true);
     } catch (e: any) {if (!isPickerCancel(e)) setRestoreError(e.message || 'Could not read file.');}
@@ -327,6 +352,12 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           setRestoreError(e.message || 'Restore failed');
         } finally {
           setRestoring(false);
+          // Clean up our internal temp copy regardless of outcome.
+          try {
+            const safeTempPath = `${RNFS.TemporaryDirectoryPath}/ps_restore_pending.json`;
+            const exists = await RNFS.exists(safeTempPath);
+            if (exists) await RNFS.unlink(safeTempPath);
+          } catch {}
         }
       }},
     ]);

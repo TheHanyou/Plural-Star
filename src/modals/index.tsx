@@ -345,6 +345,7 @@ export const MemberModal = ({visible, theme: T, member, members, groups, onSave,
   const [allNotes, setAllNotes] = useState<NoteboardEntry[]>([]);
   const [noteText, setNoteText] = useState('');
   const [noteAuthorId, setNoteAuthorId] = useState<string>('');
+  const [markdownEditFieldId, setMarkdownEditFieldId] = useState<string | null>(null);
 
   useEffect(() => {
     store.get<CustomFieldDef[]>(KEYS.customFieldDefs, []).then(d => setFieldDefs(d || []));
@@ -567,9 +568,25 @@ export const MemberModal = ({visible, theme: T, member, members, groups, onSave,
                         style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, fontSize: 13, fontFamily: 'monospace'}} />
                     </View>
                   </View>
+                ) : (fd.type === 'markdown' || (fd.type === 'text' && fd.markdown)) ? (
+                  <View style={{marginBottom: 0}}>
+                    <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 5, fontWeight: '600'}}>{fd.name}</Text>
+                    <TouchableOpacity onPress={() => setMarkdownEditFieldId(fd.id)} activeOpacity={0.7}
+                      style={{backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderRadius: 8, padding: 12, minHeight: 72}}>
+                      {val ? <RichDescription text={String(val)} T={T} /> : <Text style={{fontSize: 13, color: T.muted}}>{fd.name}…</Text>}
+                    </TouchableOpacity>
+                    <RichTextEditor
+                      visible={markdownEditFieldId === fd.id}
+                      title={fd.name}
+                      initialContent={String(val || '')}
+                      theme={T}
+                      onSave={(html: string) => { setFieldVal(fd.id, html); setMarkdownEditFieldId(null); }}
+                      onClose={() => setMarkdownEditFieldId(null)}
+                    />
+                  </View>
                 ) : (
                   <Field label={fd.name} value={String(val || '')} onChange={(v: string) => setFieldVal(fd.id, fd.type === 'number' ? (v === '' ? null : Number(v)) : v)}
-                    placeholder={fd.name} multiline={fd.type === 'markdown'} T={T} />
+                    placeholder={fd.name} T={T} />
                 )}
               </View>
             );
