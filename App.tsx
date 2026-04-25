@@ -36,7 +36,7 @@ const TAB_ICONS: Record<Tab, string> = {
   front: '◈', members: '◇', hub: '⬡', journal: '◉', history: '◷',
 };
 
-const DEFAULT_SETTINGS: AppSettings = {locations: [], customMoods: [], lightMode: false, gpsEnabled: false, filesEnabled: true, language: 'en', notificationsEnabled: true, activePaletteId: '__dark__', textScale: 1.0};
+const DEFAULT_SETTINGS: AppSettings = {locations: [], customMoods: [], lightMode: false, gpsEnabled: false, filesEnabled: true, language: 'en', notificationsEnabled: true, noteboardNotifications: true, activePaletteId: '__dark__', textScale: 1.0};
 
 const getGPSLocation = (): Promise<string | null> =>
   new Promise(async resolve => {
@@ -211,6 +211,25 @@ function MainAppContent() {
       await notifee.requestPermission();
     } catch (e) { console.error('[PS] notification permission error:', e); }
     if (Platform.OS !== 'android') return;
+    // Android 13+ (API 33) introduced runtime POST_NOTIFICATIONS permission.
+    // notifee.requestPermission() does not reliably trigger this dialog, so we
+    // also request it explicitly via PermissionsAndroid.
+    try {
+      if (Platform.Version >= 33) {
+        const result = await PermissionsAndroid.request(
+          'android.permission.POST_NOTIFICATIONS' as any,
+          {
+            title: t('notification.notifPermTitle'),
+            message: t('notification.notifPermMsg'),
+            buttonPositive: t('notification.allow'),
+            buttonNegative: t('notification.notNow'),
+          },
+        );
+        if (result !== PermissionsAndroid.RESULTS.GRANTED) {
+          console.warn('[PS] POST_NOTIFICATIONS denied:', result);
+        }
+      }
+    } catch (e) { console.error('[PS] POST_NOTIFICATIONS request error:', e); }
     try {
       if (appSettings.gpsEnabled) {
         await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
