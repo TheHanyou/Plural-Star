@@ -132,7 +132,7 @@ export const showFrontNotification = async (
         ongoing: true,
         onlyAlertOnce: true,
         autoCancel: false,
-        smallIcon: 'ic_stat_notif',
+        smallIcon: 'ic_stat_notification',
         importance: AndroidImportance.LOW,
         visibility: AndroidVisibility.PUBLIC,
         pressAction: {id: 'default'},
@@ -183,7 +183,7 @@ export const scheduleFrontCheckReminder = async (intervalHours: number) => {
         body: i18n.t('notification.whosFronting', {defaultValue: "Who's fronting right now?"}),
         android: {
           channelId: REMINDER_CHANNEL_ID,
-          smallIcon: 'ic_stat_notif',
+          smallIcon: 'ic_stat_notification',
           importance: AndroidImportance.DEFAULT,
           visibility: AndroidVisibility.PUBLIC,
           pressAction: {id: 'default'},
@@ -244,7 +244,7 @@ export const showNoteboardNotification = async (
       body: summary,
       android: {
         channelId: REMINDER_CHANNEL_ID,
-        smallIcon: 'ic_stat_notif',
+        smallIcon: 'ic_stat_notification',
         importance: AndroidImportance.DEFAULT,
         visibility: AndroidVisibility.PUBLIC,
         pressAction: {id: 'default'},

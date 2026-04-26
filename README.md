@@ -78,7 +78,7 @@ Migrating from Simply Plural or PluralKit? Import your full system data — memb
 Export your full system data as JSON (reimportable), HTML (opens in Google Docs), or send a formatted summary to any email address. Granular per-category toggles — pick exactly what to export or restore: system info, members, avatars, banners, front history, journal, groups, chat, moods, palettes, settings, custom fields, noteboards, polls. Import `.txt`, `.md`, or `.json` files directly as journal entries.
 
 **🌐 Multilingual**  
-Full interface available in English, Español, Français, Deutsch, Português, Suomi, Norsk, 中文, and 日本語 — 9 languages total. Auto-detects your device language on first launch. Change anytime via dropdown in System Settings.
+Full interface available in English, Español, Français, Deutsch, Português, Suomi, Norsk, русский язык, Ukrainian, 中文, and 日本語 — 11 languages total. Auto-detects your device language on first launch. Change anytime via the dropdown in System Settings.
 
 **Other Features**
 - Obsidian Blue dark theme and Steel light theme built-in, plus 10 custom palette slots — define your own four-color theme

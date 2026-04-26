@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>PluralSpace</string>
+	<string>Plural Star</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -35,7 +35,9 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Plural Space uses your approximate location to tag where you are when fronting.</string>
+	<string>Plural Star uses your approximate location to tag where you are when fronting.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Plural Star needs access to your photo library so you can choose member avatars and banners.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UILaunchScreen</key>
