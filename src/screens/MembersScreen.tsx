@@ -36,10 +36,13 @@ const TIER_BADGE_KEY: Record<FrontTierKey, {i18nKey: string; colorKey: string}> 
 
 interface Props {
   theme: any; members: Member[]; front: FrontState | null; groups: MemberGroup[];
+  initialSortMode?: MemberSortMode;
   onAdd: () => void; onEdit: (member: Member) => void; onSaveGroups: (groups: MemberGroup[]) => void;
+  onSaveSortMode?: (mode: MemberSortMode) => void;
+  onReorderMember?: (id: string, direction: 'up' | 'down') => void;
 }
 
-export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, onSaveGroups}: Props) => {
+export const MembersScreen = ({theme: T, members, front, groups, initialSortMode, onAdd, onEdit, onSaveGroups, onSaveSortMode, onReorderMember}: Props) => {
   const {t} = useTranslation();
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const [memberTab, setMemberTab] = useState<'active' | 'archived'>('active');
@@ -48,7 +51,7 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [showManageGroups, setShowManageGroups] = useState(false);
-  const [sortMode, setSortMode] = useState<MemberSortMode>('alphabetical');
+  const [sortMode, setSortMode] = useState<MemberSortMode>(initialSortMode || 'alphabetical');
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupColor, setNewGroupColor] = useState(PALETTE[0]);
   const [editGroupId, setEditGroupId] = useState<string | null>(null);
@@ -87,16 +90,30 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
     setEditGroupId(null); setEditGroupName('');
   };
 
-  const renderMember = ({item: m}: {item: Member}) => {
+  const showReorder = sortMode === 'manual' && memberTab === 'active' && !query && !activeGroup && !activeTag;
+
+  const renderMember = ({item: m, index}: {item: Member; index: number}) => {
     const tier = getMemberTier(m.id, front);
     const isFronting = allFrontIds.has(m.id);
     const badgeCfg = tier ? TIER_BADGE_KEY[tier] : null;
     const badgeColor = badgeCfg ? (T as any)[badgeCfg.colorKey] || T.accent : T.accent;
     const memberGroups = groups.filter(g => (m.groupIds || []).includes(g.id));
+    const isFirst = index === 0;
+    const isLast = index === filtered.length - 1;
     return (
       <TouchableOpacity activeOpacity={0.75} style={[s.card, {backgroundColor: T.card, borderColor: isFronting ? `${m.color}60` : T.border, marginBottom: 8}]}
         onPress={() => setExpanded(expanded === m.id ? null : m.id)}>
         <View style={{flexDirection: 'row', alignItems: 'center', gap: 14}}>
+          {showReorder && (
+            <View style={{justifyContent: 'center', gap: 2, marginRight: -6}}>
+              <TouchableOpacity onPress={() => !isFirst && onReorderMember && onReorderMember(m.id, 'up')} hitSlop={{top: 6, bottom: 2, left: 8, right: 8}} disabled={isFirst}>
+                <Text style={{fontSize: fs(14), color: isFirst ? T.muted : T.dim, opacity: isFirst ? 0.3 : 1}}>▲</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => !isLast && onReorderMember && onReorderMember(m.id, 'down')} hitSlop={{top: 2, bottom: 6, left: 8, right: 8}} disabled={isLast}>
+                <Text style={{fontSize: fs(14), color: isLast ? T.muted : T.dim, opacity: isLast ? 0.3 : 1}}>▼</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           <Avatar member={m} size={44} pulse={isFronting} T={T} />
           <View style={{flex: 1, overflow: 'hidden'}}>
             <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2}}>
@@ -157,7 +174,7 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom: 10, flexGrow: 0}}>
         <View style={{flexDirection: 'row', gap: 6, paddingHorizontal: 2}}>
           {(['alphabetical', 'reverse-alphabetical', 'age', 'color', 'role', 'manual'] as const).map(mode => (
-            <TouchableOpacity key={mode} onPress={() => setSortMode(mode)} activeOpacity={0.7}
+            <TouchableOpacity key={mode} onPress={() => {setSortMode(mode); onSaveSortMode && onSaveSortMode(mode);}} activeOpacity={0.7}
               style={{paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1,
                 backgroundColor: sortMode === mode ? `${T.accent}20` : T.surface,
                 borderColor: sortMode === mode ? `${T.accent}50` : T.border}}>
@@ -257,7 +274,7 @@ export const MembersScreen = ({theme: T, members, front, groups, onAdd, onEdit, 
       renderItem={renderMember}
       keyExtractor={(m: Member) => m.id}
       estimatedItemSize={120}
-      extraData={{expanded, T, front, groups}}
+      extraData={{expanded, T, front, groups, showReorder, filteredLength: filtered.length}}
       contentContainerStyle={{padding: 16, paddingBottom: 32, backgroundColor: T.bg}}
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={ListHeader}
