@@ -38,6 +38,7 @@
 > **Renamed from Plural Space.** The app, repo, and subreddit were renamed to Plural Star for community clarity — another app was also using the Plural Space name. Your existing installation, data, backups, and Buy-Me-a-Coffee links all continue to work; on-device data and old Plural Space `.json` exports are fully compatible with Plural Star.
 >
 > The iOS build artifact is still named `PluralSpace.ipa` because the underlying Xcode project name hasn't been migrated (doing so requires a separate native-module refactor). This is cosmetic only — the installed app shows as Plural Star everywhere on your device.
+Plural Star is a private, offline-first system management app built for plural individuals — those with DID, OSDD, or any form of plurality.
 
 Made in part with AI assistance, and is one of the main reasons we went Open Source. So that those wishing to, or those with concerns, could examine the code.
 
