@@ -569,7 +569,20 @@ function MainAppContent() {
       case 'front':
         return <FrontScreen theme={C} front={front} getMember={getMember} onSetFront={() => setShowSetFront(true)} onUpdateNote={updateFrontNote} onEditDetails={handleEditDetails} />;
       case 'members':
-        return <MembersScreen theme={C} members={members} front={front} groups={groups} onAdd={() => {setEditMember(null); setShowMember(true);}} onEdit={m => {setEditMember(m); setShowMember(true);}} onSaveGroups={saveGroups} />;
+        return <MembersScreen theme={C} members={members} front={front} groups={groups} initialSortMode={appSettings.memberSortMode} onAdd={() => {setEditMember(null); setShowMember(true);}} onEdit={m => {setEditMember(m); setShowMember(true);}} onSaveGroups={saveGroups} onSaveSortMode={async (mode) => {const next = {...appSettings, memberSortMode: mode}; setAppSettings(next); await store.set(KEYS.settings, next);}} onReorderMember={async (id, direction) => {
+          const active = members.filter(m => !m.archived);
+          const archived = members.filter(m => m.archived);
+          const needsInit = active.some(m => m.sortOrder === undefined);
+          const seeded = needsInit ? active.map((m, i) => ({...m, sortOrder: i})) : [...active];
+          const ordered = [...seeded].sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
+          const idx = ordered.findIndex(m => m.id === id);
+          if (idx === -1) return;
+          const swapWith = direction === 'up' ? idx - 1 : idx + 1;
+          if (swapWith < 0 || swapWith >= ordered.length) return;
+          [ordered[idx], ordered[swapWith]] = [ordered[swapWith], ordered[idx]];
+          const reindexed = ordered.map((m, i) => ({...m, sortOrder: i}));
+          await saveMembers([...reindexed, ...archived]);
+        }} />;
       case 'hub':
         return <HubScreen theme={C} members={members} history={history} front={front} onSaveHistory={saveHistory} onSetFront={handleHubSetFront} renderShareScreen={renderShareScreen} renderStatsScreen={renderStatsScreen} renderChatScreen={renderChatScreen} renderCustomFieldsScreen={renderCustomFieldsScreen} renderPollsScreen={renderPollsScreen} resetKey={hubResetKey} />;
       case 'journal':
