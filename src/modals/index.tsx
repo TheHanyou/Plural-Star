@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useEffect} from 'react';
-import {View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView, Image, Linking, Keyboard, Alert} from 'react-native';
+import {View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView, Image, Keyboard, Alert} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import RNFS from 'react-native-fs';
 import {safePick, isPickerCancel, getPickedFilePath} from '../utils/safePicker';
@@ -999,11 +999,6 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
           <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 8}}>{items.map((l: string) => (<TouchableOpacity key={l} onPress={() => setItems(items.filter((x: string) => x !== l))} activeOpacity={0.7} style={{flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1, borderColor: T.border, backgroundColor: T.surface}}><Text style={{fontSize: 12, color: T.dim}}>{l}</Text><Text style={{fontSize: 10, color: T.danger}}>✕</Text></TouchableOpacity>))}</View>
           <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}><TextInput value={val} onChangeText={setVal} placeholder={placeholder} placeholderTextColor={T.muted} style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontSize: 13}} onSubmitEditing={add} returnKeyType="done" /><Btn T={T} onPress={add} style={{paddingHorizontal: 12, paddingVertical: 9}}>{t('common.add')}</Btn></View>
         </View>))}
-      <View style={{borderTopWidth: 1, borderTopColor: T.border, paddingTop: 14, marginTop: 14, alignItems: 'center'}}>
-        <TouchableOpacity onPress={() => Linking.openURL('https://www.buymeacoffee.com/PluralStar')} activeOpacity={0.8} style={{paddingVertical: 11, paddingHorizontal: 28, borderRadius: 8, borderWidth: 1, borderColor: T.accent, backgroundColor: T.accentBg}}>
-          <Text style={{fontSize: 15, fontWeight: '600', color: T.accent}}>{t('modal.supportPS')}</Text>
-        </TouchableOpacity>
-      </View>
     </Sheet>
   );
 };

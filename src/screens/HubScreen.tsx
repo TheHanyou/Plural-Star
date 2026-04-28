@@ -11,7 +11,7 @@ const Avatar = ({member, size = 26, T}: {member?: Member | null; size?: number; 
   </View>
 );
 
-type HubTile = 'share' | 'retroHistory' | 'statistics' | 'chat' | 'customFields' | 'polls' | 'discord' | 'credits';
+type HubTile = 'share' | 'retroHistory' | 'statistics' | 'chat' | 'customFields' | 'polls' | 'discord' | 'credits' | 'supportPS';
 
 interface Props {
   theme: any;
@@ -345,6 +345,7 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
 };
 
 const DISCORD_URL = 'https://discord.gg/FFQw33cu8m';
+const BMC_URL = 'https://www.buymeacoffee.com/PluralStar';
 
 export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onSetFront, renderShareScreen, renderStatsScreen, renderChatScreen, renderCustomFieldsScreen, renderPollsScreen, resetKey}: Props) => {
   const {t} = useTranslation();
@@ -467,11 +468,14 @@ export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onS
     {id: 'polls', icon: '📊', label: t('polls.title')},
     {id: 'credits', icon: '✦', label: t('hub.credits', {defaultValue: 'Credits'})},
     {id: 'discord', icon: '💬', label: t('hub.discord'), external: true},
+    {id: 'supportPS', icon: '☕', label: t('hub.supportPS'), external: true},
   ];
 
   const handleTilePress = (tile: typeof tiles[0]) => {
     if (tile.external && tile.id === 'discord') {
       Linking.openURL(DISCORD_URL);
+    } else if (tile.external && tile.id === 'supportPS') {
+      Linking.openURL(BMC_URL);
     } else {
       setActiveTile(tile.id);
     }
