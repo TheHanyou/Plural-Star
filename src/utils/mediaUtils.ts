@@ -65,6 +65,21 @@ export const saveAvatarFromUrl = async (memberId: string, url: string): Promise<
   } catch { return undefined; }
 };
 
+const BANNER_DIR = `${RNFS.DocumentDirectoryPath}/ps_banners`;
+
+export const saveBannerFromUrl = async (memberId: string, url: string): Promise<string | undefined> => {
+  if (!url || !url.startsWith('http')) return undefined;
+  try {
+    await ensureDir(BANNER_DIR);
+    const urlExt = url.split('?')[0].split('.').pop()?.toLowerCase() || '';
+    const ext = ['png', 'gif', 'webp'].includes(urlExt) ? urlExt : 'jpg';
+    const path = `${BANNER_DIR}/${memberId}.${ext}`;
+    const result = await RNFS.downloadFile({fromUrl: url, toFile: path}).promise;
+    if (result.statusCode === 200) return `file://${path}?t=${Date.now()}`;
+    return undefined;
+  } catch { return undefined; }
+};
+
 export const deleteAvatar = async (memberId: string): Promise<void> => {
   try {
     for (const ext of ['jpg', 'png', 'gif', 'webp']) {

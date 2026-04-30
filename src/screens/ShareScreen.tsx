@@ -5,12 +5,12 @@ import {safePick, isPickerCancel, getPickedFilePath} from '../utils/safePicker';
 import RNFS from 'react-native-fs';
 import {exportJSON, exportHTML, exportEmail, exportAllJournalJSON, exportAllJournalTxt, exportAllJournalMd, ExportCategories} from '../export/exportUtils';
 import {store, KEYS, chatMsgKey, listRecoverableBackups, restoreFromBackup, RecoverableEntry} from '../storage';
-import {SystemInfo, Member, FrontState, HistoryEntry, JournalEntry, ShareSettings, AppSettings, ExportPayload, CustomFieldDef, CustomFieldType, CustomFieldValue, uid, allFrontMemberIds, findOpenFrontInHistory} from '../utils';
+import {SystemInfo, Member, MemberGroup, FrontState, HistoryEntry, JournalEntry, ShareSettings, AppSettings, ExportPayload, CustomFieldDef, CustomFieldType, CustomFieldValue, uid, allFrontMemberIds, findOpenFrontInHistory} from '../utils';
 
 type Section = 'export' | 'import' | 'shareview';
 type ImportSource = 'backup' | 'journal' | 'simplyplural' | 'pluralkit' | 'spfile';
 
-import {saveAvatarFromUrl, saveAvatar, saveBannerFromBase64} from '../utils/mediaUtils';
+import {saveAvatarFromUrl, saveAvatar, saveBannerFromBase64, saveBannerFromUrl, migrateInlineChatMedia} from '../utils/mediaUtils';
 
 interface Props {
   theme: any; system: SystemInfo; members: Member[]; front: FrontState | null;
@@ -43,8 +43,8 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const [importSource, setImportSource] = useState<ImportSource>('backup');
   const [extToken, setExtToken] = useState('');
   const [extLoading, setExtLoading] = useState(false);
-  const [extPreview, setExtPreview] = useState<{members: any[]; switches: any[]; system: any; customFields?: any[]} | null>(null);
-  const [extSel, setExtSel] = useState({system: true, members: true, avatars: true, frontHistory: true, customFields: true});
+  const [extPreview, setExtPreview] = useState<{members: any[]; switches: any[]; system: any; customFields?: any[]; groups?: any[]} | null>(null);
+  const [extSel, setExtSel] = useState({system: true, members: true, avatars: true, banners: true, frontHistory: true, customFields: true, groups: true});
 
   const primaryFronters = (front?.primary?.memberIds || []).map(getMember).filter(Boolean) as Member[];
   const coFronters = (front?.coFront?.memberIds || []).map(getMember).filter(Boolean) as Member[];
@@ -337,8 +337,29 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           if (restoreSel.chat) {
             if (data.chatChannels) await store.set(KEYS.chatChannels, data.chatChannels);
             if (data.chatMessages) {
-              for (const [chId, msgs] of Object.entries(data.chatMessages)) {
-                await store.set(chatMsgKey(chId), msgs);
+              // Migrate inline base64 chat images to disk BEFORE writing to AsyncStorage.
+              // Chat images embedded in JSON imports can blow past the 20MB AsyncStorage cap
+              // and cause native crashes on Android. Migrating each channel's messages through
+              // saveChatMedia replaces the inline base64 strings with small file:// URIs.
+              const channelIds = Object.keys(data.chatMessages);
+              for (const chId of channelIds) {
+                try {
+                  const msgs = data.chatMessages[chId];
+                  if (!Array.isArray(msgs) || msgs.length === 0) {
+                    delete data.chatMessages[chId];
+                    continue;
+                  }
+                  const {messages: migrated} = await migrateInlineChatMedia(msgs);
+                  await store.set(chatMsgKey(chId), migrated);
+                  // Drop our reference once written so the GC can reclaim the channel's
+                  // memory before processing the next one. Important when total chat
+                  // payload is tens of MB.
+                  delete data.chatMessages[chId];
+                } catch (chErr) {
+                  console.error(`[RESTORE] failed channel ${chId}:`, chErr);
+                  delete data.chatMessages[chId];
+                  // Don't bail the whole import for one bad channel; continue.
+                }
               }
             }
           }
@@ -384,24 +405,27 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
       if (!meRes.ok) throw new Error(t('share.authFailed', {status: meRes.status}));
       const meData = await meRes.json();
       const userId = meData.id || meData.uid;
-      const [mRes, sRes, cfRes] = await Promise.all([
+      const [mRes, sRes, cfRes, gRes] = await Promise.all([
         fetch(`https://v2.apparyllis.com/v1/members/${userId}`, {headers}),
         fetch(`https://v2.apparyllis.com/v1/frontHistory/${userId}?startTime=0&endTime=${Date.now()}`, {headers}),
         fetch(`https://v2.apparyllis.com/v1/customFields/${userId}`, {headers}),
+        fetch(`https://v2.apparyllis.com/v1/groups/${userId}`, {headers}),
       ]);
-      let mData: any = []; let sData: any = []; let cfData: any = [];
+      let mData: any = []; let sData: any = []; let cfData: any = []; let gData: any = [];
       try { mData = await mRes.json(); } catch { mData = []; }
       try { sData = await sRes.json(); } catch { sData = []; }
       try { cfData = await cfRes.json(); } catch { cfData = []; }
+      try { gData = await gRes.json(); } catch { gData = []; }
       const memberList = Array.isArray(mData) ? mData : (mData.members || []);
       const switchList = Array.isArray(sData) ? sData : (sData.switches || sData.frontHistory || []);
       const customFieldList = Array.isArray(cfData) ? cfData : (cfData.customFields || []);
+      const groupList = Array.isArray(gData) ? gData : (gData.groups || []);
       const sanitized = memberList.map((m: any) => {
         if (m?.content?.name) m.content.name = String(m.content.name).replace(/[-\u001F\u007F]/g, '').trim();
         if (m?.name) m.name = String(m.name).replace(/[-\u001F\u007F]/g, '').trim();
         return m;
       });
-      setExtPreview({system: meData, members: sanitized, switches: switchList, customFields: customFieldList});
+      setExtPreview({system: meData, members: sanitized, switches: switchList, customFields: customFieldList, groups: groupList});
     } catch (e: any) {Alert.alert(t('share.importFailed'), e.message || 'Could not connect.');}
     finally {setExtLoading(false);}
   };
@@ -411,23 +435,25 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
     setExtLoading(true); setExtPreview(null);
     try {
       const headers = {Authorization: extToken.trim(), 'Content-Type': 'application/json', 'User-Agent': 'PluralStar/1.0'};
-      const [sRes, mRes, swRes] = await Promise.all([
+      const [sRes, mRes, swRes, gRes] = await Promise.all([
         fetch('https://api.pluralkit.me/v2/systems/@me', {headers}),
         fetch('https://api.pluralkit.me/v2/systems/@me/members', {headers}),
         fetch('https://api.pluralkit.me/v2/systems/@me/switches?limit=500', {headers}),
+        fetch('https://api.pluralkit.me/v2/systems/@me/groups?with_members=true', {headers}),
       ]);
       if (!sRes.ok) throw new Error(t('share.authFailed', {status: sRes.status}));
-      let sData: any = {}; let mData: any = []; let swData: any = [];
+      let sData: any = {}; let mData: any = []; let swData: any = []; let gData: any = [];
       try { sData = await sRes.json(); } catch { sData = {}; }
       try { mData = await mRes.json(); } catch { mData = []; }
       try { swData = await swRes.json(); } catch { swData = []; }
+      try { gData = await gRes.json(); } catch { gData = []; }
       const memberList = Array.isArray(mData) ? mData : [];
       const sanitized = memberList.map((m: any) => {
         if (m?.display_name) m.display_name = String(m.display_name).replace(/[-\u001F\u007F]/g, '').trim();
         if (m?.name) m.name = String(m.name).replace(/[-\u001F\u007F]/g, '').trim();
         return m;
       });
-      setExtPreview({system: sData, members: sanitized, switches: Array.isArray(swData) ? swData : []});
+      setExtPreview({system: sData, members: sanitized, switches: Array.isArray(swData) ? swData : [], groups: Array.isArray(gData) ? gData : []});
     } catch (e: any) {Alert.alert(t('share.importFailed'), e.message || 'Could not connect.');}
     finally {setExtLoading(false);}
   };
@@ -489,7 +515,16 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
         if (extSel.members && extPreview.members.length > 0) {
           const newM: Member[] = extPreview.members.map((m: any) => {
             const id = uid();
-            return {id, name: isPK ? m.display_name || m.name : (m.content?.name || m.name || 'Unknown'), pronouns: isPK ? (m.pronouns || '') : (m.content?.pronouns || ''), role: isPK ? '' : (m.content?.role || ''), color: isPK ? (m.color ? `#${m.color}` : '#DAA520') : (m.content?.color || '#DAA520'), description: isPK ? (m.description || '') : (m.content?.desc || '')};
+            return {
+              id,
+              name: isPK ? m.display_name || m.name : (m.content?.name || m.name || 'Unknown'),
+              pronouns: isPK ? (m.pronouns || '') : (m.content?.pronouns || ''),
+              role: isPK ? '' : (m.content?.role || ''),
+              color: isPK ? (m.color ? `#${m.color}` : '#DAA520') : (m.content?.color || '#DAA520'),
+              description: isPK ? (m.description || '') : (m.content?.desc || ''),
+              // SP exposes archived as a boolean on content; PK has no equivalent field.
+              archived: !isPK && !!m.content?.archived ? true : undefined,
+            };
           });
           const merged = [...members, ...newM.filter(nm => !members.find(em => em.name.toLowerCase() === nm.name.toLowerCase()))];
           await store.set(KEYS.members, merged);
@@ -532,6 +567,32 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
               }
             }
             await store.set(KEYS.members, withAvatars);
+          }
+          // PK exposes per-member banner URLs. SP has no member banner concept.
+          // Download each one to disk via saveBannerFromUrl just like avatars.
+          if (isPK && extSel.banners) {
+            const bannerUrls: Record<string, string> = {};
+            extPreview.members.forEach((m: any) => {
+              const url = m.banner || '';
+              if (!url || !url.startsWith('http')) return;
+              const name = m.display_name || m.name || '';
+              const match = merged.find(lm => lm.name.toLowerCase() === name.toLowerCase());
+              if (match) bannerUrls[match.id] = url;
+            });
+            const bannerEntries = Object.entries(bannerUrls);
+            if (bannerEntries.length > 0) {
+              const currentMembers = await store.get<Member[]>(KEYS.members) || [];
+              const withBanners = [...currentMembers];
+              let changed = false;
+              for (const [memberId, url] of bannerEntries) {
+                const banner = await saveBannerFromUrl(memberId, url);
+                if (banner) {
+                  const idx = withBanners.findIndex(m => m.id === memberId);
+                  if (idx >= 0) { withBanners[idx] = {...withBanners[idx], banner}; changed = true; }
+                }
+              }
+              if (changed) await store.set(KEYS.members, withBanners);
+            }
           }
           const idMap: Record<string, string> = {};
           extPreview.members.forEach((m: any, i: number) => { const eid = isPK ? (m.uuid || m.id) : m.id; const lm = merged.find(l => l.name.toLowerCase() === newM[i]?.name.toLowerCase()); if (eid && lm) idMap[eid] = lm.id; if (isPK && m.id && lm) idMap[m.id] = lm.id; });
@@ -623,6 +684,52 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
             console.log(`[CF-IMPORT] wrote CF values to ${wroteCount}/${currentMembers.length} members`);
             await store.set(KEYS.members, updatedMembers);
           }
+          // Member groups import.
+          // SP shape: [{id, content: {name, color, desc, members: [memberIds]}}, ...]
+          // PK shape: [{id, uuid, name, display_name, color, members: [memberUUIDs], ...}]
+          // For both we map external group → local MemberGroup and patch each member's groupIds.
+          if (extSel.groups && extPreview.groups && extPreview.groups.length > 0) {
+            const existingGroups = await store.get<MemberGroup[]>(KEYS.groups, []) || [];
+            const newGroups: MemberGroup[] = [];
+            const groupIdMap: Record<string, string> = {};
+            const groupMemberMap: Record<string, string[]> = {};
+            extPreview.groups.forEach((g: any) => {
+              const gName = isPK ? (g.display_name || g.name || 'Group') : (g.content?.name || g.name || 'Group');
+              const gColor = isPK ? (g.color ? `#${g.color}` : undefined) : (g.content?.color || undefined);
+              const externalId = isPK ? (g.uuid || g.id) : (g.id || g._id);
+              const externalMembers: string[] = isPK
+                ? (Array.isArray(g.members) ? g.members : [])
+                : (Array.isArray(g.content?.members) ? g.content.members : (Array.isArray(g.members) ? g.members : []));
+              if (!gName || !externalId) return;
+              const existing = existingGroups.find(eg => eg.name.toLowerCase() === gName.toLowerCase());
+              const localId = existing ? existing.id : uid();
+              if (!existing) newGroups.push({id: localId, name: gName, color: gColor});
+              groupIdMap[externalId] = localId;
+              groupMemberMap[localId] = externalMembers;
+            });
+            if (newGroups.length > 0) await store.set(KEYS.groups, [...existingGroups, ...newGroups]);
+            // Patch members' groupIds. For each group, find local members whose external id maps to one of the group's external members, and add the local groupId.
+            if (Object.keys(groupMemberMap).length > 0) {
+              const currentMembers = await store.get<Member[]>(KEYS.members, []) || [];
+              const memberLocalIdsByGroup: Record<string, Set<string>> = {};
+              for (const [localGroupId, externalMemberIds] of Object.entries(groupMemberMap)) {
+                memberLocalIdsByGroup[localGroupId] = new Set(
+                  externalMemberIds.map(eid => idMap[eid]).filter(Boolean) as string[]
+                );
+              }
+              const updatedMembers = currentMembers.map(lm => {
+                const additions: string[] = [];
+                for (const [localGroupId, localMemberSet] of Object.entries(memberLocalIdsByGroup)) {
+                  if (localMemberSet.has(lm.id) && !(lm.groupIds || []).includes(localGroupId)) {
+                    additions.push(localGroupId);
+                  }
+                }
+                if (additions.length === 0) return lm;
+                return {...lm, groupIds: [...(lm.groupIds || []), ...additions]};
+              });
+              await store.set(KEYS.members, updatedMembers);
+            }
+          }
           if (extSel.frontHistory && extPreview.switches.length > 0) {
             const newH = isPK ? convertPKSwitches(extPreview.switches, idMap) : convertSPSwitches(extPreview.switches, idMap);
             if (newH.length > 0) {
@@ -660,12 +767,14 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
       const spMembers = Array.isArray(data.members) ? data.members : [];
       const spHistory = Array.isArray(data.frontHistory) ? data.frontHistory : [];
       const spUsers = Array.isArray(data.users) ? data.users : [];
+      const spGroups = Array.isArray(data.groups) ? data.groups : [];
+      const spCustomFields = Array.isArray(data.customFields) ? data.customFields : [];
       const systemInfo = spUsers[0] || {};
       const sanitized = spMembers.map((m: any) => {
         if (m?.name) m.name = String(m.name).replace(/[-\u001F\u007F]/g, '').trim();
         return m;
       });
-      setExtPreview({system: {content: systemInfo}, members: sanitized, switches: spHistory});
+      setExtPreview({system: {content: systemInfo}, members: sanitized, switches: spHistory, groups: spGroups, customFields: spCustomFields});
       setImportSource('spfile');
     } catch (e: any) {
       if (!isPickerCancel(e)) Alert.alert(t('share.importFailed'), e.message || '');
@@ -727,12 +836,13 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
             }
             await store.set(KEYS.members, withAvatars);
           }
+          // Build idMap once — both frontHistory AND groups depend on the SP _id → local id mapping.
+          const idMap: Record<string, string> = {};
+          spMembers.forEach((m: any, i: number) => {
+            const lm = merged.find(l => l.name.toLowerCase() === newM[i]?.name.toLowerCase());
+            if (m._id && lm) idMap[m._id] = lm.id;
+          });
           if (extSel.frontHistory && spHistory.length > 0) {
-            const idMap: Record<string, string> = {};
-            spMembers.forEach((m: any, i: number) => {
-              const lm = merged.find(l => l.name.toLowerCase() === newM[i]?.name.toLowerCase());
-              if (m._id && lm) idMap[m._id] = lm.id;
-            });
             const newH = convertSPSwitches(spHistory.map((sh: any) => ({content: sh, ...sh})), idMap);
             if (newH.length > 0) {
               const mergedHistory = [...newH, ...history].sort((a, b) => b.startTime - a.startTime).slice(0, 1000);
@@ -740,6 +850,42 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
               const importedOpenFront = findOpenFrontInHistory(mergedHistory);
               if (importedOpenFront) await store.set(KEYS.front, importedOpenFront);
             }
+          }
+          // Member groups from SP file MongoDB export.
+          if (extSel.groups && extPreview.groups && extPreview.groups.length > 0) {
+            const existingGroups = await store.get<MemberGroup[]>(KEYS.groups, []) || [];
+            const newGroups: MemberGroup[] = [];
+            const groupMemberMap: Record<string, string[]> = {};
+            extPreview.groups.forEach((g: any) => {
+              const gName = g.name || 'Group';
+              const gColor = g.color || undefined;
+              const externalId = g._id || g.id;
+              const externalMembers: string[] = Array.isArray(g.members) ? g.members : [];
+              if (!gName || !externalId) return;
+              const existing = existingGroups.find(eg => eg.name.toLowerCase() === gName.toLowerCase());
+              const localId = existing ? existing.id : uid();
+              if (!existing) newGroups.push({id: localId, name: gName, color: gColor});
+              groupMemberMap[localId] = externalMembers;
+            });
+            if (newGroups.length > 0) await store.set(KEYS.groups, [...existingGroups, ...newGroups]);
+            const memberLocalIdsByGroup: Record<string, Set<string>> = {};
+            for (const [localGroupId, externalMemberIds] of Object.entries(groupMemberMap)) {
+              memberLocalIdsByGroup[localGroupId] = new Set(
+                externalMemberIds.map(eid => idMap[eid]).filter(Boolean) as string[]
+              );
+            }
+            const currentMembers = await store.get<Member[]>(KEYS.members, []) || [];
+            const updatedMembers = currentMembers.map(lm => {
+              const additions: string[] = [];
+              for (const [localGroupId, localMemberSet] of Object.entries(memberLocalIdsByGroup)) {
+                if (localMemberSet.has(lm.id) && !(lm.groupIds || []).includes(localGroupId)) {
+                  additions.push(localGroupId);
+                }
+              }
+              if (additions.length === 0) return lm;
+              return {...lm, groupIds: [...(lm.groupIds || []), ...additions]};
+            });
+            await store.set(KEYS.members, updatedMembers);
           }
         }
         setExtPreview(null);
@@ -1080,7 +1226,13 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                     <SectionRow label={t('share.systemNameDesc')} value={extSel.system} onToggle={() => togE('system')} />
                     <SectionRow label={t('share.memberProfiles')} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
                     <SectionRow label={t('share.profilePictures')} value={extSel.avatars} onToggle={() => togE('avatars')} />
+                    {importSource === 'pluralkit' && (
+                      <SectionRow label={t('share.banners', {defaultValue: 'Banners'})} value={extSel.banners} onToggle={() => togE('banners')} />
+                    )}
                     <SectionRow label={t('share.frontHistory')} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
+                    {extPreview.groups && extPreview.groups.length > 0 && (
+                      <SectionRow label={t('share.groups', {defaultValue: 'Groups'})} sublabel={t('share.groupsCount', {count: extPreview.groups.length, defaultValue: `${extPreview.groups.length} group${extPreview.groups.length === 1 ? '' : 's'}`})} value={extSel.groups} onToggle={() => togE('groups')} />
+                    )}
                   </View>
                   <TouchableOpacity onPress={handleExtImport} activeOpacity={0.7} style={{alignItems: 'center', paddingVertical: 11, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`, marginBottom: 10}}>
                     <Text style={{fontSize: 14, fontWeight: '500', color: T.accent}}>{t('share.importSelected')}</Text>
@@ -1109,6 +1261,9 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                     <SectionRow label={t('share.memberProfiles')} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
                     <SectionRow label={t('share.profilePictures')} value={extSel.avatars} onToggle={() => togE('avatars')} />
                     <SectionRow label={t('share.frontHistory')} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
+                    {extPreview.groups && extPreview.groups.length > 0 && (
+                      <SectionRow label={t('share.groups', {defaultValue: 'Groups'})} sublabel={t('share.groupsCount', {count: extPreview.groups.length, defaultValue: `${extPreview.groups.length} group${extPreview.groups.length === 1 ? '' : 's'}`})} value={extSel.groups} onToggle={() => togE('groups')} />
+                    )}
                   </View>
                   <TouchableOpacity onPress={handleSPFileConfirmImport} activeOpacity={0.7} style={{alignItems: 'center', paddingVertical: 11, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`, marginBottom: 10}}>
                     <Text style={{fontSize: 14, fontWeight: '500', color: T.accent}}>{t('share.importSelected')}</Text>
