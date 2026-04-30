@@ -289,7 +289,8 @@
     "dashboard": "← Painel",
     "credits": "Créditos",
     "creditLogo": "Logo do Plural Star",
-    "creditIos": "Port do Plural Star para iOS"
+    "creditIos": "Port do Plural Star para iOS",
+    "supportPS": "Apoiar PS"
   },
   "modal": {
     "updateFront": "Atualizar Frente",

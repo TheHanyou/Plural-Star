@@ -289,7 +289,8 @@
     "dashboard": "← 仪表板",
     "credits": "致谢",
     "creditLogo": "Plural Star 标志",
-    "creditIos": "Plural Star iOS 移植"
+    "creditIos": "Plural Star iOS 移植",
+    "supportPS": "支持 PS"
   },
   "modal": {
     "updateFront": "更新前台",

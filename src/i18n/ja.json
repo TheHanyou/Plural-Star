@@ -289,7 +289,8 @@
     "dashboard": "← ダッシュボード",
     "credits": "クレジット",
     "creditLogo": "Plural Star ロゴ",
-    "creditIos": "Plural Star iOS 移植"
+    "creditIos": "Plural Star iOS 移植",
+    "supportPS": "PSを応援"
   },
   "modal": {
     "updateFront": "フロントを更新",
