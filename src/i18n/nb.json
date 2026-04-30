@@ -289,7 +289,8 @@
     "dashboard": "← Dashbord",
     "credits": "Bidragsytere",
     "creditLogo": "Plural Star-logo",
-    "creditIos": "Plural Star iOS-port"
+    "creditIos": "Plural Star iOS-port",
+    "supportPS": "Støtt PS"
   },
   "modal": {
     "systemSettings": "Systeminnstillinger",

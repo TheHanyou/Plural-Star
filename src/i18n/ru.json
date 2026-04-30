@@ -289,7 +289,8 @@
     "dashboard": "← Панель",
     "credits": "Благодарности",
     "creditLogo": "Логотип Plural Star",
-    "creditIos": "iOS-порт Plural Star"
+    "creditIos": "iOS-порт Plural Star",
+    "supportPS": "Поддержать PS"
   },
   "modal": {
     "updateFront": "Обновить фронт",

@@ -289,7 +289,8 @@
     "dashboard": "← Hallintapaneeli",
     "credits": "Tekijät",
     "creditLogo": "Plural Star -logo",
-    "creditIos": "Plural Starin iOS-portti"
+    "creditIos": "Plural Starin iOS-portti",
+    "supportPS": "Tue PS:ää"
   },
   "modal": {
     "systemSettings": "Järjestelmäasetukset",

@@ -468,7 +468,7 @@ export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onS
     {id: 'polls', icon: '📊', label: t('polls.title')},
     {id: 'credits', icon: '✦', label: t('hub.credits', {defaultValue: 'Credits'})},
     {id: 'discord', icon: '💬', label: t('hub.discord'), external: true},
-    {id: 'supportPS', icon: '☕', label: t('hub.supportPS'), external: true},
+    {id: 'supportPS', icon: '☕', label: t('hub.supportPS', {defaultValue: 'Support Plural Star'}), external: true},
   ];
 
   const handleTilePress = (tile: typeof tiles[0]) => {
