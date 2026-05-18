@@ -12,23 +12,21 @@
 		0C80B921A6F3F58F76C31292 /* libPods-PluralSpace.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-PluralSpace.a */; };
 		0EE4CC9E3485DAC9917CE413 /* PluralSpaceLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99AB2AED1AB4AFCD278085D4 /* PluralSpaceLiveActivity.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		410C7C47B99C4EDF90ECBF2E /* OpenDyslexic-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 1425362FF55B4861996BE398 /* OpenDyslexic-Bold.otf */; };
 		436604BAD66B5A568792EB70 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 171CF3BC2C212C0118685EAA /* Foundation.framework */; };
+		59FB4ECFE2474D47BFF72B97 /* OpenDyslexic-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 519A49CABD0647BBB1B91BFA /* OpenDyslexic-Regular.otf */; };
+		6789400968D34288A322CD70 /* OpenDyslexic-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 99BA947CE48C40F4A86885BA /* OpenDyslexic-Italic.otf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		81C5124F077942DE9B04B44E /* OpenDyslexic-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 519A49CABD0647BBB1B91BFA /* OpenDyslexic-Regular.otf */; };
 		9732CC66F77F86B3F12184DD /* PluralSpaceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC37ADB4B861E32C7E6AD19 /* PluralSpaceActivityAttributes.swift */; };
-		991FB1EF631FFEBE784C4D31 /* PluralSpaceLiveActivityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A46517188F14DF726053A65 /* PluralSpaceLiveActivityModule.swift */; };
-		A908F9F267CC0EF24F960549 /* PluralSpaceLiveActivityModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D023936EF11A1DA15547DB5 /* PluralSpaceLiveActivityModuleBridge.m */; };
+		991FB1EF631FFEBE784C4D31 /* PluralSpace/PluralSpaceLiveActivityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A46517188F14DF726053A65 /* PluralSpace/PluralSpaceLiveActivityModule.swift */; };
+		A908F9F267CC0EF24F960549 /* PluralSpace/PluralSpaceLiveActivityModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D023936EF11A1DA15547DB5 /* PluralSpace/PluralSpaceLiveActivityModuleBridge.m */; };
 		AF92152339CD7860F1606A29 /* PluralSpaceLiveActivity.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = EAEAB9CA942AA204BFC89C78 /* PluralSpaceLiveActivity.appex */; };
+		B4A69E344E174188A2B4A3C2 /* OpenDyslexic-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 4A9DFD6AF7934E86BEA78676 /* OpenDyslexic-BoldItalic.otf */; };
 		B6CFE064AA03C39FF3704286 /* PluralSpaceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC37ADB4B861E32C7E6AD19 /* PluralSpaceActivityAttributes.swift */; };
 		D37E399E24C3446B9930E64A /* OpenDyslexic-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 1425362FF55B4861996BE398 /* OpenDyslexic-Bold.otf */; };
-		410C7C47B99C4EDF90ECBF2E /* OpenDyslexic-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 1425362FF55B4861996BE398 /* OpenDyslexic-Bold.otf */; };
-		B4A69E344E174188A2B4A3C2 /* OpenDyslexic-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 4A9DFD6AF7934E86BEA78676 /* OpenDyslexic-BoldItalic.otf */; };
 		EB65657E7FCB42D6B5A64CAA /* OpenDyslexic-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 4A9DFD6AF7934E86BEA78676 /* OpenDyslexic-BoldItalic.otf */; };
 		F380F97DCDFB40DF9B6DAED7 /* OpenDyslexic-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 99BA947CE48C40F4A86885BA /* OpenDyslexic-Italic.otf */; };
-		6789400968D34288A322CD70 /* OpenDyslexic-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 99BA947CE48C40F4A86885BA /* OpenDyslexic-Italic.otf */; };
-		59FB4ECFE2474D47BFF72B97 /* OpenDyslexic-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 519A49CABD0647BBB1B91BFA /* OpenDyslexic-Regular.otf */; };
-		81C5124F077942DE9B04B44E /* OpenDyslexic-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 519A49CABD0647BBB1B91BFA /* OpenDyslexic-Regular.otf */; };
-		AA6576A3682042D5B012B86C /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = A3FDFF2B482D4B979773CF43 /* README.md */; };
-		0F293F5E9E8B4FE1A3FBB266 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = A3FDFF2B482D4B979773CF43 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,24 +58,23 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = PluralSpace/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = PluralSpace/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = PluralSpace/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1425362FF55B4861996BE398 /* OpenDyslexic-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenDyslexic-Bold.otf"; path = "../src/assets/fonts/OpenDyslexic-Bold.otf"; sourceTree = "<group>"; };
 		171CF3BC2C212C0118685EAA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		3B4392A12AC88292D35C810B /* Pods-PluralSpace.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PluralSpace.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PluralSpace/Pods-PluralSpace.debug.xcconfig"; sourceTree = SOURCE_ROOT; };
 		4605282D958AB70F61A5B68C /* PluralSpaceLiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PluralSpaceLiveActivityBundle.swift; sourceTree = "<group>"; };
-		4D023936EF11A1DA15547DB5 /* PluralSpaceLiveActivityModuleBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = PluralSpace/PluralSpaceLiveActivityModuleBridge.m; sourceTree = "<group>"; };
+		4A9DFD6AF7934E86BEA78676 /* OpenDyslexic-BoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenDyslexic-BoldItalic.otf"; path = "../src/assets/fonts/OpenDyslexic-BoldItalic.otf"; sourceTree = "<group>"; };
+		4D023936EF11A1DA15547DB5 /* PluralSpace/PluralSpaceLiveActivityModuleBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = PluralSpace/PluralSpaceLiveActivityModuleBridge.m; sourceTree = "<group>"; };
+		519A49CABD0647BBB1B91BFA /* OpenDyslexic-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenDyslexic-Regular.otf"; path = "../src/assets/fonts/OpenDyslexic-Regular.otf"; sourceTree = "<group>"; };
 		56D7C2A857A6220210390CB7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-PluralSpace.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PluralSpace.release.xcconfig"; path = "Pods/Target Support Files/Pods-PluralSpace/Pods-PluralSpace.release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		5BC37ADB4B861E32C7E6AD19 /* PluralSpaceActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PluralSpaceActivityAttributes.swift; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-PluralSpace.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PluralSpace.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = PluralSpace/AppDelegate.swift; sourceTree = "<group>"; };
-		7A46517188F14DF726053A65 /* PluralSpaceLiveActivityModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PluralSpace/PluralSpaceLiveActivityModule.swift; sourceTree = "<group>"; };
+		7A46517188F14DF726053A65 /* PluralSpace/PluralSpaceLiveActivityModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PluralSpace/PluralSpaceLiveActivityModule.swift; sourceTree = "<group>"; };
 		99AB2AED1AB4AFCD278085D4 /* PluralSpaceLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PluralSpaceLiveActivity.swift; sourceTree = "<group>"; };
+		99BA947CE48C40F4A86885BA /* OpenDyslexic-Italic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenDyslexic-Italic.otf"; path = "../src/assets/fonts/OpenDyslexic-Italic.otf"; sourceTree = "<group>"; };
 		EAEAB9CA942AA204BFC89C78 /* PluralSpaceLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PluralSpaceLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		1425362FF55B4861996BE398 /* OpenDyslexic-Bold.otf */ = {isa = PBXFileReference; name = "OpenDyslexic-Bold.otf"; path = "../src/assets/fonts/OpenDyslexic-Bold.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		4A9DFD6AF7934E86BEA78676 /* OpenDyslexic-BoldItalic.otf */ = {isa = PBXFileReference; name = "OpenDyslexic-BoldItalic.otf"; path = "../src/assets/fonts/OpenDyslexic-BoldItalic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		99BA947CE48C40F4A86885BA /* OpenDyslexic-Italic.otf */ = {isa = PBXFileReference; name = "OpenDyslexic-Italic.otf"; path = "../src/assets/fonts/OpenDyslexic-Italic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		519A49CABD0647BBB1B91BFA /* OpenDyslexic-Regular.otf */ = {isa = PBXFileReference; name = "OpenDyslexic-Regular.otf"; path = "../src/assets/fonts/OpenDyslexic-Regular.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		A3FDFF2B482D4B979773CF43 /* README.md */ = {isa = PBXFileReference; name = "README.md"; path = "../src/assets/fonts/README.md"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,10 +104,21 @@
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
-				7A46517188F14DF726053A65 /* PluralSpaceLiveActivityModule.swift */,
-				4D023936EF11A1DA15547DB5 /* PluralSpaceLiveActivityModuleBridge.m */,
+				7A46517188F14DF726053A65 /* PluralSpace/PluralSpaceLiveActivityModule.swift */,
+				4D023936EF11A1DA15547DB5 /* PluralSpace/PluralSpaceLiveActivityModuleBridge.m */,
 			);
 			name = PluralSpace;
+			sourceTree = "<group>";
+		};
+		2018849F7DC34773B8713840 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				1425362FF55B4861996BE398 /* OpenDyslexic-Bold.otf */,
+				4A9DFD6AF7934E86BEA78676 /* OpenDyslexic-BoldItalic.otf */,
+				99BA947CE48C40F4A86885BA /* OpenDyslexic-Italic.otf */,
+				519A49CABD0647BBB1B91BFA /* OpenDyslexic-Regular.otf */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
@@ -190,19 +198,6 @@
 			);
 			path = PluralSpaceLiveActivity;
 			sourceTree = "<group>";
-		};
-		2018849F7DC34773B8713840 /* Resources */ = {
-			isa = "PBXGroup";
-			children = (
-				1425362FF55B4861996BE398 /* OpenDyslexic-Bold.otf */,
-				4A9DFD6AF7934E86BEA78676 /* OpenDyslexic-BoldItalic.otf */,
-				99BA947CE48C40F4A86885BA /* OpenDyslexic-Italic.otf */,
-				519A49CABD0647BBB1B91BFA /* OpenDyslexic-Regular.otf */,
-				A3FDFF2B482D4B979773CF43 /* README.md */,
-			);
-			name = Resources;
-			sourceTree = "<group>";
-			path = "";
 		};
 /* End PBXGroup section */
 
@@ -290,7 +285,6 @@
 				B4A69E344E174188A2B4A3C2 /* OpenDyslexic-BoldItalic.otf in Resources */,
 				F380F97DCDFB40DF9B6DAED7 /* OpenDyslexic-Italic.otf in Resources */,
 				59FB4ECFE2474D47BFF72B97 /* OpenDyslexic-Regular.otf in Resources */,
-				AA6576A3682042D5B012B86C /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -302,7 +296,6 @@
 				EB65657E7FCB42D6B5A64CAA /* OpenDyslexic-BoldItalic.otf in Resources */,
 				6789400968D34288A322CD70 /* OpenDyslexic-Italic.otf in Resources */,
 				81C5124F077942DE9B04B44E /* OpenDyslexic-Regular.otf in Resources */,
-				0F293F5E9E8B4FE1A3FBB266 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -333,9 +326,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -372,9 +369,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -390,8 +391,8 @@
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				B6CFE064AA03C39FF3704286 /* PluralSpaceActivityAttributes.swift in Sources */,
-				991FB1EF631FFEBE784C4D31 /* PluralSpaceLiveActivityModule.swift in Sources */,
-				A908F9F267CC0EF24F960549 /* PluralSpaceLiveActivityModuleBridge.m in Sources */,
+				991FB1EF631FFEBE784C4D31 /* PluralSpace/PluralSpaceLiveActivityModule.swift in Sources */,
+				A908F9F267CC0EF24F960549 /* PluralSpace/PluralSpaceLiveActivityModuleBridge.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,17 +426,19 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 42;
+				DEVELOPMENT_TEAM = CKAA876673;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = PluralSpace/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Plural Star";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5.2;
+				MARKETING_VERSION = 1.7.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -459,16 +462,18 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 42;
+				DEVELOPMENT_TEAM = CKAA876673;
 				INFOPLIST_FILE = PluralSpace/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Plural Star";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5.2;
+				MARKETING_VERSION = 1.7.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -546,6 +551,10 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
+				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DFOLLY_NO_CONFIG",
@@ -553,11 +562,9 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -619,6 +626,10 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
+				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DFOLLY_NO_CONFIG",
@@ -626,11 +637,9 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
@@ -645,7 +654,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 42;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PluralSpaceLiveActivity/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
@@ -654,7 +663,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.5.2;
+				MARKETING_VERSION = 1.7.2;
 				PRODUCT_BUNDLE_IDENTIFIER = org.reactjs.native.example.PluralSpace.LiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -671,7 +680,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 42;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PluralSpaceLiveActivity/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
@@ -680,7 +689,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.5.2;
+				MARKETING_VERSION = 1.7.2;
 				PRODUCT_BUNDLE_IDENTIFIER = org.reactjs.native.example.PluralSpace.LiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

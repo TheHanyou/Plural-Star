@@ -39,6 +39,15 @@
 	<string>Plural Star needs access to your photo library so you can choose member avatars and banners.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
+	<key>RCTNewArchEnabled</key>
+	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>OpenDyslexic-Bold.otf</string>
+		<string>OpenDyslexic-BoldItalic.otf</string>
+		<string>OpenDyslexic-Italic.otf</string>
+		<string>OpenDyslexic-Regular.otf</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -58,12 +67,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>OpenDyslexic-Bold.otf</string>
-		<string>OpenDyslexic-BoldItalic.otf</string>
-		<string>OpenDyslexic-Italic.otf</string>
-		<string>OpenDyslexic-Regular.otf</string>
-	</array>
 </dict>
 </plist>
