@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 100;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -42,14 +42,12 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		B28F1116B2DF26847C9CAB2D /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 13;
+			dstSubfolder = PlugIns;
 			files = (
 				AF92152339CD7860F1606A29 /* PluralSpaceLiveActivity.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -80,19 +78,15 @@
 /* Begin PBXFrameworksBuildPhase section */
 		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				0C80B921A6F3F58F76C31292 /* libPods-PluralSpace.a in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F8D158B93035451FEA293A71 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				436604BAD66B5A568792EB70 /* Foundation.framework in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -235,8 +229,6 @@
 			);
 			buildRules = (
 			);
-			dependencies = (
-			);
 			name = PluralSpaceLiveActivity;
 			productName = PluralSpaceLiveActivity;
 			productReference = EAEAB9CA942AA204BFC89C78 /* PluralSpaceLiveActivity.appex */;
@@ -256,7 +248,6 @@
 				};
 			};
 			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "PluralSpace" */;
-			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -264,6 +255,7 @@
 				Base,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
+			preferredProjectObjectVersion = 100;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -277,7 +269,6 @@
 /* Begin PBXResourcesBuildPhase section */
 		13B07F8E1A680F5B00A75B9A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				09CDA2242BEA26CFB97DE3C0 /* PrivacyInfo.xcprivacy in Resources */,
@@ -286,100 +277,92 @@
 				F380F97DCDFB40DF9B6DAED7 /* OpenDyslexic-Italic.otf in Resources */,
 				59FB4ECFE2474D47BFF72B97 /* OpenDyslexic-Regular.otf in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F7168C55AE6EED91A72A0354 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				410C7C47B99C4EDF90ECBF2E /* OpenDyslexic-Bold.otf in Resources */,
 				EB65657E7FCB42D6B5A64CAA /* OpenDyslexic-BoldItalic.otf in Resources */,
 				6789400968D34288A322CD70 /* OpenDyslexic-Italic.otf in Resources */,
 				81C5124F077942DE9B04B44E /* OpenDyslexic-Regular.otf in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
 			inputPaths = (
 				"$(SRCROOT)/.xcode.env.local",
 				"$(SRCROOT)/.xcode.env",
 			);
 			name = "Bundle React Native code and images";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\nexport CONFIG_JSON=\"{\\\"root\\\":\\\"$PROJECT_DIR/..\\\",\\\"reactNativePath\\\":\\\"$PROJECT_DIR/../node_modules/react-native\\\",\\\"platforms\\\":{\\\"ios\\\":{},\\\"android\\\":{}}}\"\n\n\"$WITH_ENVIRONMENT\" \"$REACT_NATIVE_XCODE\"\n";
+			shellScript = (
+				"set -e",
+				"",
+				"WITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"",
+				"REACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"",
+				"export CONFIG_JSON=\"{\\\"root\\\":\\\"$PROJECT_DIR/..\\\",\\\"reactNativePath\\\":\\\"$PROJECT_DIR/../node_modules/react-native\\\",\\\"platforms\\\":{\\\"ios\\\":{},\\\"android\\\":{}}}\"",
+				"",
+				"\"$WITH_ENVIRONMENT\" \"$REACT_NATIVE_XCODE\"",
+				"",
+			);
 		};
 		00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-frameworks.sh\"\n";
+			shellScript = (
+				"\"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-frameworks.sh\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
 				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-PluralSpace-checkManifestLockResult.txt",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = (
+				"diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null",
+				"if [ $? != 0 ] ; then",
+				"    # print error to STDERR",
+				"    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2",
+				"    exit 1",
+				"fi",
+				"# This output is used by Xcode 'outputs' to avoid re-running this script phase.",
+				"echo \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-resources.sh\"\n";
+			shellScript = (
+				"\"${PODS_ROOT}/Target Support Files/Pods-PluralSpace/Pods-PluralSpace-resources.sh\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -387,24 +370,20 @@
 /* Begin PBXSourcesBuildPhase section */
 		13B07F871A680F5B00A75B9A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				B6CFE064AA03C39FF3704286 /* PluralSpaceActivityAttributes.swift in Sources */,
 				991FB1EF631FFEBE784C4D31 /* PluralSpace/PluralSpaceLiveActivityModule.swift in Sources */,
 				A908F9F267CC0EF24F960549 /* PluralSpace/PluralSpaceLiveActivityModuleBridge.m in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		B26523AF48692778DE581C14 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				9732CC66F77F86B3F12184DD /* PluralSpaceActivityAttributes.swift in Sources */,
 				0EE4CC9E3485DAC9917CE413 /* PluralSpaceLiveActivity.swift in Sources */,
 				0B13441F4701EF9014AA38D1 /* PluralSpaceLiveActivityBundle.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -418,18 +397,17 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		13B07F941A680F5B00A75B9A /* Debug */ = {
+		13B07F941A680F5B00A75B9A /* Debug configuration for PBXNativeTarget "PluralSpace" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3B4392A12AC88292D35C810B /* Pods-PluralSpace.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 42;
-				DEVELOPMENT_TEAM = CKAA876673;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = CKAA876673;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = PluralSpace/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Plural Star";
@@ -444,9 +422,10 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.pluralstar.app;
 				PRODUCT_NAME = PluralSpace;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Plural Star(CKAA876673.com.pluralstar.app)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -456,16 +435,17 @@
 			};
 			name = Debug;
 		};
-		13B07F951A680F5B00A75B9A /* Release */ = {
+		13B07F951A680F5B00A75B9A /* Release configuration for PBXNativeTarget "PluralSpace" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 5709B34CF0A7D63546082F79 /* Pods-PluralSpace.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 42;
-				DEVELOPMENT_TEAM = CKAA876673;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = CKAA876673;
 				INFOPLIST_FILE = PluralSpace/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Plural Star";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -479,9 +459,10 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.pluralstar.app;
 				PRODUCT_NAME = PluralSpace;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Plural Star(CKAA876673.com.pluralstar.app)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_VERSION = 5.0;
@@ -490,7 +471,7 @@
 			};
 			name = Release;
 		};
-		83CBBA201A601CBA00E9B192 /* Debug */ = {
+		83CBBA201A601CBA00E9B192 /* Debug configuration for PBXProject "PluralSpace" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -519,7 +500,6 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -573,7 +553,7 @@
 			};
 			name = Debug;
 		};
-		83CBBA211A601CBA00E9B192 /* Release */ = {
+		83CBBA211A601CBA00E9B192 /* Release configuration for PBXProject "PluralSpace" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -602,7 +582,6 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -648,13 +627,16 @@
 			};
 			name = Release;
 		};
-		8814AC5BA7DD2A8EEA95B1F7 /* Debug */ = {
+		8814AC5BA7DD2A8EEA95B1F7 /* Debug configuration for PBXNativeTarget "PluralSpaceLiveActivity" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 42;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = CKAA876673;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PluralSpaceLiveActivity/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
@@ -664,8 +646,10 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.7.2;
-				PRODUCT_BUNDLE_IDENTIFIER = org.reactjs.native.example.PluralSpace.LiveActivity;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pluralstar.app.liveactivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Plural Star Live Activity(CKAA876673.com.pluralsta";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -674,13 +658,16 @@
 			};
 			name = Debug;
 		};
-		E77B5F51C99914C61BA1B3A0 /* Release */ = {
+		E77B5F51C99914C61BA1B3A0 /* Release configuration for PBXNativeTarget "PluralSpaceLiveActivity" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 42;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = CKAA876673;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PluralSpaceLiveActivity/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
@@ -690,8 +677,10 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.7.2;
-				PRODUCT_BUNDLE_IDENTIFIER = org.reactjs.native.example.PluralSpace.LiveActivity;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pluralstar.app.liveactivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Plural Star Live Activity(CKAA876673.com.pluralsta";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -707,28 +696,25 @@
 		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "PluralSpace" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				13B07F941A680F5B00A75B9A /* Debug */,
-				13B07F951A680F5B00A75B9A /* Release */,
+				13B07F941A680F5B00A75B9A /* Debug configuration for PBXNativeTarget "PluralSpace" */,
+				13B07F951A680F5B00A75B9A /* Release configuration for PBXNativeTarget "PluralSpace" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "PluralSpace" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				83CBBA201A601CBA00E9B192 /* Debug */,
-				83CBBA211A601CBA00E9B192 /* Release */,
+				83CBBA201A601CBA00E9B192 /* Debug configuration for PBXProject "PluralSpace" */,
+				83CBBA211A601CBA00E9B192 /* Release configuration for PBXProject "PluralSpace" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		DFF7955D99654699ADB62B72 /* Build configuration list for PBXNativeTarget "PluralSpaceLiveActivity" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				E77B5F51C99914C61BA1B3A0 /* Release */,
-				8814AC5BA7DD2A8EEA95B1F7 /* Debug */,
+				E77B5F51C99914C61BA1B3A0 /* Release configuration for PBXNativeTarget "PluralSpaceLiveActivity" */,
+				8814AC5BA7DD2A8EEA95B1F7 /* Debug configuration for PBXNativeTarget "PluralSpaceLiveActivity" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
