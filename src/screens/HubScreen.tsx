@@ -3,7 +3,7 @@ import {View, ScrollView, TouchableOpacity, Alert, Linking} from 'react-native';
 import {Text, TextInput} from '../components/AppText';
 import {useTranslation} from 'react-i18next';
 import {Fonts} from '../theme';
-import {Member, HistoryEntry, FrontState, FrontTierKey, fmtTime, fmtDur, allFrontMemberIds, sortMembersBySearch} from '../utils';
+import {Member, HistoryEntry, FrontState, FrontTierKey, fmtTime, fmtDur, allFrontMemberIds, sortMembersBySearch, singletStatuses} from '../utils';
 import {DateTimeEditor} from '../components/DateTimeEditor';
 import {Avatar} from '../components/Avatar';
 
@@ -11,6 +11,8 @@ type HubTile = 'share' | 'retroHistory' | 'statistics' | 'chat' | 'customFields'
 
 interface Props {
   theme: any;
+  singlet?: boolean;
+  selfId?: string;
   members: Member[];
   history: HistoryEntry[];
   front: FrontState | null;
@@ -95,15 +97,20 @@ const TierMemberPicker = ({tierKey, label, color, selected, setSelected, members
   );
 };
 
-const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFront, onBack, editIndex, editEntry}: {
+const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFront, onBack, editIndex, editEntry, singlet = false, selfId}: {
   T: any; members: Member[]; history: HistoryEntry[]; front: FrontState | null;
   onSaveHistory: (h: HistoryEntry[]) => void; onSetFront: (f: FrontState | null) => void; onBack: () => void;
   editIndex?: number;
   editEntry?: HistoryEntry;
+  singlet?: boolean;
+  selfId?: string;
 }) => {
   const {t} = useTranslation();
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const isEditing = editIndex !== undefined && editIndex >= 0 && !!editEntry;
+  const regularMembers = members.filter(m => !m.isCustomFront);
+  const customFronts = members.filter(m => m.isCustomFront && !m.archived);
+  const statusPool = singletStatuses(members);
 
   const editingActiveFront = !!(
     isEditing && editEntry && front
@@ -112,12 +119,17 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
     && (!editEntry.changeType || editEntry.changeType === 'front')
   );
 
-  const [primaryIds, setPrimaryIds] = useState<string[]>(editEntry?.memberIds || []);
+  const [primaryIds, setPrimaryIds] = useState<string[]>(
+    singlet && selfId ? (editEntry?.memberIds || []).filter(id => id !== selfId) : (editEntry?.memberIds || [])
+  );
   const [coFrontIds, setCoFrontIds] = useState<string[]>(editEntry?.coFrontIds || []);
   const [coConIds, setCoConIds] = useState<string[]>(editEntry?.coConsciousIds || []);
   const [mood, setMood] = useState(editEntry?.mood || '');
   const [note, setNote] = useState(editEntry?.note || '');
   const [location, setLocation] = useState(editEntry?.location || '');
+  const [energy, setEnergy] = useState<number | undefined>(editEntry?.energyLevel);
+  const effectivePrimary = (): string[] =>
+    singlet && selfId ? [selfId, ...primaryIds.filter(id => id !== selfId)] : primaryIds;
   const [startDate, setStartDate] = useState(editEntry ? new Date(editEntry.startTime) : new Date());
   const [endDate, setEndDate] = useState(editEntry?.endTime ? new Date(editEntry.endTime) : new Date());
   const [isCurrent, setIsCurrent] = useState(editEntry?.endTime === null);
@@ -135,12 +147,13 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
   };
 
   const buildEntry = (): HistoryEntry => ({
-    memberIds: primaryIds,
+    memberIds: effectivePrimary(),
     startTime: startDate.getTime(),
     endTime: isCurrent ? null : endDate.getTime(),
     note: note,
     mood: mood || undefined,
     location: location || undefined,
+    energyLevel: energy,
     coFrontIds: coFrontIds.length > 0 ? coFrontIds : undefined,
     coFrontMood: undefined,
     coFrontNote: undefined,
@@ -169,7 +182,7 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
   };
 
   const handleSave = () => {
-    if (primaryIds.length === 0 && coFrontIds.length === 0 && coConIds.length === 0) {
+    if (!singlet && primaryIds.length === 0 && coFrontIds.length === 0 && coConIds.length === 0) {
       Alert.alert(t('hub.noMembersSelected'), t('hub.selectAtLeastOne'));
       return;
     }
@@ -184,7 +197,7 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
     if (editingActiveFront) {
       if (isCurrent) {
         const newFront: FrontState = {
-          primary: {memberIds: primaryIds, mood: mood || undefined, note, location: location || undefined},
+          primary: {memberIds: effectivePrimary(), mood: mood || undefined, note, location: location || undefined, energyLevel: energy},
           coFront: {memberIds: coFrontIds, note: front?.coFront.note || ''},
           coConscious: {memberIds: coConIds, note: front?.coConscious.note || ''},
           startTime: startDate.getTime(),
@@ -211,7 +224,7 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
                 ? {...e, endTime: now} : e
             );
             const newFront: FrontState = {
-              primary: {memberIds: primaryIds, mood: mood || undefined, note, location: location || undefined},
+              primary: {memberIds: effectivePrimary(), mood: mood || undefined, note, location: location || undefined, energyLevel: energy},
               coFront: {memberIds: coFrontIds, note: ''},
               coConscious: {memberIds: coConIds, note: ''},
               startTime: startDate.getTime(),
@@ -227,7 +240,7 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
           }},
           {text: t('hub.addTo'), onPress: () => {
             const newFront: FrontState = {
-              primary: {memberIds: [...(front?.primary.memberIds || []), ...primaryIds.filter(id => !front?.primary.memberIds.includes(id))], mood: mood || front?.primary.mood, note: note || front?.primary.note || '', location: location || front?.primary.location},
+              primary: {memberIds: [...(front?.primary.memberIds || []), ...effectivePrimary().filter(id => !front?.primary.memberIds.includes(id))], mood: mood || front?.primary.mood, note: note || front?.primary.note || '', location: location || front?.primary.location},
               coFront: {memberIds: [...(front?.coFront.memberIds || []), ...coFrontIds.filter(id => !front?.coFront.memberIds.includes(id))], note: front?.coFront.note || ''},
               coConscious: {memberIds: [...(front?.coConscious.memberIds || []), ...coConIds.filter(id => !front?.coConscious.memberIds.includes(id))], note: front?.coConscious.note || ''},
               startTime: front?.startTime || startDate.getTime(),
@@ -296,9 +309,21 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
 
       <View style={{height: 1, backgroundColor: T.border, marginVertical: 10}} />
 
-      <TierMemberPicker tierKey="primary" label={t('tier.primaryFront')} color={T.accent} selected={primaryIds} setSelected={setPrimaryIds} members={members} allSelected={allSelected} T={T} />
-      <TierMemberPicker tierKey="coFront" label={t('tier.coFront')} color={T.info} selected={coFrontIds} setSelected={setCoFrontIds} members={members} allSelected={allSelected} T={T} />
-      <TierMemberPicker tierKey="coConscious" label={t('tier.coConscious')} color={T.success} selected={coConIds} setSelected={setCoConIds} members={members} allSelected={allSelected} T={T} />
+      {singlet ? (
+        <TierMemberPicker tierKey="primary" label={t('status.statuses')} color={T.accent} selected={primaryIds} setSelected={setPrimaryIds} members={statusPool} allSelected={allSelected} T={T} />
+      ) : (
+        <>
+          <TierMemberPicker tierKey="primary" label={t('tier.primaryFront')} color={T.accent} selected={primaryIds} setSelected={setPrimaryIds} members={regularMembers} allSelected={allSelected} T={T} />
+          {customFronts.length > 0 && (
+            <TierMemberPicker tierKey="primary" label={t('members.customFronts')} color={T.accent} selected={primaryIds} setSelected={setPrimaryIds} members={customFronts} allSelected={allSelected} T={T} />
+          )}
+          <TierMemberPicker tierKey="coFront" label={t('tier.coFront')} color={T.info} selected={coFrontIds} setSelected={setCoFrontIds} members={regularMembers} allSelected={allSelected} T={T} />
+          {customFronts.length > 0 && (
+            <TierMemberPicker tierKey="coFront" label={t('members.customFronts')} color={T.info} selected={coFrontIds} setSelected={setCoFrontIds} members={customFronts} allSelected={allSelected} T={T} />
+          )}
+          <TierMemberPicker tierKey="coConscious" label={t('tier.coConscious')} color={T.success} selected={coConIds} setSelected={setCoConIds} members={regularMembers} allSelected={allSelected} T={T} />
+        </>
+      )}
 
       <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{t('modal.mood')}</Text>
       <TextInput value={mood} onChangeText={setMood} placeholder={t('modal.enterMood')} placeholderTextColor={T.muted}
@@ -307,6 +332,19 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
       <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{t('modal.location')}</Text>
       <TextInput value={location} onChangeText={setLocation} placeholder={t('modal.typeLocation')} placeholderTextColor={T.muted}
         style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontSize: fs(14), marginBottom: 14}} />
+
+      <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{t('energy.level')}</Text>
+      <View style={{flexDirection: 'row', gap: 3, marginBottom: 14, alignItems: 'center'}}>
+        {[1,2,3,4,5,6,7,8,9,10].map(n => (
+          <TouchableOpacity key={n} onPress={() => setEnergy(energy === n ? undefined : n)} activeOpacity={0.7}
+            accessibilityRole="button" accessibilityState={{selected: energy === n}} accessibilityLabel={`${t('energy.level')} ${n}`}
+            style={{flex: 1, paddingVertical: 6, borderRadius: 6, borderWidth: 1, alignItems: 'center',
+              backgroundColor: energy === n ? `${T.accent}30` : T.surface,
+              borderColor: energy !== undefined && n <= energy ? T.accent : T.border}}>
+            <Text style={{fontSize: fs(10), color: energy !== undefined && n <= energy ? T.accent : T.dim, fontWeight: '600'}}>{n}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{t('modal.note')}</Text>
       <TextInput value={note} onChangeText={setNote} placeholder={t('modal.whatHappening')} placeholderTextColor={T.muted} multiline numberOfLines={3}
@@ -329,7 +367,7 @@ const RetroHistoryScreen = ({T, members, history, front, onSaveHistory, onSetFro
 const DISCORD_URL = 'https://discord.gg/FFQw33cu8m';
 const BMC_URL = 'https://www.buymeacoffee.com/PluralStar';
 
-export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onSetFront, renderShareScreen, renderStatsScreen, renderChatScreen, renderCustomFieldsScreen, renderSystemManagerScreen, renderPollsScreen, resetKey, editHistoryIndex, onClearEditHistory}: Props) => {
+export const HubScreen = ({theme: T, singlet = false, selfId, members, history, front, onSaveHistory, onSetFront, renderShareScreen, renderStatsScreen, renderChatScreen, renderCustomFieldsScreen, renderSystemManagerScreen, renderPollsScreen, resetKey, editHistoryIndex, onClearEditHistory}: Props) => {
   const {t} = useTranslation();
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const [activeTile, setActiveTile] = useState<HubTile | null>(null);
@@ -370,6 +408,7 @@ export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onS
   if (activeTile === 'retroHistory') {
     return <RetroHistoryScreen
       T={T} members={members} history={history} front={front}
+      singlet={singlet} selfId={selfId}
       onSaveHistory={onSaveHistory} onSetFront={onSetFront}
       onBack={handleRetroBack}
       editIndex={editingEntry ? editHistoryIndex! : undefined}
@@ -488,7 +527,7 @@ export const HubScreen = ({theme: T, members, history, front, onSaveHistory, onS
     {id: 'credits', icon: '✦', label: t('hub.credits')},
     {id: 'discord', icon: '💬', label: t('hub.discord'), external: true},
     {id: 'supportPS', icon: '☕', label: t('hub.supportPS'), external: true},
-  ];
+  ].filter(tile => !singlet || (tile.id !== 'chat' && tile.id !== 'systemManager' && tile.id !== 'customFields' && tile.id !== 'polls')) as {id: HubTile; icon: string; label: string; external?: boolean}[];
 
   const handleTilePress = (tile: typeof tiles[0]) => {
     if (tile.external && tile.id === 'discord') {

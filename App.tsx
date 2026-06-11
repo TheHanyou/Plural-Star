@@ -14,9 +14,9 @@ import {T, BUILTIN_PALETTES, deriveTheme} from './src/theme';
 import type {CustomPalette, ThemeColors} from './src/theme';
 import {AccentText} from './src/components/AccentText';
 import {store, KEYS} from './src/storage';
-import {SystemInfo, Member, MemberGroup, FrontState, FrontTier, FrontTierKey, HistoryEntry, JournalEntry, JournalTemplate, ShareSettings, AppSettings, ChatChannel, ChatMessage, NoteboardEntry, DEFAULT_CHANNELS, findOpenFrontInHistory, migrateFrontState, frontToHistoryEntry, uid, makeDefaultCustomFronts, isFrontEmpty, allFrontMemberIds} from './src/utils';
+import {SystemInfo, Member, MemberGroup, FrontState, FrontTier, FrontTierKey, HistoryEntry, JournalEntry, JournalTemplate, ShareSettings, AppSettings, ChatChannel, ChatMessage, NoteboardEntry, DEFAULT_CHANNELS, findOpenFrontInHistory, migrateFrontState, frontToHistoryEntry, uid, makeDefaultCustomFronts, isFrontEmpty, allFrontMemberIds, singletStatuses} from './src/utils';
 import {migrateInlineAvatars, migrateInlineChatMedia, clearAllMedia, migrateStaleMediaPaths, rebaseChatMessageMedia} from './src/utils/mediaUtils';
-import {showFrontNotification, clearFrontNotification, scheduleFrontCheckReminder, cancelFrontCheckReminder, showNoteboardNotification, clearNoteboardNotification} from './src/services/NotificationService';
+import {showFrontNotification, clearFrontNotification, scheduleFrontCheckReminder, cancelFrontCheckReminder, showNoteboardNotification, clearNoteboardNotification, scheduleFrontNotificationRefresh, cancelFrontNotificationRefresh} from './src/services/NotificationService';
 
 import {SetupScreen} from './src/screens/SetupScreen';
 import {LockScreen} from './src/screens/LockScreen';
@@ -31,7 +31,9 @@ import {StatsScreen} from './src/screens/StatsScreen';
 import {ChatScreen} from './src/screens/ChatScreen';
 import {CustomFieldsScreen} from './src/screens/CustomFieldsScreen';
 import {PollsScreen} from './src/screens/PollsScreen';
-import {SetFrontModal, EditFrontDetailModal, MemberModal, JournalModal, SystemModal, CustomFrontModal} from './src/modals';
+import {StatusScreen} from './src/screens/StatusScreen';
+import {ProfileScreen} from './src/screens/ProfileScreen';
+import {SetFrontModal, SetStatusModal, EditFrontDetailModal, MemberModal, JournalModal, SystemModal, CustomFrontModal} from './src/modals';
 
 type Tab = 'front' | 'members' | 'hub' | 'journal' | 'history';
 
@@ -337,6 +339,15 @@ function MainAppContent() {
     }
   }, [appSettings.frontCheckInterval, appSettings.notificationsEnabled]);
 
+  useEffect(() => {
+    const mins = appSettings.notificationRefreshMinutes || 0;
+    if (!front || !appSettings.notificationsEnabled || mins <= 0) {
+      cancelFrontNotificationRefresh().catch(e => console.error('[PS] notif refresh cancel error:', e));
+    } else {
+      scheduleFrontNotificationRefresh(front, members, mins).catch(e => console.error('[PS] notif refresh schedule error:', e));
+    }
+  }, [front, members, appSettings.notificationRefreshMinutes, appSettings.notificationsEnabled]);
+
   const prevFrontIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!appSettings.notificationsEnabled || !appSettings.noteboardNotifications) {
@@ -584,6 +595,12 @@ function MainAppContent() {
     await store.set(KEYS.front, f);
   };
 
+  const isSinglet = appSettings.accountMode === 'singlet';
+  const selfMember = isSinglet
+    ? (members.find(m => m.id === appSettings.selfMemberId && !m.isCustomFront)
+      || members.find(m => !m.isCustomFront && !m.archived))
+    : undefined;
+
   if (!loaded) {
     return (
       <View style={[styles.loading, {backgroundColor: T.bg}]}>
@@ -598,7 +615,15 @@ function MainAppContent() {
     return (
       <>
         <StatusBar barStyle="light-content" backgroundColor={C.bg} translucent={false} />
-        <SetupScreen theme={C} onSave={async s => {await saveSystem(s); setFirstRun(false); setTimeout(requestPermissions, 500);}} />
+        <SetupScreen theme={C} onSave={async s => {
+          await saveSystem({name: s.name, description: s.description});
+          if (s.singlet) {
+            const self: Member = {id: uid(), name: s.name, pronouns: '', role: '', color: '#DAA520', description: '', tags: [], groupIds: [], customFields: [], createdAt: Date.now()};
+            await saveMembers([...members, self]);
+            await saveAppSettings({...appSettings, accountMode: 'singlet', selfMemberId: self.id});
+          }
+          setFirstRun(false); setTimeout(requestPermissions, 500);
+        }} />
       </>
     );
   }
@@ -614,12 +639,28 @@ function MainAppContent() {
 
   const handleEditDetails = (tier: FrontTierKey) => { setEditTier(tier); setShowEditFrontDetail(true); };
 
+  const ensureSelfMember = async (): Promise<Member> => {
+    if (selfMember) {
+      if (selfMember.id !== appSettings.selfMemberId) await saveAppSettings({...appSettings, selfMemberId: selfMember.id});
+      return selfMember;
+    }
+    const nm: Member = {id: uid(), name: system.name || t('share.system'), pronouns: '', role: '', color: '#DAA520', description: '', tags: [], groupIds: [], customFields: [], createdAt: Date.now()};
+    await saveMembers([...members, nm]);
+    await saveAppSettings({...appSettings, selfMemberId: nm.id});
+    return nm;
+  };
+  const tabLabel = (id: Tab): string => {
+    if (isSinglet && id === 'front') return t('tabs.status');
+    if (isSinglet && id === 'members') return t('tabs.profile');
+    return t(`tabs.${id}`);
+  };
+
   const renderShareScreen = () => (
     <ShareScreen theme={C} system={system} members={members} front={front} history={history} journal={journal} shareSettings={shareSettings} appSettings={appSettings} onSettingsChange={saveShareSettings} getMember={getMember} onDataImported={loadAll} onAddJournalEntry={addJournalEntry} onDeleteAccount={handleDeleteAccount} />
   );
 
   const renderStatsScreen = () => (
-    <StatsScreen theme={C} history={history} members={members} chatMessages={allChatMessages} />
+    <StatsScreen theme={C} history={history} members={members} chatMessages={allChatMessages} singlet={isSinglet} selfId={selfMember?.id} />
   );
 
   const renderChatScreen = () => (
@@ -637,8 +678,18 @@ function MainAppContent() {
   const renderScreen = () => {
     switch (tab) {
       case 'front':
+        if (isSinglet) {
+          return <StatusScreen theme={C} front={front} getMember={getMember} selfId={selfMember?.id}
+            onSetStatus={async () => {await ensureSelfMember(); setShowSetFront(true);}} onEditDetails={handleEditDetails} />;
+        }
         return <FrontScreen theme={C} front={front} getMember={getMember} onSetFront={() => setShowSetFront(true)} onEditDetails={handleEditDetails} />;
       case 'members':
+        if (isSinglet) {
+          return <ProfileScreen theme={C} member={selfMember} statuses={singletStatuses(members)} front={front}
+            onEditProfile={async () => {const self = await ensureSelfMember(); setEditMember(self); setViewOnlyMember(false); setAddCustomFront(false); setShowMember(true);}}
+            onAddStatus={() => {setEditCustomFront(null); setShowCustomFront(true);}}
+            onEditStatus={m => {setEditCustomFront(m); setShowCustomFront(true);}} />;
+        }
         return <MembersScreen theme={C} members={members} front={front} groups={groups} initialSortMode={appSettings.memberSortMode}
           onAdd={() => {setEditMember(null); setViewOnlyMember(false); setAddCustomFront(false); setShowMember(true);}}
           onAddCustomFront={() => {setEditCustomFront(null); setShowCustomFront(true);}}
@@ -664,11 +715,11 @@ function MainAppContent() {
           onBulkAddGroups={bulkAddGroups}
         />;
       case 'hub':
-        return <HubScreen theme={C} members={members} history={history} front={front} onSaveHistory={saveHistory} onSetFront={handleHubSetFront} renderShareScreen={renderShareScreen} renderStatsScreen={renderStatsScreen} renderChatScreen={renderChatScreen} renderCustomFieldsScreen={renderCustomFieldsScreen} renderSystemManagerScreen={() => <SystemManagerScreen theme={C} members={members} groups={groups} onSaveGroups={saveGroups} />} renderPollsScreen={renderPollsScreen} resetKey={hubResetKey} editHistoryIndex={editHistoryIndex} onClearEditHistory={() => setEditHistoryIndex(null)} />;
+        return <HubScreen theme={C} singlet={isSinglet} selfId={selfMember?.id} members={members} history={history} front={front} onSaveHistory={saveHistory} onSetFront={handleHubSetFront} renderShareScreen={renderShareScreen} renderStatsScreen={renderStatsScreen} renderChatScreen={renderChatScreen} renderCustomFieldsScreen={renderCustomFieldsScreen} renderSystemManagerScreen={() => <SystemManagerScreen theme={C} members={members} groups={groups} onSaveGroups={saveGroups} />} renderPollsScreen={renderPollsScreen} resetKey={hubResetKey} editHistoryIndex={editHistoryIndex} onClearEditHistory={() => setEditHistoryIndex(null)} />;
       case 'journal':
         return <JournalScreen theme={C} journal={journal} templates={journalTemplates} members={members} systemJournalPassword={system.journalPassword} onAdd={() => {setEditJournal(null); setShowJournal(true);}} onEdit={e => {setEditJournal(e); setShowJournal(true);}} onDelete={deleteEntry} onSaveTemplates={saveJournalTemplates} onMentionPress={openMemberById} />;
       case 'history':
-        return <HistoryScreen theme={C} history={history} journal={journal} getMember={getMember} members={members} onSaveHistory={saveHistory} onEditEntry={(idx: number) => {setEditHistoryIndex(idx); setTab('hub');}} />;
+        return <HistoryScreen theme={C} history={history} journal={journal} getMember={getMember} members={members} singlet={isSinglet} selfId={selfMember?.id} onSaveHistory={saveHistory} onEditEntry={(idx: number) => {setEditHistoryIndex(idx); setTab('hub');}} />;
     }
   };
 
@@ -703,31 +754,40 @@ function MainAppContent() {
       <View style={styles.content}>{renderScreen()}</View>
       <View style={[styles.tabBar, {backgroundColor: C.surface, borderTopColor: C.border}]} accessibilityRole="tablist" accessibilityLabel={t('a11y.mainNav')}>
         {TAB_IDS.map(id => (
-          <TouchableOpacity key={id} onPress={() => { if (id === 'hub' && tab === 'hub') setHubResetKey(k => k + 1); setTab(id); }} activeOpacity={0.7} accessibilityRole="tab" accessibilityState={{selected: tab === id}} accessibilityLabel={t(`tabs.${id}`)} style={[styles.tabBtn, {paddingBottom: 8 + (insets.bottom || 0)}]}>
+          <TouchableOpacity key={id} onPress={() => { if (id === 'hub' && tab === 'hub') setHubResetKey(k => k + 1); setTab(id); }} activeOpacity={0.7} accessibilityRole="tab" accessibilityState={{selected: tab === id}} accessibilityLabel={tabLabel(id)} style={[styles.tabBtn, {paddingBottom: 8 + (insets.bottom || 0)}]}>
             <AccentText T={C} style={[styles.tabIcon, {color: tab === id ? C.accent : C.dim, fontSize: fs(18)}]} maxFontSizeMultiplier={1.2}>{TAB_ICONS[id]}</AccentText>
-            <AccentText T={C} style={[styles.tabLabel, {color: tab === id ? C.accent : C.dim, fontSize: fs(9)}]} numberOfLines={1} allowFontScaling={false}>{t(`tabs.${id}`)}</AccentText>
+            <AccentText T={C} style={[styles.tabLabel, {color: tab === id ? C.accent : C.dim, fontSize: fs(9)}]} numberOfLines={1} allowFontScaling={false}>{tabLabel(id)}</AccentText>
           </TouchableOpacity>
         ))}
       </View>
 
-      <SetFrontModal visible={showSetFront} theme={C} members={members.filter(m => !m.archived)} groups={groups} current={front} settings={appSettings}
-        lastKnownLocation={lastKnownLocation}
-        onSave={async (primary: FrontTier, coFront: FrontTier, coConscious: FrontTier) => {await updateFront(primary, coFront, coConscious); setShowSetFront(false);}}
-        onClose={() => setShowSetFront(false)} />
+      {isSinglet ? (
+        <SetStatusModal visible={showSetFront} theme={C} statuses={singletStatuses(members)} selfId={selfMember?.id} current={front} settings={appSettings}
+          lastKnownLocation={lastKnownLocation}
+          onSave={async (primary: FrontTier, coFront: FrontTier, coConscious: FrontTier) => {await updateFront(primary, coFront, coConscious); setShowSetFront(false);}}
+          onClose={() => setShowSetFront(false)} />
+      ) : (
+        <SetFrontModal visible={showSetFront} theme={C} members={members.filter(m => !m.archived)} groups={groups} current={front} settings={appSettings}
+          lastKnownLocation={lastKnownLocation}
+          onSave={async (primary: FrontTier, coFront: FrontTier, coConscious: FrontTier) => {await updateFront(primary, coFront, coConscious); setShowSetFront(false);}}
+          onClose={() => setShowSetFront(false)} />
+      )}
       {front && (
-        <EditFrontDetailModal visible={showEditFrontDetail} theme={C} front={front} tier={editTier} settings={appSettings}
+        <EditFrontDetailModal visible={showEditFrontDetail} theme={C} front={front} tier={editTier} settings={appSettings} statusMode={isSinglet}
           lastKnownLocation={lastKnownLocation}
           onSave={async (mood: string, location: string, note: string) => {await updateFrontDetails(editTier, mood, location, note); setShowEditFrontDetail(false);}}
           onClose={() => setShowEditFrontDetail(false)} />
       )}
       <MemberModal key={`${editMember?.id || 'new-member'}-${viewOnlyMember ? 'view' : 'edit'}`} visible={showMember} theme={C} member={editMember} members={members} groups={groups} settings={appSettings}
         readOnly={viewOnlyMember}
+        profileMode={isSinglet && editMember?.id === selfMember?.id && !editMember?.isCustomFront}
+        onRequestEdit={isSinglet && viewOnlyMember ? () => setViewOnlyMember(false) : undefined}
         isFronting={!!editMember && allFrontMemberIds(front).includes(editMember.id)}
         onMentionPress={openMemberById}
         onSave={async (m: Member) => {await saveMember(addCustomFront && !editMember ? {...m, isCustomFront: true} : m); setShowMember(false); setEditMember(null); setViewOnlyMember(false); setAddCustomFront(false);}}
         onDelete={async (id: string) => {await deleteMember(id); setShowMember(false); setEditMember(null); setViewOnlyMember(false);}}
         onClose={() => {setShowMember(false); setEditMember(null); setViewOnlyMember(false);}} />
-      <CustomFrontModal visible={showCustomFront} theme={C} customFront={editCustomFront}
+      <CustomFrontModal visible={showCustomFront} theme={C} customFront={editCustomFront} statusMode={isSinglet}
         isFronting={!!editCustomFront && allFrontMemberIds(front).includes(editCustomFront.id)}
         onSave={async (m: Member) => {await saveMember({...m, isCustomFront: true}); setShowCustomFront(false); setEditCustomFront(null);}}
         onDelete={async (id: string) => {await deleteMember(id); setShowCustomFront(false); setEditCustomFront(null);}}
@@ -739,7 +799,20 @@ function MainAppContent() {
       <SystemModal visible={showSystem} theme={C} system={system} settings={appSettings}
         palettes={palettes} activePaletteId={activePaletteId}
         onSave={async (s: SystemInfo) => {await saveSystem(s); setShowSystem(false);}}
-        onSaveSettings={async (s: AppSettings) => {await saveAppSettings(s); setShowSystem(false);}}
+        onSaveSettings={async (s: AppSettings) => {
+          let next = s;
+          if (s.accountMode === 'singlet' && !members.find(m => m.id === s.selfMemberId && !m.isCustomFront)) {
+            const existing = members.find(m => !m.isCustomFront && !m.archived);
+            if (existing) {
+              next = {...s, selfMemberId: existing.id};
+            } else {
+              const nm: Member = {id: uid(), name: system.name || t('share.system'), pronouns: '', role: '', color: '#DAA520', description: '', tags: [], groupIds: [], customFields: [], createdAt: Date.now()};
+              await saveMembers([...members, nm]);
+              next = {...s, selfMemberId: nm.id};
+            }
+          }
+          await saveAppSettings(next); setShowSystem(false);
+        }}
         onSavePalettes={savePalettes}
         onSelectPalette={selectPalette}
         onClose={() => setShowSystem(false)} />

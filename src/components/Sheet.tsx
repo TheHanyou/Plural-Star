@@ -13,13 +13,14 @@ interface SheetProps {
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  headerAction?: ReactNode;
 }
 
 const isIPad = Platform.OS === 'ios' && Platform.isPad;
 
 const ANDROID_NAV_BAR_FLOOR = 24;
 
-export const Sheet = ({visible, title, theme: T, onClose, children, footer}: SheetProps) => {
+export const Sheet = ({visible, title, theme: T, onClose, children, footer, headerAction}: SheetProps) => {
   const {t} = useTranslation();
   const sheetRef = useRef<TrueSheet>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -64,7 +65,8 @@ export const Sheet = ({visible, title, theme: T, onClose, children, footer}: She
       scrollable
       header={
         <View style={[s.header, {borderBottomColor: T.border, backgroundColor: T.card}]}>
-          <Text style={[s.title, {color: T.text}]} accessibilityRole="header">{title}</Text>
+          <Text style={[s.title, {color: T.text, flex: 1, marginRight: 8}]} accessibilityRole="header" numberOfLines={1}>{title}</Text>
+          {headerAction}
           <TouchableOpacity onPress={onClose} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={t('common.close')} style={s.closeBtn}>
             <Text style={[s.closeX, {color: T.dim}]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">✕</Text>
           </TouchableOpacity>

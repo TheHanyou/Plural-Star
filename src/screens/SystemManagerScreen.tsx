@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
-import {View, ScrollView, TouchableOpacity, Alert} from 'react-native';
+import {View, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView} from 'react-native';
 import {Text, TextInput} from '../components/AppText';
 import {useTranslation} from 'react-i18next';
 import {PALETTE} from '../theme';
+import {useKeyboardBehavior} from '../hooks/useKeyboardBehavior';
 import {Member, MemberGroup, GroupNodeKind, uid, childrenOf, descendantsOf, isDescendant, groupKind} from '../utils';
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
 export const SystemManagerScreen = ({theme: T, members, groups, onSaveGroups}: Props) => {
   const {t} = useTranslation();
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
+  const behavior = useKeyboardBehavior();
 
   const [newName, setNewName] = useState('');
   const [newColor, setNewColor] = useState(PALETTE[0]);
@@ -117,7 +119,8 @@ export const SystemManagerScreen = ({theme: T, members, groups, onSaveGroups}: P
   };
 
   return (
-    <ScrollView style={{flex: 1, backgroundColor: T.bg}} contentContainerStyle={{padding: 16, paddingBottom: 32}}>
+    <KeyboardAvoidingView style={{flex: 1}} behavior={behavior}>
+    <ScrollView style={{flex: 1, backgroundColor: T.bg}} contentContainerStyle={{padding: 16, paddingBottom: 120}} keyboardShouldPersistTaps="handled">
       <Text style={{fontSize: fs(11), color: T.dim, marginBottom: 14, lineHeight: 18}}>{t('systemManager.desc')}</Text>
       {movingId && (
         <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10, padding: 8, borderRadius: 8, backgroundColor: T.surface, borderWidth: 1, borderColor: `${T.accent}40`}}>
@@ -143,5 +146,6 @@ export const SystemManagerScreen = ({theme: T, members, groups, onSaveGroups}: P
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };

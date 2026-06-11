@@ -5,7 +5,7 @@ import {Avatar} from '../components/Avatar';
 import {useTranslation} from 'react-i18next';
 import {Fonts} from '../theme';
 import {AccentText} from '../components/AccentText';
-import {HistoryEntry, JournalEntry, Member, FrontTierKey, fmtTime, fmtDate, fmtDur, TIER_LABELS, translateMood, sortMembersBySearch} from '../utils';
+import {HistoryEntry, JournalEntry, Member, FrontTierKey, fmtTime, fmtDate, fmtDur, TIER_LABELS, translateMood, sortMembersBySearch, singletStatuses, buildEffectiveEnd} from '../utils';
 import {store, KEYS} from '../storage';
 import {FlashList} from '@shopify/flash-list';
 
@@ -22,6 +22,8 @@ interface Props {
   journal: JournalEntry[];
   getMember: (id: string) => Member | undefined;
   members: Member[];
+  singlet?: boolean;
+  selfId?: string;
   onSaveHistory: (h: HistoryEntry[]) => void;
   onEditEntry?: (originalIndex: number) => void;
 }
@@ -54,16 +56,22 @@ interface FrontHistoryEntryRowProps {
   T: any;
   fs: (n: number) => number;
   t: (key: string, opts?: any) => string;
+  selfId?: string;
+  singlet?: boolean;
+  effectiveEnd: number | null;
   onToggleExpand: (key: string) => void;
   onEditEntry?: (originalIndex: number) => void;
   onDelete: (originalIndex: number) => void;
 }
 
 const FrontHistoryEntryRow = React.memo(function FrontHistoryEntryRow({
-  entry, isLastInGroup, originalIndex, entryKey, isExpanded, memberMap, T, fs, t, onToggleExpand, onEditEntry, onDelete,
+  entry, isLastInGroup, originalIndex, entryKey, isExpanded, memberMap, T, fs, t, selfId, singlet, effectiveEnd, onToggleExpand, onEditEntry, onDelete,
 }: FrontHistoryEntryRowProps) {
-  const primaryFronters = (entry.memberIds || []).map(id => memberMap.get(id)).filter(Boolean) as Member[];
-  const isOpen = entry.endTime === null;
+  const allPrimary = (entry.memberIds || []).map(id => memberMap.get(id)).filter(Boolean) as Member[];
+  const withoutSelf = singlet && selfId ? allPrimary.filter(m => m.id !== selfId) : allPrimary;
+  const primaryFronters = singlet && withoutSelf.length === 0 ? allPrimary : withoutSelf;
+  const displayEnd = entry.endTime ?? effectiveEnd;
+  const isOpen = displayEnd === null;
   const hasCoFront = (entry.coFrontIds || []).length > 0;
   const hasCoConscious = (entry.coConsciousIds || []).length > 0;
   const NAME_CAP = 6;
@@ -104,7 +112,7 @@ const FrontHistoryEntryRow = React.memo(function FrontHistoryEntryRow({
             {primaryDisplay || t('common.unknown')}
           </Text>
           <AccentText T={T} style={{fontSize: fs(12), color: T.accent, fontWeight: '500'}}>
-            {fmtDur(entry.startTime, entry.endTime)}
+            {fmtDur(entry.startTime, displayEnd)}
           </AccentText>
         </View>
         {(hasCoFront || hasCoConscious) && (
@@ -115,7 +123,7 @@ const FrontHistoryEntryRow = React.memo(function FrontHistoryEntryRow({
         )}
         <Text style={{fontSize: fs(11), color: T.muted, marginBottom: 4}}>
           {fmtTime(entry.startTime)}
-          {isOpen ? ` → ${t('history.now')}` : entry.endTime ? ` → ${fmtTime(entry.endTime)}` : ''}
+          {isOpen ? ` → ${t('history.now')}` : displayEnd ? ` → ${fmtTime(displayEnd)}` : ''}
         </Text>
         {(entry.mood || entry.location) && (
           <View style={{flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 4}}>
@@ -168,7 +176,7 @@ const FrontHistoryEntryRow = React.memo(function FrontHistoryEntryRow({
   );
 });
 
-export const HistoryScreen = ({theme: T, history, journal, getMember, members, onSaveHistory, onEditEntry}: Props) => {
+export const HistoryScreen = ({theme: T, history, journal, getMember, members, singlet = false, selfId, onSaveHistory, onEditEntry}: Props) => {
   const {t} = useTranslation();
   const fs = useCallback((s: number) => Math.round(s * (T.textScale || 1)), [T.textScale]);
   const [subTab, setSubTab] = useState<SubTab>('front');
@@ -214,10 +222,11 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
 
   type FrontHistoryRow =
     | {kind: 'header'; key: string; date: string}
-    | {kind: 'entry'; key: string; entry: HistoryEntry; isLastInGroup: boolean; originalIndex: number};
+    | {kind: 'entry'; key: string; entry: HistoryEntry; isLastInGroup: boolean; originalIndex: number; effectiveEnd: number | null};
   const frontHistoryRows = useMemo<FrontHistoryRow[]>(() => {
     const frontHistory = history.filter(e => !e.changeType || e.changeType === 'front');
     if (frontHistory.length === 0) return [];
+    const effEnd = buildEffectiveEnd(history);
     const frontGroups: Record<string, HistoryEntry[]> = {};
     for (const e of frontHistory) {
       const k = fmtDate(e.startTime);
@@ -236,6 +245,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
           entry,
           isLastInGroup: i === entries.length - 1,
           originalIndex: indexMap.get(entry) ?? -1,
+          effectiveEnd: effEnd(entry),
         });
       });
     }
@@ -262,12 +272,15 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
         T={T}
         fs={fs}
         t={t}
+        selfId={selfId}
+        singlet={singlet}
+        effectiveEnd={item.effectiveEnd}
         onToggleExpand={toggleEntryExpanded}
         onEditEntry={onEditEntry}
         onDelete={startDelete}
       />
     );
-  }, [expandedEntries, memberMap, T, fs, t, toggleEntryExpanded, onEditEntry, startDelete]);
+  }, [expandedEntries, memberMap, T, fs, t, singlet, selfId, toggleEntryExpanded, onEditEntry, startDelete]);
 
   const tierNames = (ids: string[] | undefined) =>
     (ids || []).map(id => memberMap.get(id)).filter(Boolean).map(m => m!.name).join(', ');
@@ -308,8 +321,12 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
     if (type === 'location') return t('history.locationChanged') + tierSuffix;
     if (type === 'note')     return t('history.noteUpdated') + tierSuffix;
     if (type === 'journal')  return t('history.journalEntry');
-    return t('history.frontSwitch');
+    return singlet ? t('history.statusChange') : t('history.frontSwitch');
   };
+
+  const pickerMembers = singlet
+    ? [...members.filter(m => m.id === selfId), ...singletStatuses(members)]
+    : members;
 
   return (
     <View style={{flex: 1, backgroundColor: T.bg}}>
@@ -334,7 +351,9 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
                 fontWeight: subTab === tab ? '600' : '400',
                 color: subTab === tab ? T.accent : T.dim,
               }}>
-                {tab === 'front' ? t('history.frontHistory') : t('history.memberHistory')}
+                {tab === 'front'
+                  ? (singlet ? t('history.statusHistory') : t('history.frontHistory'))
+                  : (singlet ? t('history.byStatus') : t('history.memberHistory'))}
               </AccentText>
             </TouchableOpacity>
           ))}
@@ -351,7 +370,7 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
             <View style={{alignItems: 'center', paddingVertical: 48}}>
               <Text style={{fontSize: fs(36), opacity: 0.4, marginBottom: 12}}>◷</Text>
               <Text style={{fontSize: fs(13), color: T.dim, textAlign: 'center'}}>
-                {t('history.noHistory')}
+                {singlet ? t('history.noHistorySinglet') : t('history.noHistory')}
               </Text>
             </View>
           }
@@ -361,9 +380,9 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
 
       {subTab === 'member' && (
         <View style={{flex: 1}}>
-          {members.length === 0 ? (
+          {pickerMembers.length === 0 ? (
             <View style={{alignItems: 'center', paddingVertical: 48}}>
-              <Text style={{fontSize: fs(13), color: T.dim}}>{t('history.noMembers')}</Text>
+              <Text style={{fontSize: fs(13), color: T.dim}}>{singlet ? t('profile.noStatuses') : t('history.noMembers')}</Text>
             </View>
           ) : (
             <>
@@ -381,12 +400,12 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
                     </TouchableOpacity>
                   </View>
                 )}
-                <TextInput value={memberSearch} onChangeText={setMemberSearch} placeholder={t('history.searchMember')} placeholderTextColor={T.muted}
+                <TextInput value={memberSearch} onChangeText={setMemberSearch} placeholder={singlet ? t('history.searchStatus') : t('history.searchMember')} placeholderTextColor={T.muted}
                   style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9, fontSize: fs(13)}} />
                 {memberSearch.length > 0 && (
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginTop: 4, maxHeight: 280}}>
                     <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true}>
-                      {sortMembersBySearch(members.filter(m => m.name.toLowerCase().includes(memberSearch.toLowerCase())), memberSearch).map(m => (
+                      {sortMembersBySearch(pickerMembers.filter(m => m.name.toLowerCase().includes(memberSearch.toLowerCase())), memberSearch).map(m => (
                         <TouchableOpacity key={m.id}
                           onPress={() => {setSelectedMemberId(m.id); setMemberSearch('');}}
                           activeOpacity={0.7}
@@ -406,7 +425,8 @@ export const HistoryScreen = ({theme: T, history, journal, getMember, members, o
 
               {selectedMember && allMemberEvents.length > 0 && (() => {
                 const frontE = memberHistoryEvents.filter(e => !e.entry.changeType || e.entry.changeType === 'front');
-                const totalMs = frontE.reduce((sum, e) => sum + ((e.entry.endTime ?? Date.now()) - e.entry.startTime), 0);
+                const effEnd = buildEffectiveEnd(history);
+                const totalMs = frontE.reduce((sum, e) => sum + Math.max(0, (effEnd(e.entry) ?? Date.now()) - e.entry.startTime), 0);
                 const moodCounts: Record<string, number> = {};
                 memberHistoryEvents.forEach(e => {if (e.entry.mood) moodCounts[e.entry.mood] = (moodCounts[e.entry.mood] || 0) + 1;});
                 const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];

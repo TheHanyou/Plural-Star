@@ -209,7 +209,15 @@ export interface ShareSettings {
 
 export type TextScale = 1.0 | 1.25 | 1.5;
 
+export type AccountMode = 'system' | 'singlet';
+
+export const SINGLET_HIDDEN_STATUS_NAMES = ['Blurry', 'Blendy', 'Rapid Switching', 'Dissociated'];
+export const singletStatuses = (members: Member[]): Member[] =>
+  members.filter(m => m.isCustomFront && !m.archived && !SINGLET_HIDDEN_STATUS_NAMES.includes(m.name));
+
 export interface AppSettings {
+  accountMode?: AccountMode;
+  selfMemberId?: string;
   locations: string[];
   customMoods: string[];
   lightMode: boolean;
@@ -217,6 +225,7 @@ export interface AppSettings {
   filesEnabled: boolean;
   language: SupportedLanguage;
   notificationsEnabled: boolean;
+  notificationRefreshMinutes?: number;
   activePaletteId: string;
   textScale: TextScale;
   memberSortMode?: MemberSortMode;
@@ -350,6 +359,22 @@ export const findOpenFrontInHistory = (history: HistoryEntry[]): FrontState | nu
   );
 
   return openFrontEntry ? historyEntryToFrontState(openFrontEntry) : null;
+};
+
+export const buildEffectiveEnd = (history: HistoryEntry[]): ((e: HistoryEntry) => number | null) => {
+  const starts = history
+    .filter(e => !e.changeType || e.changeType === 'front')
+    .map(e => e.startTime)
+    .sort((a, b) => a - b);
+  return (e: HistoryEntry): number | null => {
+    if (e.endTime != null) return e.endTime;
+    let lo = 0; let hi = starts.length - 1; let ans = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (starts[mid] > e.startTime) { ans = mid; hi = mid - 1; } else { lo = mid + 1; }
+    }
+    return ans === -1 ? null : starts[ans];
+  };
 };
 
 export const isFrontEmpty = (f: FrontState | null): boolean =>

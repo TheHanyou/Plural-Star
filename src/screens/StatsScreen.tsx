@@ -3,7 +3,7 @@ import {View, ScrollView, TouchableOpacity} from 'react-native';
 import {Text} from '../components/AppText';
 import {useTranslation} from 'react-i18next';
 import {Fonts} from '../theme';
-import {Member, HistoryEntry, ChatMessage, fmtDur, translateMood} from '../utils';
+import {Member, HistoryEntry, ChatMessage, fmtDur, translateMood, SINGLET_HIDDEN_STATUS_NAMES, buildEffectiveEnd} from '../utils';
 import {DateTimeEditor} from '../components/DateTimeEditor';
 import {Avatar} from '../components/Avatar';
 
@@ -17,9 +17,11 @@ interface Props {
   history: HistoryEntry[];
   members: Member[];
   chatMessages: ChatMessage[];
+  singlet?: boolean;
+  selfId?: string;
 }
 
-export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) => {
+export const StatsScreen = ({theme: T, history, members, chatMessages, singlet = false, selfId}: Props) => {
   const {t} = useTranslation();
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const [range, setRange] = useState<TimeRange>('all');
@@ -64,7 +66,14 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
 
   const stats = useMemo(() => {
     const customFrontIds = new Set(members.filter(m => m.isCustomFront).map(m => m.id));
-    const totalMs = filteredHistory.reduce((sum, e) => sum + ((e.endTime ?? Date.now()) - e.startTime), 0);
+    const hiddenStatusIds = new Set(members.filter(m => m.isCustomFront && SINGLET_HIDDEN_STATUS_NAMES.includes(m.name)).map(m => m.id));
+    // In singlet mode, statuses (custom fronts) are what gets ranked; the self profile is excluded.
+    const rankExclude = (id: string): boolean => singlet
+      ? (id === selfId || !customFrontIds.has(id) || hiddenStatusIds.has(id))
+      : customFrontIds.has(id);
+    const effEnd = buildEffectiveEnd(history);
+    const entryDur = (e: HistoryEntry): number => Math.max(0, (effEnd(e) ?? Date.now()) - e.startTime);
+    const totalMs = filteredHistory.reduce((sum, e) => sum + entryDur(e), 0);
 
     const frontCounts: Record<string, {time: number; sessions: number}> = {};
     const coFrontCounts: Record<string, number> = {};
@@ -73,7 +82,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
     const locCounts: Record<string, number> = {};
 
     filteredHistory.forEach(e => {
-      const dur = (e.endTime ?? Date.now()) - e.startTime;
+      const dur = entryDur(e);
       (e.memberIds || []).forEach(id => {
         if (!frontCounts[id]) frontCounts[id] = {time: 0, sessions: 0};
         frontCounts[id].time += dur;
@@ -113,15 +122,18 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
     const energyByHour = energyHourSum.map((s, h) => energyHourCount[h] > 0 ? Math.round((s / energyHourCount[h]) * 10) / 10 : 0);
 
     const energyAvgs = Object.entries(energyMap)
-      .filter(([id]) => !customFrontIds.has(id))
+      .filter(([id]) => !rankExclude(id))
       .map(([id, {sum, count}]) => ({id, avg: Math.round((sum / count) * 10) / 10}))
       .sort((a, b) => b.avg - a.avg);
 
     const topN = (obj: Record<string, number>, n: number) =>
-      Object.entries(obj).filter(([id]) => !customFrontIds.has(id)).sort((a, b) => b[1] - a[1]).slice(0, n);
+      Object.entries(obj).filter(([id]) => !rankExclude(id)).sort((a, b) => b[1] - a[1]).slice(0, n);
+
+    const topNPlain = (obj: Record<string, number>, n: number) =>
+      Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, n);
 
     const topFronters = Object.entries(frontCounts)
-      .filter(([id]) => !customFrontIds.has(id))
+      .filter(([id]) => !rankExclude(id))
       .sort((a, b) => b[1].time - a[1].time)
       .slice(0, MAX_BOARD)
       .map(([id, data]) => ({id, ...data}));
@@ -132,15 +144,15 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
       topFronters,
       topCoFronters: topN(coFrontCounts, MAX_BOARD),
       topCoCon: topN(coConCounts, MAX_BOARD),
-      topMoods: topN(moodCounts, MAX_BOARD),
-      topLocations: topN(locCounts, MAX_BOARD),
+      topMoods: topNPlain(moodCounts, MAX_BOARD),
+      topLocations: topNPlain(locCounts, MAX_BOARD),
       topChatters: topN(chatCounts, MAX_BOARD),
       totalMessages: filteredChat.length,
       energyAvgs,
       peakHours: peakHoursArr,
       energyByHour,
     };
-  }, [filteredHistory, filteredChat, members]);
+  }, [filteredHistory, filteredChat, members, history, singlet, selfId]);
 
   const getMember = (id: string) => members.find(m => m.id === id);
 
@@ -220,7 +232,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
     const maxT = Math.max(...shown.map(e => e.time), 1);
     return (
       <View style={{marginBottom: 18}}>
-        <Text accessibilityRole="header" style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{t('stats.topFronters')}</Text>
+        <Text accessibilityRole="header" style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{singlet ? t('stats.topStatuses') : t('stats.topFronters')}</Text>
         <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border}}>
           {shown.map((entry, i) => {
             const member = getMember(entry.id);
@@ -316,13 +328,13 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
       <View style={{flexDirection: 'row', gap: 8, marginBottom: 16}}>
         <StatCard label={t('stats.totalTime')} value={fmtDur(0, stats.totalMs)} accent />
         <StatCard label={t('stats.sessions')} value={String(stats.totalSessions)} />
-        <StatCard label={t('stats.messages')} value={String(stats.totalMessages)} />
+        {!singlet && <StatCard label={t('stats.messages')} value={String(stats.totalMessages)} />}
       </View>
 
       <FrontLeaderboard />
-      <Leaderboard title={t('stats.topCoFronters')} boardKey="cofronters" entries={stats.topCoFronters} renderValue={v => `${v}x`} />
-      <Leaderboard title={t('stats.topCoCon')} boardKey="cocon" entries={stats.topCoCon} renderValue={v => `${v}x`} />
-      <Leaderboard title={t('stats.topChatters')} boardKey="chatters" entries={stats.topChatters} renderValue={v => `${v} ${t('stats.msgsSuffix')}`} />
+      {!singlet && <Leaderboard title={t('stats.topCoFronters')} boardKey="cofronters" entries={stats.topCoFronters} renderValue={v => `${v}x`} />}
+      {!singlet && <Leaderboard title={t('stats.topCoCon')} boardKey="cocon" entries={stats.topCoCon} renderValue={v => `${v}x`} />}
+      {!singlet && <Leaderboard title={t('stats.topChatters')} boardKey="chatters" entries={stats.topChatters} renderValue={v => `${v} ${t('stats.msgsSuffix')}`} />}
       <Leaderboard title={t('stats.topMoods')} boardKey="moods" entries={stats.topMoods} renderValue={v => `${v}x`} formatKey={m => translateMood(m, t)} />
       <Leaderboard title={t('stats.topLocations')} boardKey="locations" entries={stats.topLocations} renderValue={v => `${v}x`} />
 
@@ -392,10 +404,10 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
       )}
 
       <View style={{marginBottom: 16}}>
-        <Text accessibilityRole="header" style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{t('stats.topCoMembers')}</Text>
+        <Text accessibilityRole="header" style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{singlet ? t('stats.statusDetails') : t('stats.topCoMembers')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom: 10, flexGrow: 0}}>
           <View style={{flexDirection: 'row', gap: 6}}>
-            {members.filter((m: Member) => !m.archived).map((m: Member) => (
+            {members.filter((m: Member) => !m.archived && (!singlet || (m.isCustomFront && !SINGLET_HIDDEN_STATUS_NAMES.includes(m.name)))).map((m: Member) => (
               <TouchableOpacity key={m.id} onPress={() => setSelectedStatMember(selectedStatMember === m.id ? null : m.id)} activeOpacity={0.7}
                 accessibilityRole="button" accessibilityLabel={m.name} accessibilityState={{selected: selectedStatMember === m.id}}
                 style={{paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1,
@@ -418,7 +430,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
           let eSum = 0; let eCount = 0;
           entries.forEach(e => {
             [...(e.memberIds || []), ...(e.coFrontIds || []), ...(e.coConsciousIds || [])].forEach(id => {
-              if (id !== selectedStatMember) coMembers[id] = (coMembers[id] || 0) + 1;
+              if (id !== selectedStatMember && !(singlet && id === selfId)) coMembers[id] = (coMembers[id] || 0) + 1;
             });
             if (e.mood) moods[e.mood] = (moods[e.mood] || 0) + 1;
             if (e.energyLevel && (e.memberIds || []).includes(selectedStatMember)) { eSum += e.energyLevel; eCount++; }
@@ -437,7 +449,7 @@ export const StatsScreen = ({theme: T, history, members, chatMessages}: Props) =
               </View>
               {topCo.length > 0 && (
                 <View style={{marginBottom: 8}}>
-                  <Text style={{fontSize: fs(9), letterSpacing: 1, textTransform: 'uppercase', color: T.muted, marginBottom: 6}}>{t('stats.topCoMembers')}</Text>
+                  <Text style={{fontSize: fs(9), letterSpacing: 1, textTransform: 'uppercase', color: T.muted, marginBottom: 6}}>{singlet ? t('stats.coStatuses') : t('stats.topCoMembers')}</Text>
                   {topCo.map(([id, count]) => {
                     const cm = getMember(id);
                     return (

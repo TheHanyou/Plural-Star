@@ -97,6 +97,11 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
   const coFronters = (front?.coFront?.memberIds || []).map(getMember).filter(Boolean) as Member[];
   const coConsciousFronters = (front?.coConscious?.memberIds || []).map(getMember).filter(Boolean) as Member[];
 
+  const singlet = appSettings.accountMode === 'singlet';
+  const catSystemLabel = singlet ? t('share.nameGoals') : t('share.systemNameDesc');
+  const catMembersLabel = singlet ? t('tabs.profile') : t('share.memberProfiles');
+  const catFrontLabel = singlet ? t('history.statusHistory') : t('share.frontHistory');
+
   const tog = (k: keyof ShareSettings) => onSettingsChange({...shareSettings, [k]: !shareSettings[k]});
   const togR = (k: keyof typeof restoreSel) => setRestoreSel(s => ({...s, [k]: !s[k]}));
   const togE = (k: keyof typeof extSel) => setExtSel(s => ({...s, [k]: !s[k]}));
@@ -635,7 +640,7 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
     if (!extToken.trim()) {Alert.alert(t('share.tokenRequired'), t('share.pkTokenRequiredMsg')); return;}
     setExtLoading(true); setExtPreview(null);
     try {
-      const headers = {Authorization: extToken.trim(), 'Content-Type': 'application/json', 'User-Agent': 'PluralStar/1.9.1'};
+      const headers = {Authorization: extToken.trim(), 'Content-Type': 'application/json', 'User-Agent': 'PluralStar/1.9.2'};
       const [sRes, mRes, swRes, gRes] = await Promise.all([
         fetch('https://api.pluralkit.me/v2/systems/@me', {headers}),
         fetch('https://api.pluralkit.me/v2/systems/@me/members', {headers}),
@@ -1839,10 +1844,10 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
 
   const friendlyKeyName = (key: string): string => {
     switch (key) {
-      case KEYS.system: return t('share.systemNameDesc');
-      case KEYS.members: return t('share.memberProfiles');
-      case KEYS.front: return t('hub.front');
-      case KEYS.history: return t('share.frontHistory');
+      case KEYS.system: return catSystemLabel;
+      case KEYS.members: return catMembersLabel;
+      case KEYS.front: return singlet ? t('tabs.status') : t('hub.front');
+      case KEYS.history: return catFrontLabel;
       case KEYS.journal: return t('share.journalEntries');
       case KEYS.groups: return t('share.memberGroups');
       case KEYS.chatChannels: return t('share.chatData');
@@ -1933,11 +1938,11 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
           <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8, marginTop: 4}}>{t('share.exportCategories')}</Text>
           <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
             {([
-              ['system', t('share.systemNameDesc')],
-              ['members', t('share.memberProfiles')],
+              ['system', catSystemLabel],
+              ['members', catMembersLabel],
               ['avatars', t('share.profilePictures')],
               ['banners', t('share.banners')],
-              ['frontHistory', t('share.frontHistory')],
+              ['frontHistory', catFrontLabel],
               ['journal', t('share.journalEntries')],
               ['groups', t('share.memberGroups')],
               ['chat', t('share.chatData')],
@@ -2024,11 +2029,11 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                   <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{t('share.restoreCategories')}</Text>
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
                     {([
-                      ['system', t('share.systemNameDesc')],
-                      ['members', t('share.memberProfiles')],
+                      ['system', catSystemLabel],
+                      ['members', catMembersLabel],
                       ['avatars', t('share.profilePictures')],
                       ['banners', t('share.banners')],
-                      ['frontHistory', t('share.frontHistory')],
+                      ['frontHistory', catFrontLabel],
                       ['journal', t('share.journalEntries')],
                       ['groups', t('share.memberGroups')],
                       ['chat', t('share.chatData')],
@@ -2126,13 +2131,13 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                   </View>
                   <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{t('share.importCategories')}</Text>
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
-                    <SectionRow label={t('share.systemNameDesc')} value={extSel.system} onToggle={() => togE('system')} />
-                    <SectionRow label={t('share.memberProfiles')} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
+                    <SectionRow label={catSystemLabel} value={extSel.system} onToggle={() => togE('system')} />
+                    <SectionRow label={catMembersLabel} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
                     <SectionRow label={t('share.profilePictures')} value={extSel.avatars} onToggle={() => togE('avatars')} />
                     {importSource === 'pluralkit' && (
                       <SectionRow label={t('share.banners')} value={extSel.banners} onToggle={() => togE('banners')} />
                     )}
-                    <SectionRow label={t('share.frontHistory')} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
+                    <SectionRow label={catFrontLabel} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
                     {importSource === 'simplyplural' && (
                       <SectionRow label={t('customFields.title')} sublabel={t('share.customFieldsCount', {count: (extPreview.customFields || []).length})} value={extSel.customFields} onToggle={() => togE('customFields')} />
                     )}
@@ -2163,10 +2168,10 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                   </View>
                   <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{t('share.importCategories')}</Text>
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
-                    <SectionRow label={t('share.systemNameDesc')} value={extSel.system} onToggle={() => togE('system')} />
-                    <SectionRow label={t('share.memberProfiles')} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
+                    <SectionRow label={catSystemLabel} value={extSel.system} onToggle={() => togE('system')} />
+                    <SectionRow label={catMembersLabel} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
                     <SectionRow label={t('share.profilePictures')} value={extSel.avatars} onToggle={() => togE('avatars')} />
-                    <SectionRow label={t('share.frontHistory')} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
+                    <SectionRow label={catFrontLabel} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
                     {extPreview.groups && extPreview.groups.length > 0 && (
                       <SectionRow label={t('share.groups')} sublabel={t('share.groupsCount', {count: extPreview.groups.length})} value={extSel.groups} onToggle={() => togE('groups')} />
                     )}
@@ -2196,10 +2201,10 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                   </View>
                   <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{t('share.importCategories')}</Text>
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
-                    <SectionRow label={t('share.systemNameDesc')} value={extSel.system} onToggle={() => togE('system')} />
-                    <SectionRow label={t('share.memberProfiles')} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
+                    <SectionRow label={catSystemLabel} value={extSel.system} onToggle={() => togE('system')} />
+                    <SectionRow label={catMembersLabel} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
                     <SectionRow label={t('customFields.title')} value={extSel.customFields} onToggle={() => togE('customFields')} />
-                    <SectionRow label={t('share.frontHistory')} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
+                    <SectionRow label={catFrontLabel} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
                   </View>
                   <TouchableOpacity onPress={handleAmpersandConfirm} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={t('share.importSelected')} style={{alignItems: 'center', paddingVertical: 11, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`, marginBottom: 10}}>
                     <Text style={{fontSize: fs(14), fontWeight: '500', color: T.accent}}>{t('share.importSelected')}</Text>
@@ -2236,11 +2241,11 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
                   </View>
                   <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 8}}>{t('share.importCategories')}</Text>
                   <View style={{backgroundColor: T.card, borderRadius: 10, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 14}}>
-                    <SectionRow label={t('share.systemNameDesc')} value={extSel.system} onToggle={() => togE('system')} />
-                    <SectionRow label={t('share.memberProfiles')} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
+                    <SectionRow label={catSystemLabel} value={extSel.system} onToggle={() => togE('system')} />
+                    <SectionRow label={catMembersLabel} sublabel={t('share.membersCount', {count: extPreview.members.length})} value={extSel.members} onToggle={() => togE('members')} />
                     <SectionRow label={t('share.profilePictures')} value={extSel.avatars} onToggle={() => togE('avatars')} />
                     <SectionRow label={t('customFields.title')} value={extSel.customFields} onToggle={() => togE('customFields')} />
-                    <SectionRow label={t('share.frontHistory')} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
+                    <SectionRow label={catFrontLabel} sublabel={t('share.frontEntries', {count: extPreview.switches.length})} value={extSel.frontHistory} onToggle={() => togE('frontHistory')} />
                     {(extPreview.groups || []).length > 0 && (
                       <SectionRow label={t('share.groups')} sublabel={t('share.groupsCount', {count: (extPreview.groups || []).length})} value={extSel.groups} onToggle={() => togE('groups')} />
                     )}
@@ -2270,8 +2275,8 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
         <View>
           <Text style={[s.para, {color: T.dim, marginTop: 8}]}>{t('share.controlVisibility')}</Text>
           <View style={{backgroundColor: T.card, borderRadius: 12, borderWidth: 1, borderColor: T.border, overflow: 'hidden', marginBottom: 4}}>
-            <SectionRow label={t('share.showCurrentFront')} value={shareSettings.showFront} onToggle={() => tog('showFront')} />
-            <SectionRow label={t('share.showMemberList')} value={shareSettings.showMembers} onToggle={() => tog('showMembers')} />
+            <SectionRow label={singlet ? t('share.showCurrentStatus') : t('share.showCurrentFront')} value={shareSettings.showFront} onToggle={() => tog('showFront')} />
+            {!singlet && <SectionRow label={t('share.showMemberList')} value={shareSettings.showMembers} onToggle={() => tog('showMembers')} />}
             <SectionRow label={t('share.showMemberDescriptions')} value={shareSettings.showDescriptions} onToggle={() => tog('showDescriptions')} />
           </View>
           <Divider label={t('share.preview')} />
@@ -2282,10 +2287,12 @@ export const ShareScreen = ({theme: T, system, members, front, history, journal,
               <View>
                 {primaryFronters.length === 0 && coFronters.length === 0 && coConsciousFronters.length === 0
                   ? <Text style={{fontSize: fs(12), color: T.muted, marginTop: 8}}>{t('share.nobodySet')}</Text>
+                  : singlet
+                  ? (<PreviewTier label={t('tabs.status')} fronters={primaryFronters} color={T.accent} />)
                   : (<><PreviewTier label={t('tier.primaryFront')} fronters={primaryFronters} color={T.accent} /><PreviewTier label={t('tier.coFront')} fronters={coFronters} color={T.info} /><PreviewTier label={t('tier.coConscious')} fronters={coConsciousFronters} color={T.success} /></>)}
               </View>
             )}
-            {shareSettings.showMembers && members.length > 0 && (
+            {!singlet && shareSettings.showMembers && members.length > 0 && (
               <View style={{marginTop: 10}}>
                 <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 6}}>{t('share.membersLabel', {count: members.length})}</Text>
                 {members.slice(0, 4).map(m => (

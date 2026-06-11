@@ -38,7 +38,9 @@
     "members": "Members",
     "hub": "Hub",
     "journal": "Journal",
-    "history": "History"
+    "history": "History",
+    "status": "Status",
+    "profile": "Profile"
   },
   "tier": {
     "primaryFront": "Primary Front",
@@ -59,7 +61,42 @@
     "systemNamePlaceholder": "e.g. The Hanyou System",
     "description": "DESCRIPTION (OPTIONAL)",
     "descriptionPlaceholder": "A brief description…",
-    "enter": "Enter"
+    "enter": "Enter",
+    "subtitleSinglet": "Set up your personal space to begin.",
+    "yourName": "YOUR NAME *",
+    "yourNamePlaceholder": "e.g. Alex",
+    "goals": "GOALS (OPTIONAL)",
+    "goalsPlaceholder": "What do you want to track or work toward?",
+    "observatory": "Observatory",
+    "observatoryHint": "One person? Switch to the singlet interface — a personal journal & status tracker."
+  },
+  "status": {
+    "current": "Current Status",
+    "update": "Update Status",
+    "noneSet": "No status set. Tap Update Status to check in.",
+    "noStatuses": "No statuses selected.",
+    "statuses": "Statuses",
+    "since": "Since {{time}}",
+    "editDetails": "Edit status details",
+    "add": "Add Status",
+    "edit": "Edit Status",
+    "clearTitle": "Clear Status?",
+    "clearMsg": "This will clear your status and log the end of the current session. Continue?"
+  },
+  "profile": {
+    "edit": "Edit Profile",
+    "notSetUp": "Profile not set up yet",
+    "noDescription": "No description yet. Tap Edit Profile to add one.",
+    "statuses": "Statuses",
+    "addStatus": "+ Add Status",
+    "statusesDesc": "Statuses describe how you're doing — like Sleeping, Working, or Anxious. Select them when updating your status.",
+    "noStatuses": "No statuses yet. Add one to get started.",
+    "activeStatus": "Active",
+    "favoriteColor": "Favorite Color"
+  },
+  "settings": {
+    "observatory": "Observatory (Singlet) Interface",
+    "observatoryDesc": "Single-person mode: Status & Profile tabs replace Front & Members, and system-only tools are hidden."
   },
   "front": {
     "currentlyFronting": "Currently Fronting",
@@ -141,6 +178,11 @@
     "noteUpdated": "Note Updated",
     "journalEntry": "Journal Entry",
     "frontSwitch": "Front Switch",
+    "statusHistory": "Status History",
+    "byStatus": "By Status",
+    "searchStatus": "Search statuses…",
+    "statusChange": "Status Change",
+    "noHistorySinglet": "No history yet. Status updates will appear here automatically.",
     "tierSuffix": " ({{tier}})",
     "now": "now",
     "mood": "mood",
@@ -306,6 +348,8 @@
     "importCategories": "Import these categories",
     "controlVisibility": "Control what's visible in shared exports and email summaries.",
     "showCurrentFront": "Show current front",
+    "showCurrentStatus": "Show current status",
+    "nameGoals": "Name & Goals",
     "showMemberList": "Show member list",
     "showMemberDescriptions": "Show member descriptions",
     "preview": "Preview",
@@ -440,6 +484,8 @@
     "systemSettings": "System Settings",
     "systemName": "System Name",
     "systemNamePlaceholder": "Your system's name",
+    "goals": "Goals",
+    "viewEntry": "Journal Entry",
     "descriptionLabel": "Description",
     "descriptionFieldPlaceholder": "A brief description…",
     "globalJournalPassword": "Global Journal Password",
@@ -505,6 +551,10 @@
     "frontCheckDesc": "Remind me to check who is fronting.",
     "frontCheckInterval": "Check Interval",
     "everyNHours": "Every {{count}} hours",
+    "everyNMinutes": "Every {{count}} min",
+    "off": "Off",
+    "refreshTitle": "Notification Refresh",
+    "refreshDesc": "Re-posts the persistent notification on a schedule so it stays near the top of your notification shade.",
     "whosFronting": "Who's fronting right now?",
     "noteboard": "Noteboard Notifications",
     "noteboardDesc": "Notify me when a fronting member has unread notes on their noteboard.",
@@ -546,7 +596,8 @@
     "allGroups": "All Groups",
     "addPlaceholder": "New group name…",
     "deleteGroup": "Delete Group",
-    "deleteGroupMsg": "Remove this group? Members won't be deleted."
+    "deleteGroupMsg": "Remove this group? Members won't be deleted.",
+    "deleteWithChildrenMsg": "This contains {{count}} nested item(s). Keep them and move them up one level, or delete everything?"
   },
   "stats": {
     "showMore": "Show more",
@@ -559,6 +610,9 @@
     "sessions": "Sessions",
     "messages": "Messages",
     "topFronters": "Top Fronters",
+    "topStatuses": "Top Statuses",
+    "statusDetails": "Status Details",
+    "coStatuses": "Often Active With",
     "topCoFronters": "Top Co-Fronters",
     "topCoCon": "Top Co-Conscious",
     "topChatters": "Top Chatters",

@@ -58,7 +58,9 @@
     "members": "Jäsenet",
     "hub": "Keskus",
     "journal": "Päiväkirja",
-    "history": "Historia"
+    "history": "Historia",
+    "status": "Tila",
+    "profile": "Profiili"
   },
   "tier": {
     "primaryFront": "Ensisijainen",
@@ -79,7 +81,42 @@
     "systemNamePlaceholder": "esim. Järjestelmän Nimi",
     "description": "KUVAUS (VALINNAINEN)",
     "descriptionPlaceholder": "Lyhyt kuvaus…",
-    "enter": "Aloita"
+    "enter": "Aloita",
+    "subtitleSinglet": "Määritä oma tilasi aloittaaksesi.",
+    "yourName": "NIMESI *",
+    "yourNamePlaceholder": "esim. Alex",
+    "goals": "TAVOITTEET (VALINNAINEN)",
+    "goalsPlaceholder": "Mitä haluat seurata tai saavuttaa?",
+    "observatory": "Observatorio",
+    "observatoryHint": "Yksi henkilö? Vaihda yksilökäyttöliittymään — henkilökohtainen päiväkirja ja tilaseuranta."
+  },
+  "status": {
+    "current": "Nykyinen tila",
+    "update": "Päivitä tila",
+    "noneSet": "Tilaa ei ole asetettu. Napauta Päivitä tila kirjataksesi.",
+    "noStatuses": "Tiloja ei ole valittu.",
+    "statuses": "Tilat",
+    "since": "Alkaen {{time}}",
+    "editDetails": "Muokkaa tilan tietoja",
+    "add": "Lisää tila",
+    "edit": "Muokkaa tilaa",
+    "clearTitle": "Tyhjennetäänkö tila?",
+    "clearMsg": "Tämä tyhjentää tilasi ja kirjaa nykyisen istunnon päättyneeksi. Jatketaanko?"
+  },
+  "profile": {
+    "edit": "Muokkaa profiilia",
+    "notSetUp": "Profiilia ei ole vielä määritetty",
+    "noDescription": "Ei vielä kuvausta. Napauta Muokkaa profiilia lisätäksesi sellaisen.",
+    "statuses": "Tilat",
+    "addStatus": "+ Lisää tila",
+    "statusesDesc": "Tilat kuvaavat, miten voit — kuten Nukkumassa, Töissä tai Ahdistunut. Valitse ne tilaa päivittäessäsi.",
+    "noStatuses": "Ei vielä tiloja. Lisää yksi aloittaaksesi.",
+    "activeStatus": "Aktiivinen",
+    "favoriteColor": "Lempiväri"
+  },
+  "settings": {
+    "observatory": "Observatorio-käyttöliittymä (yksilö)",
+    "observatoryDesc": "Yhden henkilön tila: Tila- ja Profiili-välilehdet korvaavat Edessä- ja Jäsenet-välilehdet, ja järjestelmätyökalut piilotetaan."
   },
   "front": {
     "currentlyFronting": "Parhaillaan frontissa",
@@ -148,6 +185,11 @@
     "noteUpdated": "Muistiinpano Päivitetty",
     "journalEntry": "Päiväkirjamerkintä",
     "frontSwitch": "Front-vaihto",
+    "statusHistory": "Tilahistoria",
+    "byStatus": "Tilan mukaan",
+    "searchStatus": "Hae tiloja…",
+    "statusChange": "Tilan muutos",
+    "noHistorySinglet": "Ei vielä historiaa. Tilapäivitykset näkyvät täällä automaattisesti.",
     "tierSuffix": " ({{tier}})",
     "now": "nyt",
     "mood": "mieliala",
@@ -294,6 +336,8 @@
     "importCategories": "Tuo nämä luokat",
     "controlVisibility": "Hallitse, mitä näkyy jaetuissa vienneissä ja sähköpostiyhteenvedoissa.",
     "showCurrentFront": "Näytä nykyinen front",
+    "showCurrentStatus": "Näytä nykyinen tila",
+    "nameGoals": "Nimi ja tavoitteet",
     "showMemberList": "Näytä jäsenluettelo",
     "showMemberDescriptions": "Näytä jäsenten kuvaukset",
     "preview": "Esikatselu",
@@ -394,6 +438,8 @@
     "systemSettings": "Järjestelmäasetukset",
     "systemName": "Järjestelmän Nimi",
     "systemNamePlaceholder": "Järjestelmän nimi",
+    "goals": "Tavoitteet",
+    "viewEntry": "Päiväkirjamerkintä",
     "addMember": "Lisää Jäsen",
     "editMember": "Muokkaa Jäsentä",
     "member": "Jäsen",
@@ -497,6 +543,10 @@
     "frontCheck": "Front-muistutus",
     "frontCheckDesc": "Säännöllinen ilmoitus frontin tarkistamiseen.",
     "everyNHours": "{{count}}h välein",
+    "everyNMinutes": "{{count}} min välein",
+    "off": "Pois",
+    "refreshTitle": "Ilmoituksen virkistys",
+    "refreshDesc": "Julkaisee pysyvän ilmoituksen uudelleen aikataulun mukaan, jotta se pysyy ilmoitusten yläosassa.",
     "frontCheckInterval": "Väli",
     "whosFronting": "Kuka on nyt frontissa?",
     "noteboard": "Ilmoitustaulun ilmoitukset",
@@ -536,7 +586,8 @@
     "allGroups": "Kaikki Ryhmät",
     "addPlaceholder": "Uuden ryhmän nimi…",
     "deleteGroup": "Poista Ryhmä",
-    "deleteGroupMsg": "Poista tämä ryhmä? Jäseniä ei poisteta."
+    "deleteGroupMsg": "Poista tämä ryhmä? Jäseniä ei poisteta.",
+    "deleteWithChildrenMsg": "Sisältää {{count}} sisäkkäistä kohdetta. Säilytetäänkö ne ja siirretään taso ylöspäin, vai poistetaanko kaikki?"
   },
   "stats": {
     "showMore": "Näytä lisää",
@@ -549,6 +600,9 @@
     "sessions": "Istunnot",
     "messages": "Viestit",
     "topFronters": "Eniten edessä",
+    "topStatuses": "Yleisimmät tilat",
+    "statusDetails": "Tilan tiedot",
+    "coStatuses": "Usein aktiivisia yhdessä",
     "topCoFronters": "Eniten rinnakkain",
     "topCoCon": "Eniten yhteistietoisia",
     "topChatters": "Eniten viestijät",

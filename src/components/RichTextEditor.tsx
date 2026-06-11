@@ -169,19 +169,18 @@ const MarkdownEditor = ({initialContent, theme: T, onSave, onClose, title, membe
 };
 
 export const RichTextEditor = ({visible, title, initialContent, theme, onSave, onClose, members}: Props) => {
+  if (!visible) return null;
   return (
-    <Modal visible={visible} animationType="none" presentationStyle="fullScreen" onRequestClose={onClose}>
+    <Modal visible animationType="none" presentationStyle="fullScreen" onRequestClose={onClose}>
       <View style={{flex: 1, backgroundColor: theme.bg}}>
-        {visible && (
-          <MarkdownEditor
-            title={title}
-            initialContent={initialContent}
-            theme={theme}
-            onSave={onSave}
-            onClose={onClose}
-            members={members}
-          />
-        )}
+        <MarkdownEditor
+          title={title}
+          initialContent={initialContent}
+          theme={theme}
+          onSave={onSave}
+          onClose={onClose}
+          members={members}
+        />
       </View>
     </Modal>
   );

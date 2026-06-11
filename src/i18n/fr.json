@@ -58,7 +58,9 @@
     "members": "Membres",
     "hub": "Centre",
     "journal": "Journal",
-    "history": "Historique"
+    "history": "Historique",
+    "status": "Statut",
+    "profile": "Profil"
   },
   "tier": {
     "primaryFront": "Front Principal",
@@ -79,7 +81,42 @@
     "systemNamePlaceholder": "p. ex. Le Système Hanyou",
     "description": "DESCRIPTION (FACULTATIF)",
     "descriptionPlaceholder": "Une brève description…",
-    "enter": "Entrer"
+    "enter": "Entrer",
+    "subtitleSinglet": "Configurez votre espace personnel pour commencer.",
+    "yourName": "VOTRE NOM *",
+    "yourNamePlaceholder": "p. ex. Alex",
+    "goals": "OBJECTIFS (FACULTATIF)",
+    "goalsPlaceholder": "Que voulez-vous suivre ou accomplir ?",
+    "observatory": "Observatoire",
+    "observatoryHint": "Une seule personne ? Passez à l'interface individuelle : un journal personnel et un suivi de statut."
+  },
+  "status": {
+    "current": "Statut actuel",
+    "update": "Mettre à jour le statut",
+    "noneSet": "Aucun statut défini. Touchez Mettre à jour le statut pour vous enregistrer.",
+    "noStatuses": "Aucun statut sélectionné.",
+    "statuses": "Statuts",
+    "since": "Depuis {{time}}",
+    "editDetails": "Modifier les détails du statut",
+    "add": "Ajouter un statut",
+    "edit": "Modifier le statut",
+    "clearTitle": "Effacer le statut ?",
+    "clearMsg": "Cela effacera votre statut et enregistrera la fin de la session en cours. Continuer ?"
+  },
+  "profile": {
+    "edit": "Modifier le profil",
+    "notSetUp": "Profil pas encore configuré",
+    "noDescription": "Pas encore de description. Touchez Modifier le profil pour en ajouter une.",
+    "statuses": "Statuts",
+    "addStatus": "+ Ajouter un statut",
+    "statusesDesc": "Les statuts décrivent comment vous allez — comme En sommeil, Au travail ou Anxieux·se. Sélectionnez-les en mettant à jour votre statut.",
+    "noStatuses": "Pas encore de statuts. Ajoutez-en un pour commencer.",
+    "activeStatus": "Actif",
+    "favoriteColor": "Couleur préférée"
+  },
+  "settings": {
+    "observatory": "Interface Observatoire (individuelle)",
+    "observatoryDesc": "Mode une seule personne : les onglets Statut et Profil remplacent Front et Membres, et les outils de système sont masqués."
   },
   "front": {
     "currentlyFronting": "Actuellement au front",
@@ -147,6 +184,11 @@
     "noteUpdated": "Note Mise à Jour",
     "journalEntry": "Entrée de Journal",
     "frontSwitch": "Changement de Front",
+    "statusHistory": "Historique des statuts",
+    "byStatus": "Par statut",
+    "searchStatus": "Rechercher des statuts…",
+    "statusChange": "Changement de statut",
+    "noHistorySinglet": "Pas encore d'historique. Les mises à jour de statut apparaîtront ici automatiquement.",
     "tierSuffix": " ({{tier}})",
     "now": "maintenant",
     "mood": "humeur",
@@ -294,6 +336,8 @@
     "importCategories": "Importer ces catégories",
     "controlVisibility": "Contrôlez ce qui est visible dans les exports partagés et les résumés par e-mail.",
     "showCurrentFront": "Afficher le front actuel",
+    "showCurrentStatus": "Afficher le statut actuel",
+    "nameGoals": "Nom et objectifs",
     "showMemberList": "Afficher la liste des membres",
     "showMemberDescriptions": "Afficher les descriptions des membres",
     "preview": "Aperçu",
@@ -398,6 +442,8 @@
     "systemSettings": "Paramètres du Système",
     "systemName": "Nom du Système",
     "systemNamePlaceholder": "Le nom de votre système",
+    "goals": "Objectifs",
+    "viewEntry": "Entrée de journal",
     "descriptionLabel": "Description",
     "descriptionFieldPlaceholder": "Une brève description…",
     "globalJournalPassword": "Mot de Passe Global du Journal",
@@ -464,6 +510,10 @@
     "frontCheck": "Rappel de front",
     "frontCheckDesc": "Notification périodique pour vérifier qui est au front.",
     "everyNHours": "Toutes les {{count}}h",
+    "everyNMinutes": "Toutes les {{count}} min",
+    "off": "Désactivé",
+    "refreshTitle": "Rafraîchissement de la notification",
+    "refreshDesc": "Republie la notification persistante selon un intervalle pour qu'elle reste en haut de vos notifications.",
     "frontCheckInterval": "Intervalle",
     "whosFronting": "Qui est au front maintenant ?",
     "noteboard": "Notifications du Tableau",
@@ -503,7 +553,8 @@
     "allGroups": "Tous les Groupes",
     "addPlaceholder": "Nom du groupe…",
     "deleteGroup": "Supprimer le Groupe",
-    "deleteGroupMsg": "Supprimer ce groupe ? Les membres ne seront pas supprimés."
+    "deleteGroupMsg": "Supprimer ce groupe ? Les membres ne seront pas supprimés.",
+    "deleteWithChildrenMsg": "Ceci contient {{count}} élément(s) imbriqué(s). Les conserver en les remontant d'un niveau, ou tout supprimer ?"
   },
   "hub": {
     "front": "Front",
@@ -549,6 +600,9 @@
     "sessions": "Sessions",
     "messages": "Messages",
     "topFronters": "Plus Fréquents",
+    "topStatuses": "Statuts les plus fréquents",
+    "statusDetails": "Détails du statut",
+    "coStatuses": "Souvent actifs ensemble",
     "topCoFronters": "Top Co-Front",
     "topCoCon": "Top Co-Conscient",
     "topChatters": "Plus Actifs",

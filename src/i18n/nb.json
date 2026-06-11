@@ -58,7 +58,9 @@
     "members": "Medlemmer",
     "hub": "Hub",
     "journal": "Dagbok",
-    "history": "Historikk"
+    "history": "Historikk",
+    "status": "Status",
+    "profile": "Profil"
   },
   "tier": {
     "primaryFront": "Primær Front",
@@ -79,7 +81,42 @@
     "systemNamePlaceholder": "f.eks. Systemnavnet",
     "description": "BESKRIVELSE (VALGFRI)",
     "descriptionPlaceholder": "En kort beskrivelse…",
-    "enter": "Start"
+    "enter": "Start",
+    "subtitleSinglet": "Sett opp ditt personlige område for å begynne.",
+    "yourName": "NAVNET DITT *",
+    "yourNamePlaceholder": "f.eks. Alex",
+    "goals": "MÅL (VALGFRI)",
+    "goalsPlaceholder": "Hva vil du følge med på eller oppnå?",
+    "observatory": "Observatorium",
+    "observatoryHint": "Bare én person? Bytt til enkeltperson-grensesnittet — en personlig dagbok med statussporing."
+  },
+  "status": {
+    "current": "Nåværende status",
+    "update": "Oppdater status",
+    "noneSet": "Ingen status satt. Trykk på Oppdater status for å sjekke inn.",
+    "noStatuses": "Ingen statuser valgt.",
+    "statuses": "Statuser",
+    "since": "Siden {{time}}",
+    "editDetails": "Rediger statusdetaljer",
+    "add": "Legg til status",
+    "edit": "Rediger status",
+    "clearTitle": "Tømme status?",
+    "clearMsg": "Dette tømmer statusen din og logger slutten på gjeldende økt. Fortsette?"
+  },
+  "profile": {
+    "edit": "Rediger profil",
+    "notSetUp": "Profilen er ikke satt opp ennå",
+    "noDescription": "Ingen beskrivelse ennå. Trykk på Rediger profil for å legge til en.",
+    "statuses": "Statuser",
+    "addStatus": "+ Legg til status",
+    "statusesDesc": "Statuser beskriver hvordan du har det — som Sover, Jobber eller Engstelig. Velg dem når du oppdaterer statusen din.",
+    "noStatuses": "Ingen statuser ennå. Legg til en for å komme i gang.",
+    "activeStatus": "Aktiv",
+    "favoriteColor": "Favorittfarge"
+  },
+  "settings": {
+    "observatory": "Observatorium-grensesnitt (enkeltperson)",
+    "observatoryDesc": "Énpersonsmodus: Fanene Status og Profil erstatter Front og Medlemmer, og systemverktøy skjules."
   },
   "front": {
     "currentlyFronting": "Fronter nå",
@@ -148,6 +185,11 @@
     "noteUpdated": "Notat Oppdatert",
     "journalEntry": "Dagbokinnlegg",
     "frontSwitch": "Frontbytte",
+    "statusHistory": "Statushistorikk",
+    "byStatus": "Etter status",
+    "searchStatus": "Søk i statuser…",
+    "statusChange": "Statusendring",
+    "noHistorySinglet": "Ingen historikk ennå. Statusoppdateringer vises her automatisk.",
     "tierSuffix": " ({{tier}})",
     "now": "nå",
     "mood": "humør",
@@ -294,6 +336,8 @@
     "importCategories": "Importer disse kategoriene",
     "controlVisibility": "Kontroller hva som vises i delte eksporter og e-postsammendrag.",
     "showCurrentFront": "Vis nåværende front",
+    "showCurrentStatus": "Vis nåværende status",
+    "nameGoals": "Navn og mål",
     "showMemberList": "Vis medlemsliste",
     "showMemberDescriptions": "Vis medlemsbeskrivelser",
     "preview": "Forhåndsvisning",
@@ -394,6 +438,8 @@
     "systemSettings": "Systeminnstillinger",
     "systemName": "Systemnavn",
     "systemNamePlaceholder": "Systemnavn",
+    "goals": "Mål",
+    "viewEntry": "Dagbokinnlegg",
     "addMember": "Legg til Medlem",
     "editMember": "Rediger Medlem",
     "member": "Medlem",
@@ -497,6 +543,10 @@
     "frontCheck": "Front-påminnelse",
     "frontCheckDesc": "Periodisk varsel for å sjekke hvem som fronter.",
     "everyNHours": "Hver {{count}}.t",
+    "everyNMinutes": "Hvert {{count}}. min",
+    "off": "Av",
+    "refreshTitle": "Varslingsoppdatering",
+    "refreshDesc": "Publiserer den vedvarende varslingen på nytt etter en tidsplan slik at den holder seg øverst i varslingsfeltet.",
     "frontCheckInterval": "Intervall",
     "whosFronting": "Hvem fronter nå?",
     "noteboard": "Notattavle-varsler",
@@ -536,7 +586,8 @@
     "allGroups": "Alle Grupper",
     "addPlaceholder": "Nytt gruppenavn…",
     "deleteGroup": "Slett Gruppe",
-    "deleteGroupMsg": "Fjerne denne gruppen? Medlemmer slettes ikke."
+    "deleteGroupMsg": "Fjerne denne gruppen? Medlemmer slettes ikke.",
+    "deleteWithChildrenMsg": "Inneholder {{count}} nestede elementer. Behold dem og flytt dem opp ett nivå, eller slett alt?"
   },
   "stats": {
     "showMore": "Vis mer",
@@ -549,6 +600,9 @@
     "sessions": "Økter",
     "messages": "Meldinger",
     "topFronters": "Mest foran",
+    "topStatuses": "Vanligste statuser",
+    "statusDetails": "Statusdetaljer",
+    "coStatuses": "Ofte aktive sammen",
     "topCoFronters": "Mest co-front",
     "topCoCon": "Mest co-bevisst",
     "topChatters": "Mest aktive",

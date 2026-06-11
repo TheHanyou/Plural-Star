@@ -250,7 +250,8 @@ export const MembersScreen = ({theme: T, members, front, groups, initialSortMode
     const idx = filtered.findIndex(m => ((m.name || '').trim().toUpperCase()[0] || '') === letter);
     if (idx >= 0) { try { listRef.current?.scrollToIndex({index: idx, animated: false}); } catch {} }
   };
-  const showRail = !selectionMode && sortMode === 'alphabetical' && filtered.length > 12;
+  const showRail = !selectionMode && (sortMode === 'alphabetical' || sortMode === 'reverse-alphabetical') && filtered.length > 12;
+  const railLetters = sortMode === 'reverse-alphabetical' ? [...ALPHABET].reverse() : ALPHABET;
 
   const handleActivate = useCallback((mm: Member) => (onView || onEdit)(mm), [onView, onEdit]);
 
@@ -477,7 +478,7 @@ export const MembersScreen = ({theme: T, members, front, groups, initialSortMode
     />
     {showRail && (
       <View style={{position: 'absolute', right: 1, top: 96, bottom: 96, justifyContent: 'center'}}>
-        {ALPHABET.map(L => (
+        {railLetters.map(L => (
           <TouchableOpacity key={L} onPress={() => jumpToLetter(L)} hitSlop={{left: 10, right: 4, top: 1, bottom: 1}} accessibilityRole="button" accessibilityLabel={L} style={{paddingHorizontal: 3, paddingVertical: 0.5}}>
             <Text style={{fontSize: fs(9), fontWeight: '700', color: T.dim}} allowFontScaling={false}>{L}</Text>
           </TouchableOpacity>

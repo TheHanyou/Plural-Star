@@ -58,7 +58,9 @@
     "members": "成员",
     "hub": "中心",
     "journal": "日记",
-    "history": "历史"
+    "history": "历史",
+    "status": "状态",
+    "profile": "个人资料"
   },
   "tier": {
     "primaryFront": "主前台",
@@ -79,7 +81,42 @@
     "systemNamePlaceholder": "例如 我们的系统",
     "description": "描述（可选）",
     "descriptionPlaceholder": "简要描述…",
-    "enter": "进入"
+    "enter": "进入",
+    "subtitleSinglet": "设置你的个人空间以开始。",
+    "yourName": "你的名字 *",
+    "yourNamePlaceholder": "例如 Alex",
+    "goals": "目标（可选）",
+    "goalsPlaceholder": "你想记录或实现什么？",
+    "observatory": "天文台",
+    "observatoryHint": "只有一个人？切换到个人界面——一个带状态记录的个人日记。"
+  },
+  "status": {
+    "current": "当前状态",
+    "update": "更新状态",
+    "noneSet": "尚未设置状态。点按“更新状态”进行记录。",
+    "noStatuses": "未选择状态。",
+    "statuses": "状态",
+    "since": "自 {{time}}",
+    "editDetails": "编辑状态详情",
+    "add": "添加状态",
+    "edit": "编辑状态",
+    "clearTitle": "清除状态？",
+    "clearMsg": "这将清除你的状态并记录当前会话结束。是否继续？"
+  },
+  "profile": {
+    "edit": "编辑个人资料",
+    "notSetUp": "尚未设置个人资料",
+    "noDescription": "暂无描述。点按“编辑个人资料”添加。",
+    "statuses": "状态",
+    "addStatus": "+ 添加状态",
+    "statusesDesc": "状态描述你的近况——例如 睡觉中、工作中 或 焦虑。更新状态时选择它们。",
+    "noStatuses": "暂无状态。添加一个开始吧。",
+    "activeStatus": "当前",
+    "favoriteColor": "最喜欢的颜色"
+  },
+  "settings": {
+    "observatory": "天文台界面（个人）",
+    "observatoryDesc": "单人模式：“状态”和“个人资料”标签页取代“前台”和“成员”，并隐藏系统专用工具。"
   },
   "front": {
     "currentlyFronting": "当前前台",
@@ -149,6 +186,11 @@
     "noteUpdated": "备注已更新",
     "journalEntry": "日记条目",
     "frontSwitch": "前台切换",
+    "statusHistory": "状态历史",
+    "byStatus": "按状态",
+    "searchStatus": "搜索状态…",
+    "statusChange": "状态变更",
+    "noHistorySinglet": "暂无历史记录。状态更新将自动显示在这里。",
     "tierSuffix": " ({{tier}})",
     "now": "现在",
     "mood": "情绪",
@@ -300,6 +342,8 @@
     "importCategories": "导入这些类别",
     "controlVisibility": "控制分享导出和邮件摘要中的可见内容。",
     "showCurrentFront": "显示当前前台",
+    "showCurrentStatus": "显示当前状态",
+    "nameGoals": "名字与目标",
     "showMemberList": "显示成员列表",
     "showMemberDescriptions": "显示成员描述",
     "preview": "预览",
@@ -433,6 +477,8 @@
     "systemSettings": "系统设置",
     "systemName": "系统名称",
     "systemNamePlaceholder": "你的系统名称",
+    "goals": "目标",
+    "viewEntry": "日记条目",
     "descriptionLabel": "描述",
     "descriptionFieldPlaceholder": "简要描述…",
     "globalJournalPassword": "全局日记密码",
@@ -498,6 +544,10 @@
     "frontCheckDesc": "提醒我检查谁在前台。",
     "frontCheckInterval": "检查间隔",
     "everyNHours": "每 {{count}} 小时",
+    "everyNMinutes": "每 {{count}} 分钟",
+    "off": "关闭",
+    "refreshTitle": "通知刷新",
+    "refreshDesc": "按计划重新发布常驻通知，使其保持在通知栏顶部附近。",
     "whosFronting": "现在谁在前台？",
     "noteboard": "留言板通知",
     "noteboardDesc": "当前台成员的留言板上有未读留言时通知我。",
@@ -536,7 +586,8 @@
     "allGroups": "所有组",
     "addPlaceholder": "新组名…",
     "deleteGroup": "删除组",
-    "deleteGroupMsg": "移除此组？成员不会被删除。"
+    "deleteGroupMsg": "移除此组？成员不会被删除。",
+    "deleteWithChildrenMsg": "其中包含 {{count}} 个嵌套项目。保留并上移一级，还是全部删除？"
   },
   "stats": {
     "showMore": "显示更多",
@@ -549,6 +600,9 @@
     "sessions": "会话",
     "messages": "消息",
     "topFronters": "最常前台",
+    "topStatuses": "最常用状态",
+    "statusDetails": "状态详情",
+    "coStatuses": "常同时活跃",
     "topCoFronters": "最常共前",
     "topCoCon": "最常共意",
     "topChatters": "最多聊天",

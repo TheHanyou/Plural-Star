@@ -58,7 +58,9 @@
     "members": "Membros",
     "hub": "Central",
     "journal": "Diário",
-    "history": "Histórico"
+    "history": "Histórico",
+    "status": "Status",
+    "profile": "Perfil"
   },
   "tier": {
     "primaryFront": "Frente Principal",
@@ -79,7 +81,42 @@
     "systemNamePlaceholder": "ex. O Sistema Hanyou",
     "description": "DESCRIÇÃO (OPCIONAL)",
     "descriptionPlaceholder": "Uma breve descrição…",
-    "enter": "Entrar"
+    "enter": "Entrar",
+    "subtitleSinglet": "Configure seu espaço pessoal para começar.",
+    "yourName": "SEU NOME *",
+    "yourNamePlaceholder": "ex. Alex",
+    "goals": "OBJETIVOS (OPCIONAL)",
+    "goalsPlaceholder": "O que você quer registrar ou alcançar?",
+    "observatory": "Observatório",
+    "observatoryHint": "Apenas uma pessoa? Mude para a interface individual: um diário pessoal com registro de status."
+  },
+  "status": {
+    "current": "Status atual",
+    "update": "Atualizar status",
+    "noneSet": "Nenhum status definido. Toque em Atualizar status para registrar.",
+    "noStatuses": "Nenhum status selecionado.",
+    "statuses": "Status",
+    "since": "Desde {{time}}",
+    "editDetails": "Editar detalhes do status",
+    "add": "Adicionar status",
+    "edit": "Editar status",
+    "clearTitle": "Limpar status?",
+    "clearMsg": "Isso limpará seu status e registrará o fim da sessão atual. Continuar?"
+  },
+  "profile": {
+    "edit": "Editar perfil",
+    "notSetUp": "Perfil ainda não configurado",
+    "noDescription": "Ainda não há descrição. Toque em Editar perfil para adicionar uma.",
+    "statuses": "Status",
+    "addStatus": "+ Adicionar status",
+    "statusesDesc": "Os status descrevem como você está — como Dormindo, Trabalhando ou Com ansiedade. Selecione-os ao atualizar seu status.",
+    "noStatuses": "Ainda não há status. Adicione um para começar.",
+    "activeStatus": "Ativo",
+    "favoriteColor": "Cor favorita"
+  },
+  "settings": {
+    "observatory": "Interface Observatório (individual)",
+    "observatoryDesc": "Modo de uma pessoa só: as abas Status e Perfil substituem Frente e Membros, e as ferramentas de sistema ficam ocultas."
   },
   "front": {
     "currentlyFronting": "Atualmente no front",
@@ -148,6 +185,11 @@
     "noteUpdated": "Nota Atualizada",
     "journalEntry": "Entrada do Diário",
     "frontSwitch": "Troca de Frente",
+    "statusHistory": "Histórico de status",
+    "byStatus": "Por status",
+    "searchStatus": "Pesquisar status…",
+    "statusChange": "Mudança de status",
+    "noHistorySinglet": "Ainda não há histórico. As atualizações de status aparecerão aqui automaticamente.",
     "tierSuffix": " ({{tier}})",
     "now": "agora",
     "mood": "humor",
@@ -294,6 +336,8 @@
     "importCategories": "Importar estas categorias",
     "controlVisibility": "Controle o que fica visível em exportações e resumos por email.",
     "showCurrentFront": "Mostrar frente atual",
+    "showCurrentStatus": "Mostrar status atual",
+    "nameGoals": "Nome e objetivos",
     "showMemberList": "Mostrar lista de membros",
     "showMemberDescriptions": "Mostrar descrições dos membros",
     "preview": "Visualização",
@@ -433,6 +477,8 @@
     "systemSettings": "Configurações do Sistema",
     "systemName": "Nome do Sistema",
     "systemNamePlaceholder": "Nome do seu sistema",
+    "goals": "Objetivos",
+    "viewEntry": "Entrada do diário",
     "descriptionLabel": "Descrição",
     "descriptionFieldPlaceholder": "Uma breve descrição…",
     "globalJournalPassword": "Senha Global do Diário",
@@ -497,6 +543,10 @@
     "frontCheck": "Lembrete de front",
     "frontCheckDesc": "Notificação periódica para verificar quem está no front.",
     "everyNHours": "A cada {{count}}h",
+    "everyNMinutes": "A cada {{count}} min",
+    "off": "Desligado",
+    "refreshTitle": "Atualização da notificação",
+    "refreshDesc": "Republica a notificação persistente em um intervalo para que fique perto do topo das suas notificações.",
     "frontCheckInterval": "Intervalo",
     "whosFronting": "Quem está no front agora?",
     "noteboard": "Notificações do Quadro",
@@ -536,7 +586,8 @@
     "allGroups": "Todos os Grupos",
     "addPlaceholder": "Nome do novo grupo…",
     "deleteGroup": "Excluir Grupo",
-    "deleteGroupMsg": "Remover este grupo? Os membros não serão excluídos."
+    "deleteGroupMsg": "Remover este grupo? Os membros não serão excluídos.",
+    "deleteWithChildrenMsg": "Contém {{count}} item(ns) aninhado(s). Mantê-los e subi-los um nível, ou excluir tudo?"
   },
   "stats": {
     "showMore": "Mostrar mais",
@@ -549,6 +600,9 @@
     "sessions": "Sessões",
     "messages": "Mensagens",
     "topFronters": "Mais Frequentes",
+    "topStatuses": "Status mais frequentes",
+    "statusDetails": "Detalhes do status",
+    "coStatuses": "Frequentemente ativos juntos",
     "topCoFronters": "Top Co-Front",
     "topCoCon": "Top Co-Consciente",
     "topChatters": "Mais Ativos",

@@ -56,6 +56,70 @@ const getTierField = (front: any, tier: string, field: string): string | undefin
   return undefined;
 };
 
+const buildFrontContent = (front: FrontState, members: Member[]): {title: string; body: string; bigText: string} | null => {
+  const primaryIds = getTierIds(front, 'primary');
+  const coFrontIds = getTierIds(front, 'coFront');
+  const coConsciousIds = getTierIds(front, 'coConscious');
+
+  if (primaryIds.length === 0 && coFrontIds.length === 0 && coConsciousIds.length === 0) return null;
+
+  const primaryNames = resolveNames(primaryIds, members);
+  const coFrontNames = resolveNames(coFrontIds, members);
+  const coConsciousNames = resolveNames(coConsciousIds, members);
+
+  const duration = fmtDur(front.startTime);
+  const titleNames = primaryNames || coFrontNames || coConsciousNames ||
+    i18n.t('common.unknown', {defaultValue: 'Unknown'});
+  const title = `◈ ${titleNames}  ·  ${duration}`;
+
+  const lines: string[] = [];
+  if (primaryIds.length > 0)
+    lines.push(i18n.t('notification.primary', {names: primaryNames, defaultValue: `Primary: ${primaryNames}`}));
+  if (coFrontIds.length > 0)
+    lines.push(i18n.t('notification.coFront', {names: coFrontNames, defaultValue: `Co-Front: ${coFrontNames}`}));
+  if (coConsciousIds.length > 0)
+    lines.push(i18n.t('notification.coConscious', {names: coConsciousNames, defaultValue: `Co-Conscious: ${coConsciousNames}`}));
+
+  const primaryMood = getTierField(front, 'primary', 'mood');
+  const primaryLocation = getTierField(front, 'primary', 'location');
+  const primaryNote = getTierField(front, 'primary', 'note');
+
+  if (primaryMood)
+    lines.push(i18n.t('notification.mood', {mood: primaryMood, defaultValue: `Mood: ${primaryMood}`}));
+  if (primaryLocation)
+    lines.push(i18n.t('notification.at', {location: primaryLocation, defaultValue: `At: ${primaryLocation}`}));
+  if (primaryNote)
+    lines.push(i18n.t('notification.note', {note: primaryNote, defaultValue: `Note: ${primaryNote}`}));
+  lines.push(i18n.t('notification.since', {time: fmtTime(front.startTime), defaultValue: `Since ${fmtTime(front.startTime)}`}));
+
+  const summaryParts: string[] = [];
+  if (coFrontIds.length > 0)
+    summaryParts.push(i18n.t('notification.cfShort', {names: coFrontNames, defaultValue: `CF: ${coFrontNames}`}));
+  if (coConsciousIds.length > 0)
+    summaryParts.push(i18n.t('notification.ccShort', {names: coConsciousNames, defaultValue: `CC: ${coConsciousNames}`}));
+  if (primaryMood)
+    summaryParts.push(i18n.t('notification.mood', {mood: primaryMood, defaultValue: `Mood: ${primaryMood}`}));
+  summaryParts.push(duration);
+
+  return {title, body: summaryParts.join('  ·  '), bigText: lines.join('\n')};
+};
+
+const frontAndroidConfig = (bigText: string) => ({
+  channelId: NOTIF_CHANNEL_ID,
+  ongoing: true,
+  onlyAlertOnce: true,
+  autoCancel: false,
+  smallIcon: 'ic_stat_notification',
+  importance: AndroidImportance.LOW,
+  visibility: AndroidVisibility.PUBLIC,
+  pressAction: {id: 'default'},
+  color: '#DAA520',
+  style: {
+    type: AndroidStyle.BIGTEXT as const,
+    text: bigText,
+  },
+});
+
 export const showFrontNotification = async (
   front: FrontState | null,
   members: Member[],
@@ -72,78 +136,61 @@ export const showFrontNotification = async (
       return;
     }
 
-    const primaryIds = getTierIds(front, 'primary');
-    const coFrontIds = getTierIds(front, 'coFront');
-    const coConsciousIds = getTierIds(front, 'coConscious');
-
-    if (primaryIds.length === 0 && coFrontIds.length === 0 && coConsciousIds.length === 0) {
+    const content = buildFrontContent(front, members);
+    if (!content) {
       await clearFrontNotification();
       return;
     }
 
     await setupNotificationChannel();
 
-    const primaryNames = resolveNames(primaryIds, members);
-    const coFrontNames = resolveNames(coFrontIds, members);
-    const coConsciousNames = resolveNames(coConsciousIds, members);
-
-    const duration = fmtDur(front.startTime);
-    const titleNames = primaryNames || coFrontNames || coConsciousNames ||
-      i18n.t('common.unknown', {defaultValue: 'Unknown'});
-    const title = `◈ ${titleNames}  ·  ${duration}`;
-
-    const lines: string[] = [];
-    if (primaryIds.length > 0)
-      lines.push(i18n.t('notification.primary', {names: primaryNames, defaultValue: `Primary: ${primaryNames}`}));
-    if (coFrontIds.length > 0)
-      lines.push(i18n.t('notification.coFront', {names: coFrontNames, defaultValue: `Co-Front: ${coFrontNames}`}));
-    if (coConsciousIds.length > 0)
-      lines.push(i18n.t('notification.coConscious', {names: coConsciousNames, defaultValue: `Co-Conscious: ${coConsciousNames}`}));
-
-    const primaryMood = getTierField(front, 'primary', 'mood');
-    const primaryLocation = getTierField(front, 'primary', 'location');
-    const primaryNote = getTierField(front, 'primary', 'note');
-
-    if (primaryMood)
-      lines.push(i18n.t('notification.mood', {mood: primaryMood, defaultValue: `Mood: ${primaryMood}`}));
-    if (primaryLocation)
-      lines.push(i18n.t('notification.at', {location: primaryLocation, defaultValue: `At: ${primaryLocation}`}));
-    if (primaryNote)
-      lines.push(i18n.t('notification.note', {note: primaryNote, defaultValue: `Note: ${primaryNote}`}));
-    lines.push(i18n.t('notification.since', {time: fmtTime(front.startTime), defaultValue: `Since ${fmtTime(front.startTime)}`}));
-
-    const summaryParts: string[] = [];
-    if (coFrontIds.length > 0)
-      summaryParts.push(i18n.t('notification.cfShort', {names: coFrontNames, defaultValue: `CF: ${coFrontNames}`}));
-    if (coConsciousIds.length > 0)
-      summaryParts.push(i18n.t('notification.ccShort', {names: coConsciousNames, defaultValue: `CC: ${coConsciousNames}`}));
-    if (primaryMood)
-      summaryParts.push(i18n.t('notification.mood', {mood: primaryMood, defaultValue: `Mood: ${primaryMood}`}));
-    summaryParts.push(duration);
-    const summary = summaryParts.join('  ·  ');
-
     await notifee.displayNotification({
       id: NOTIF_ID,
-      title,
-      body: summary,
-      android: {
-        channelId: NOTIF_CHANNEL_ID,
-        ongoing: true,
-        onlyAlertOnce: true,
-        autoCancel: false,
-        smallIcon: 'ic_stat_notification',
-        importance: AndroidImportance.LOW,
-        visibility: AndroidVisibility.PUBLIC,
-        pressAction: {id: 'default'},
-        color: '#DAA520',
-        style: {
-          type: AndroidStyle.BIGTEXT,
-          text: lines.join('\n'),
-        },
-      },
+      title: content.title,
+      body: content.body,
+      android: frontAndroidConfig(content.bigText),
     });
   } catch (e) {
     console.error('[PluralSpace] Notification error:', e);
+  }
+};
+
+export const scheduleFrontNotificationRefresh = async (
+  front: FrontState | null,
+  members: Member[],
+  intervalMinutes: number,
+) => {
+  try {
+    await cancelFrontNotificationRefresh();
+    if (Platform.OS !== 'android') return;
+    if (!front || !intervalMinutes || intervalMinutes < 15) return;
+    const content = buildFrontContent(front, members);
+    if (!content) return;
+    await setupNotificationChannel();
+    const trigger: IntervalTrigger = {
+      type: TriggerType.INTERVAL,
+      interval: intervalMinutes,
+      timeUnit: TimeUnit.MINUTES,
+    };
+    await notifee.createTriggerNotification(
+      {
+        id: NOTIF_ID,
+        title: content.title,
+        body: content.body,
+        android: frontAndroidConfig(content.bigText),
+      },
+      trigger,
+    );
+  } catch (e) {
+    console.error('[PluralSpace] Notification refresh schedule error:', e);
+  }
+};
+
+export const cancelFrontNotificationRefresh = async () => {
+  try {
+    await notifee.cancelTriggerNotification(NOTIF_ID);
+  } catch (e) {
+    console.error('[PluralSpace] Notification refresh cancel error:', e);
   }
 };
 
@@ -153,6 +200,7 @@ export const clearFrontNotification = async () => {
       await endFrontLiveActivity();
       return;
     }
+    try { await notifee.cancelTriggerNotification(NOTIF_ID); } catch {}
     await notifee.cancelNotification(NOTIF_ID);
     try { await notifee.stopForegroundService(); } catch {}
   } catch (e) {

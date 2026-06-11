@@ -1,10 +1,10 @@
 import React, {useState, useMemo, useEffect} from 'react';
-import {View, TouchableOpacity, StyleSheet, ScrollView, Image, Keyboard, Alert, Modal} from 'react-native';
+import {View, TouchableOpacity, StyleSheet, ScrollView, Image, Keyboard, Alert, Modal, Platform} from 'react-native';
 import {Text, TextInput} from '../components/AppText';
 import {useTranslation} from 'react-i18next';
 import {pickImageFromGallery} from '../utils/imagePicker';
 import {Sheet} from '../components/Sheet';
-import {PALETTE, BUILTIN_PALETTES, deriveTheme, FONT_OPTIONS} from '../theme';
+import {PALETTE, BUILTIN_PALETTES, deriveTheme, FONT_OPTIONS, Fonts} from '../theme';
 import type {CustomPalette, FontChoice} from '../theme';
 import {Member, MemberGroup, JournalEntry, JournalTemplate, FrontState, FrontTier, FrontTierKey, SystemInfo, AppSettings, TextScale, TEXT_SCALE_OPTIONS, CustomFieldDef, CustomFieldValue, NoteboardEntry, uid, isValidHex, normalizeHex, DEFAULT_MOODS, EMPTY_TIER, TIER_LABELS, fmtTime, getInitials, translateMood, parseMoodList, toggleMoodInList, serializeMoodList, sortMembersBySearch} from '../utils';
 import {store, KEYS} from '../storage';
@@ -27,10 +27,11 @@ const HexField = ({label, value, onChange, T}: {label: string; value: string; on
   </View>
 );
 
-const Btn = ({children, onPress, variant = 'primary', disabled = false, style = {}, T}: any) => {
+const Btn = ({children, onPress, variant = 'primary', disabled = false, style = {}, T, instant = false}: any) => {
   const variants: any = {primary: {bg: T.accentBg, color: T.accent, border: `${T.accent}40`}, ghost: {bg: 'transparent', color: T.dim, border: T.border}, danger: {bg: T.dangerBg, color: T.danger, border: `${T.danger}40`}, solid: {bg: T.accent, color: '#0a0508', border: T.accent}, info: {bg: T.infoBg, color: T.info, border: `${T.info}40`}};
   const v = variants[variant] || variants.primary;
-  return (<TouchableOpacity onPress={onPress} disabled={disabled} activeOpacity={0.7} accessibilityRole="button" accessibilityState={{disabled}} style={[{paddingHorizontal: 16, paddingVertical: 9, borderRadius: 8, borderWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: v.bg, borderColor: v.border, opacity: disabled ? 0.5 : 1}, style]}><Text style={{fontSize: 14, fontWeight: '500', color: v.color}}>{children}</Text></TouchableOpacity>);
+  const useInstant = instant && Platform.OS === 'ios';
+  return (<TouchableOpacity onPress={useInstant ? undefined : onPress} onPressIn={useInstant ? onPress : undefined} disabled={disabled} activeOpacity={0.7} accessibilityRole="button" accessibilityState={{disabled}} style={[{paddingHorizontal: 16, paddingVertical: 9, borderRadius: 8, borderWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: v.bg, borderColor: v.border, opacity: disabled ? 0.5 : 1}, style]}><Text style={{fontSize: 14, fontWeight: '500', color: v.color}}>{children}</Text></TouchableOpacity>);
 };
 
 const Field = ({label, value, onChange, placeholder, multiline = false, numberOfLines = 4, readOnly = false, T}: any) => (
@@ -147,12 +148,13 @@ const TierMemberPicker = ({tierKey, selected, setSelected, members, groups, allA
 const MoodPicker = ({mood, setMood, customMood, setCustomMood, showCustom, setShowCustom, allMoods, T, t}: any) => {
   const selected = parseMoodList(mood);
   const isSel = (m: string) => selected.includes(m);
+  const chipMoods = [...allMoods, ...selected.filter((m: string) => !allMoods.includes(m))];
   return (
     <>
       <Text style={{fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{t('modal.mood')}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom: 4}}>
         <View style={{flexDirection: 'row', gap: 5}}>
-          {allMoods.map((m: string) => (
+          {chipMoods.map((m: string) => (
             <TouchableOpacity key={m} onPress={() => setMood(toggleMoodInList(mood, m))} activeOpacity={0.7}
               accessibilityRole="button" accessibilityState={{selected: isSel(m)}} accessibilityLabel={translateMood(m, t)}
               style={{paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1, flexShrink: 0, backgroundColor: isSel(m) ? `${T.accent}20` : T.surface, borderColor: isSel(m) ? `${T.accent}60` : T.border}}>
@@ -242,7 +244,12 @@ export const SetFrontModal = ({visible, theme: T, members, groups, current, sett
   };
 
   return (
-    <Sheet visible={visible} title={t('modal.updateFront')} theme={T} onClose={onClose} footer={<><Btn variant="ghost" T={T} onPress={() => {onSave(EMPTY_TIER, EMPTY_TIER, EMPTY_TIER); onClose();}}>{t('common.clear')}</Btn><Btn T={T} onPress={handleSave}>{t('common.save')}</Btn></>}>
+    <Sheet visible={visible} title={t('modal.updateFront')} theme={T} onClose={onClose} footer={<><Btn instant variant="ghost" T={T} onPress={() => {
+      Alert.alert(t('front.clearFrontTitle'), t('front.clearFrontMsg'), [
+        {text: t('common.cancel'), style: 'cancel'},
+        {text: t('common.clear'), style: 'destructive', onPress: () => {onSave(EMPTY_TIER, EMPTY_TIER, EMPTY_TIER); onClose();}},
+      ]);
+    }}>{t('common.clear')}</Btn><Btn instant T={T} onPress={handleSave}>{t('common.save')}</Btn></>}>
       <SectionDivider label={t('tier.primaryFront')} color={T.accent} T={T} />
       <TierMemberPicker tierKey="primary" selected={primaryIds} setSelected={makeExclusiveSetter('primary', setPrimaryIds)} members={regularMembers} groups={groups} allAssigned={allAssigned} T={T} t={t} />
       {customFronts.length > 0 && (<>
@@ -319,12 +326,93 @@ export const SetFrontModal = ({visible, theme: T, members, groups, current, sett
 };
 
 
-export const EditFrontDetailModal = ({visible, theme: T, front, tier, settings, lastKnownLocation, onSave, onClose}: any) => {
+export const SetStatusModal = ({visible, theme: T, statuses, selfId, current, settings, lastKnownLocation, onSave, onClose}: any) => {
+  const fs = (n: number) => Math.round(n * (T.textScale || 1));
+  const {t} = useTranslation();
+  const [statusIds, setStatusIds] = useState<Set<string>>(new Set());
+  const [mood, setMood] = useState(''); const [customMood, setCustomMood] = useState(''); const [showCustom, setShowCustom] = useState(false);
+  const [location, setLocation] = useState(''); const [note, setNote] = useState('');
+  const [energy, setEnergy] = useState<number | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (visible) {
+      const c: FrontState | null = current;
+      setStatusIds(new Set((c?.primary?.memberIds || []).filter((id: string) => id !== selfId)));
+      setMood(c?.primary?.mood || ''); setCustomMood(''); setShowCustom(false);
+      setLocation(c?.primary?.location || lastKnownLocation || ''); setNote(c?.primary?.note || '');
+      setEnergy(c?.primary?.energyLevel);
+    }
+  }, [visible, current, selfId, lastKnownLocation]);
+
+  const allMoods = [...DEFAULT_MOODS, ...(settings?.customMoods || [])];
+  const allLocations = settings?.locations || [];
+
+  const handleSave = () => {
+    Keyboard.dismiss();
+    const moods = parseMoodList(mood);
+    if (showCustom && customMood.trim()) moods.push(customMood.trim());
+    const memberIds = [selfId, ...statusIds].filter(Boolean) as string[];
+    onSave(
+      {memberIds, mood: serializeMoodList(moods) || undefined, note, location: location || undefined, energyLevel: energy},
+      EMPTY_TIER, EMPTY_TIER,
+    );
+    onClose();
+  };
+
+  return (
+    <Sheet visible={visible} title={t('status.update')} theme={T} onClose={onClose} footer={<><Btn instant variant="ghost" T={T} onPress={() => {
+      Alert.alert(t('status.clearTitle'), t('status.clearMsg'), [
+        {text: t('common.cancel'), style: 'cancel'},
+        {text: t('common.clear'), style: 'destructive', onPress: () => {onSave(EMPTY_TIER, EMPTY_TIER, EMPTY_TIER); onClose();}},
+      ]);
+    }}>{t('common.clear')}</Btn><Btn instant T={T} onPress={handleSave}>{t('common.save')}</Btn></>}>
+      <SectionDivider label={t('status.statuses')} color={T.accent} T={T} />
+      <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12}}>
+        {statuses.map((m: Member) => {
+          const on = statusIds.has(m.id);
+          return (
+            <TouchableOpacity key={m.id} onPress={() => {const next = new Set(statusIds); if (on) {next.delete(m.id);} else {next.add(m.id);} setStatusIds(next);}} activeOpacity={0.7}
+              accessibilityRole="button" accessibilityState={{selected: on}} accessibilityLabel={m.name}
+              style={{flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1, backgroundColor: on ? `${m.color}20` : T.surface, borderColor: on ? `${m.color}60` : T.border}}>
+              <View style={{width: 7, height: 7, borderRadius: 3.5, backgroundColor: m.color}} />
+              <Text style={{fontSize: fs(12), color: on ? m.color : T.dim, fontWeight: on ? '600' : '400'}}>{m.name}</Text>
+            </TouchableOpacity>
+          );
+        })}
+        {statuses.length === 0 && <Text style={{fontSize: fs(11), color: T.muted, fontStyle: 'italic'}}>{t('profile.noStatuses')}</Text>}
+      </View>
+      <MoodPicker mood={mood} setMood={setMood} customMood={customMood} setCustomMood={setCustomMood} showCustom={showCustom} setShowCustom={setShowCustom} allMoods={allMoods} T={T} t={t} />
+      <View style={{height: 10}} />
+      <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{t('modal.location')}</Text>
+      {allLocations.length > 0 && (<ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom: 4}}><View style={{flexDirection: 'row', gap: 5}}>
+        {allLocations.map((l: string) => (<TouchableOpacity key={l} onPress={() => setLocation(location === l ? '' : l)} activeOpacity={0.7} accessibilityRole="button" accessibilityState={{selected: location === l}} accessibilityLabel={l} style={{paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1, backgroundColor: location === l ? `${T.accent}20` : T.surface, borderColor: location === l ? `${T.accent}60` : T.border}}><Text style={{fontSize: fs(11), color: location === l ? T.accent : T.dim, fontWeight: location === l ? '600' : '400'}}>{l}</Text></TouchableOpacity>))}
+      </View></ScrollView>)}
+      <TextInput value={location} onChangeText={setLocation} placeholder={t('modal.typeLocation')} placeholderTextColor={T.muted} style={{backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, fontSize: fs(13), marginTop: 4}} />
+      <View style={{height: 8}} />
+      <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 6, fontWeight: '600'}}>{t('energy.level')}</Text>
+      <View style={{flexDirection: 'row', gap: 3, marginBottom: 8, alignItems: 'center'}}>
+        {[1,2,3,4,5,6,7,8,9,10].map(n => (
+          <TouchableOpacity key={n} onPress={() => setEnergy(energy === n ? undefined : n)} activeOpacity={0.7}
+            accessibilityRole="button" accessibilityState={{selected: energy === n}} accessibilityLabel={`${t('energy.level')} ${n}`}
+            style={{flex: 1, paddingVertical: 6, borderRadius: 6, borderWidth: 1, alignItems: 'center',
+              backgroundColor: energy === n ? `${T.accent}30` : T.surface,
+              borderColor: energy !== undefined && n <= energy ? T.accent : T.border}}>
+            <Text style={{fontSize: fs(10), color: energy !== undefined && n <= energy ? T.accent : T.dim, fontWeight: '600'}}>{n}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <Field label={t('modal.noteOptional')} value={note} onChange={setNote} placeholder={t('modal.whatHappening')} multiline numberOfLines={2} T={T} />
+    </Sheet>
+  );
+};
+
+
+export const EditFrontDetailModal = ({visible, theme: T, front, tier, settings, lastKnownLocation, onSave, onClose, statusMode = false}: any) => {
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const {t} = useTranslation();
   const tierData: FrontTier = front?.[tier] || EMPTY_TIER;
   const isPrimary = tier === 'primary';
-  const tierLabel = t(`tier.${tier === 'primary' ? 'primaryFront' : tier === 'coFront' ? 'coFront' : 'coConscious'}`);
+  const tierLabel = statusMode ? t('tabs.status') : t(`tier.${tier === 'primary' ? 'primaryFront' : tier === 'coFront' ? 'coFront' : 'coConscious'}`);
   const [mood, setMood] = useState(tierData.mood || ''); const [customMood, setCustomMood] = useState(''); const [showCustomMood, setShowCustomMood] = useState(false);
   const [location, setLocation] = useState(tierData.location || lastKnownLocation || ''); const [note, setNote] = useState(tierData.note || '');
   const allMoods = [...DEFAULT_MOODS, ...(settings?.customMoods || [])]; const allLocations = settings?.locations || [];
@@ -332,7 +420,7 @@ export const EditFrontDetailModal = ({visible, theme: T, front, tier, settings, 
 
   return (
     <Sheet visible={visible} title={t('tier.editTier', {tier: tierLabel})} theme={T} onClose={onClose}
-      footer={<Btn T={T} onPress={() => {
+      footer={<Btn instant T={T} onPress={() => {
         const moods = parseMoodList(mood);
         if (showCustomMood && customMood.trim()) moods.push(customMood.trim());
         const resolved = serializeMoodList(moods) || undefined;
@@ -341,7 +429,7 @@ export const EditFrontDetailModal = ({visible, theme: T, front, tier, settings, 
       }}>{t('common.save')}</Btn>}>
       <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 8, fontWeight: '600'}}>{t('modal.mood')}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom: 6}}><View style={{flexDirection: 'row', gap: 6}}>
-        {(() => { const sel = parseMoodList(mood); return allMoods.map((m: string) => {
+        {(() => { const sel = parseMoodList(mood); const chips = [...allMoods, ...sel.filter((m: string) => !allMoods.includes(m))]; return chips.map((m: string) => {
           const on = sel.includes(m);
           return (<TouchableOpacity key={m} onPress={() => setMood(toggleMoodInList(mood, m))} activeOpacity={0.7} accessibilityRole="button" accessibilityState={{selected: on}} accessibilityLabel={translateMood(m, t)} style={{paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1, flexShrink: 0, backgroundColor: on ? `${T.accent}20` : T.surface, borderColor: on ? `${T.accent}60` : T.border}}><Text style={{fontSize: fs(12), color: on ? T.accent : T.dim, fontWeight: on ? '600' : '400'}}>{translateMood(m, t)}</Text></TouchableOpacity>);
         }); })()}
@@ -358,7 +446,7 @@ export const EditFrontDetailModal = ({visible, theme: T, front, tier, settings, 
 };
 
 
-export const MemberModal = ({visible, theme: T, member, members, groups, settings, onSave, onDelete, onClose, readOnly = false, onMentionPress, isFronting = false}: any) => {
+export const MemberModal = ({visible, theme: T, member, members, groups, settings, onSave, onDelete, onClose, readOnly = false, onMentionPress, isFronting = false, onRequestEdit, profileMode = false}: any) => {
   const {t} = useTranslation();
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const isNew = !member;
@@ -482,15 +570,22 @@ export const MemberModal = ({visible, theme: T, member, members, groups, setting
   const activeMembers = (members || []).filter((m: Member) => !m.archived);
 
   return (
-    <Sheet visible={visible} title={readOnly ? (f.name || t('modal.member')) : (isNew ? t('modal.addMember') : t('modal.editMember'))} theme={T} onClose={onClose} footer={readOnly ? (
-      <Btn variant="ghost" T={T} onPress={onClose}>{t('common.close')}</Btn>
+    <Sheet visible={visible} title={readOnly ? (f.name || t('modal.member')) : (isNew ? t('modal.addMember') : t('modal.editMember'))} theme={T} onClose={onClose}
+      headerAction={readOnly && onRequestEdit ? (
+        <TouchableOpacity onPressIn={Platform.OS === 'ios' ? onRequestEdit : undefined} onPress={Platform.OS === 'ios' ? undefined : onRequestEdit} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={t('common.edit')}
+          style={{paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1, backgroundColor: T.accentBg, borderColor: `${T.accent}40`, marginRight: 10}}>
+          <Text style={{fontSize: 13, fontWeight: '500', color: T.accent}}>{t('common.edit')}</Text>
+        </TouchableOpacity>
+      ) : undefined}
+      footer={readOnly ? (
+      <Btn instant variant="ghost" T={T} onPress={onClose}>{t('common.close')}</Btn>
     ) : (<>
-      {!isNew && !confirmDel && <Btn variant="danger" T={T} disabled={isFronting} onPress={() => setConfirmDel(true)}>{t('common.delete')}</Btn>}
-      {confirmDel && (<><Btn variant="danger" T={T} onPress={() => {onDelete(member.id); onClose();}}>{t('modal.confirmDelete')}</Btn><Btn variant="ghost" T={T} onPress={() => setConfirmDel(false)}>{t('common.cancel')}</Btn></>)}
-      {!confirmDel && <Btn variant="ghost" T={T} onPress={onClose}>{t('common.cancel')}</Btn>}
-      {!confirmDel && <Btn T={T} onPress={() => {if (f.name.trim()) {onSave(f); onClose();}}}>{t('common.save')}</Btn>}</>)}>
+      {!isNew && !confirmDel && <Btn instant variant="danger" T={T} disabled={isFronting} onPress={() => setConfirmDel(true)}>{t('common.delete')}</Btn>}
+      {confirmDel && (<><Btn instant variant="danger" T={T} onPress={() => {onDelete(member.id); onClose();}}>{t('modal.confirmDelete')}</Btn><Btn instant variant="ghost" T={T} onPress={() => setConfirmDel(false)}>{t('common.cancel')}</Btn></>)}
+      {!confirmDel && <Btn instant variant="ghost" T={T} onPress={onClose}>{t('common.cancel')}</Btn>}
+      {!confirmDel && <Btn instant T={T} onPress={() => {if (f.name.trim()) {onSave(f); onClose();}}}>{t('common.save')}</Btn>}</>)}>
 
-      {!isNew && (
+      {!isNew && !profileMode && (
         <View style={{flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: T.border, marginBottom: 14}}>
           {(['main', 'fields', 'noteboard'] as MemberTab[]).map(tab => (
             <TouchableOpacity key={tab} onPress={() => setMemberTab(tab)} activeOpacity={0.7}
@@ -560,9 +655,9 @@ export const MemberModal = ({visible, theme: T, member, members, groups, setting
 
         <Field label={t('modal.name')} value={f.name} onChange={(v: string) => set('name', v)} placeholder={t('modal.headmateName')} readOnly={readOnly} T={T} />
         <Field label={t('modal.pronouns')} value={f.pronouns} onChange={(v: string) => set('pronouns', v)} placeholder={t('modal.pronounsPlaceholder')} readOnly={readOnly} T={T} />
-        <Field label={t('modal.role')} value={f.role} onChange={(v: string) => set('role', v)} placeholder={t('modal.rolePlaceholder')} readOnly={readOnly} T={T} />
+        {!profileMode && <Field label={t('modal.role')} value={f.role} onChange={(v: string) => set('role', v)} placeholder={t('modal.rolePlaceholder')} readOnly={readOnly} T={T} />}
 
-        <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 8, fontWeight: '600'}}>{t('modal.color')}</Text>
+        <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 8, fontWeight: '600'}}>{profileMode ? t('profile.favoriteColor') : t('modal.color')}</Text>
         <View style={{flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10}}>
           <View style={{width: 36, height: 36, borderRadius: 18, backgroundColor: f.color, borderWidth: 2, borderColor: 'rgba(255,255,255,0.15)'}} />
           <TextInput value={hexInput} onChangeText={handleHexChange} placeholder="#C9A96E" placeholderTextColor={T.muted} maxLength={7} autoCapitalize="characters"
@@ -600,6 +695,7 @@ export const MemberModal = ({visible, theme: T, member, members, groups, setting
           );
         })()}
 
+        {!profileMode && (<>
         {(!readOnly || (f.tags || []).length > 0) && (
           <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 8, fontWeight: '600'}}>{t('modal.memberTags')}</Text>
         )}
@@ -621,6 +717,7 @@ export const MemberModal = ({visible, theme: T, member, members, groups, setting
             <Btn T={T} onPress={addTag} style={{paddingHorizontal: 12, paddingVertical: 9}}>{t('common.add')}</Btn>
           </View>
         )}
+        </>)}
 
         {(!readOnly || f.description) && (
           <View style={{marginBottom: 14}}>
@@ -928,7 +1025,8 @@ export const JournalModal = ({visible, theme: T, entry, members, templates, onSa
   const [authorSearch, setAuthorSearch] = useState('');
   const [showBodyEditor, setShowBodyEditor] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
-  React.useEffect(() => { if (visible) { const fresh = entry || {id: uid(), title: '', body: '', authorIds: [], hashtags: [], timestamp: Date.now()}; setF(fresh); setShowPwField(!!fresh.password); setTagInput(''); setAuthorSearch(''); setShowBodyEditor(false); setShowTemplatePicker(false); } }, [visible, entry]);
+  const [viewMode, setViewMode] = useState(!isNew);
+  React.useEffect(() => { if (visible) { const fresh = entry || {id: uid(), title: '', body: '', authorIds: [], hashtags: [], timestamp: Date.now()}; setF(fresh); setShowPwField(!!fresh.password); setTagInput(''); setAuthorSearch(''); setShowBodyEditor(false); setShowTemplatePicker(false); setViewMode(!!entry); } }, [visible, entry]);
   const set = (k: keyof JournalEntry, v: any) => setF(x => ({...x, [k]: v}));
   const togAuthor = (id: string) => set('authorIds', (f.authorIds || []).includes(id) ? (f.authorIds || []).filter((i: string) => i !== id) : [...(f.authorIds || []), id]);
   const addTag = () => { const raw = tagInput.trim().replace(/^#/, '').toLowerCase(); if (!raw) return; const cur = f.hashtags || []; if (!cur.includes(`#${raw}`)) set('hashtags', [...cur, `#${raw}`]); setTagInput(''); };
@@ -940,7 +1038,44 @@ export const JournalModal = ({visible, theme: T, entry, members, templates, onSa
   const canUseTemplates = isNew && templateList.length > 0;
 
   return (
-    <Sheet visible={visible} title={isNew ? t('modal.newEntry') : t('modal.editEntry')} theme={T} onClose={onClose} footer={<Btn T={T} onPress={() => {onSave({...f, timestamp: isNew ? Date.now() : f.timestamp, password: showPwField && f.password ? f.password : undefined}); onClose();}}>{t('common.save')}</Btn>}>
+    <Sheet visible={visible} title={viewMode ? t('modal.viewEntry') : isNew ? t('modal.newEntry') : t('modal.editEntry')} theme={T} onClose={onClose}
+      footer={viewMode
+        ? <Btn instant T={T} onPress={() => setViewMode(false)}>{t('common.edit')}</Btn>
+        : <Btn instant T={T} onPress={() => {onSave({...f, timestamp: isNew ? Date.now() : f.timestamp, password: showPwField && f.password ? f.password : undefined}); onClose();}}>{t('common.save')}</Btn>}>
+      {viewMode ? (
+        <>
+          <Text style={{fontFamily: Fonts.display, fontSize: fs(20), fontWeight: '600', fontStyle: 'italic', color: T.text, marginBottom: 4}}>{f.title || t('common.untitled')}</Text>
+          <Text style={{fontSize: fs(11), color: T.muted, marginBottom: 14}}>{fmtTime(f.timestamp)}</Text>
+          {f.body ? (
+            <View style={{backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderRadius: 8, padding: 12, marginBottom: 14}}>
+              <RichDescription text={f.body} T={T} members={members} onMentionPress={onMentionPress} />
+            </View>
+          ) : null}
+          {(f.hashtags || []).length > 0 && (
+            <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 14}}>
+              {(f.hashtags || []).map((tag: string) => (
+                <View key={tag} style={{paddingHorizontal: 9, paddingVertical: 4, borderRadius: 999, backgroundColor: `${T.info}18`, borderWidth: 1, borderColor: `${T.info}40`}}>
+                  <Text style={{fontSize: fs(12), color: T.info}}>{tag}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+          {(f.authorIds || []).length > 0 && (
+            <>
+              <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 8, fontWeight: '600'}}>{t('modal.authors')}</Text>
+              <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 14}}>
+                {(f.authorIds || []).map((id: string) => { const m = members.find((x: Member) => x.id === id); if (!m) return null; return (
+                  <View key={id} style={{flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: `${m.color}20`, borderWidth: 1, borderColor: `${m.color}50`}}>
+                    <View style={{width: 7, height: 7, borderRadius: 3.5, backgroundColor: m.color}} />
+                    <Text style={{fontSize: fs(12), color: m.color}}>{m.name}</Text>
+                  </View>
+                ); })}
+              </View>
+            </>
+          )}
+        </>
+      ) : (
+      <>
       {canUseTemplates && (
         <View style={{marginBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 8}}>
           <Text style={{flex: 1, fontSize: fs(11), color: T.muted}}>
@@ -1048,6 +1183,8 @@ export const JournalModal = ({visible, theme: T, entry, members, templates, onSa
           </TouchableOpacity>
         </Modal>
       )}
+      </>
+      )}
     </Sheet>
   );
 };
@@ -1090,10 +1227,10 @@ export const JournalTemplateModal = ({visible, theme: T, template, onSave, onDel
         <>
           {!isNew && (
             confirmDel
-              ? <Btn variant="danger" T={T} onPress={() => {onDelete?.(f.id); onClose();}}>{t('common.confirm')}</Btn>
-              : <Btn variant="ghost" T={T} onPress={() => setConfirmDel(true)}>{t('common.delete')}</Btn>
+              ? <Btn instant variant="danger" T={T} onPress={() => {onDelete?.(f.id); onClose();}}>{t('common.confirm')}</Btn>
+              : <Btn instant variant="ghost" T={T} onPress={() => setConfirmDel(true)}>{t('common.delete')}</Btn>
           )}
-          <Btn T={T} onPress={() => {
+          <Btn instant T={T} onPress={() => {
             if (!f.name.trim()) return;
             onSave({...f, name: f.name.trim(), title: f.title.trim()});
             onClose();
@@ -1167,10 +1304,13 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
   const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(settings?.language || 'en');
   const [notifEnabled, setNotifEnabled] = useState<boolean>(settings?.notificationsEnabled ?? true);
   const [frontCheckInterval, setFrontCheckInterval] = useState<number>(settings?.frontCheckInterval || 0);
+  const [notifRefreshMins, setNotifRefreshMins] = useState<number>(settings?.notificationRefreshMinutes || 0);
+  const [showNotifRefreshPicker, setShowNotifRefreshPicker] = useState(false);
   const [noteboardNotifs, setNoteboardNotifs] = useState<boolean>(settings?.noteboardNotifications ?? false);
   const [appLockPw, setAppLockPw] = useState<string>(settings?.appLockPassword || '');
   const [showAppLockPw, setShowAppLockPw] = useState<boolean>(!!settings?.appLockPassword);
   const [filesEnabled, setFilesEnabled] = useState<boolean>(settings?.filesEnabled ?? true);
+  const [singletMode, setSingletMode] = useState<boolean>(settings?.accountMode === 'singlet');
   const [textScale, setTextScale] = useState<TextScale>(settings?.textScale ?? 1.0);
   const [fontChoice, setFontChoice] = useState<FontChoice>(settings?.fontChoice ?? (settings?.useDyslexicFont === true ? 'opendyslexic' : 'default'));
   const [showLangPicker, setShowLangPicker] = useState(false);
@@ -1189,7 +1329,7 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
     finally { setAvatarLinking(false); }
   };
 
-  React.useEffect(() => { if (visible) { setShowAvatarLink(false); setAvatarLinkInput(''); setAvatarLinking(false); setF({...system}); setShowJournalPw(!!system.journalPassword); setLocs(settings?.locations || []); setMoods(settings?.customMoods || []); setNewLocation(''); setNewMood(''); setSelectedLang(settings?.language || 'en'); setNotifEnabled(settings?.notificationsEnabled ?? true); setFilesEnabled(settings?.filesEnabled ?? true); setTextScale(settings?.textScale ?? 1.0); setFontChoice(settings?.fontChoice ?? (settings?.useDyslexicFont === true ? 'opendyslexic' : 'default')); setShowLangPicker(false); setShowFrontCheckPicker(false); setEditPalette(null); setFrontCheckInterval(settings?.frontCheckInterval || 0); setNoteboardNotifs(settings?.noteboardNotifications ?? false); setAppLockPw(settings?.appLockPassword || ''); setShowAppLockPw(!!settings?.appLockPassword); } }, [visible, system, settings]);
+  React.useEffect(() => { if (visible) { setShowAvatarLink(false); setAvatarLinkInput(''); setAvatarLinking(false); setF({...system}); setShowJournalPw(!!system.journalPassword); setLocs(settings?.locations || []); setMoods(settings?.customMoods || []); setNewLocation(''); setNewMood(''); setSelectedLang(settings?.language || 'en'); setNotifEnabled(settings?.notificationsEnabled ?? true); setFilesEnabled(settings?.filesEnabled ?? true); setSingletMode(settings?.accountMode === 'singlet'); setTextScale(settings?.textScale ?? 1.0); setFontChoice(settings?.fontChoice ?? (settings?.useDyslexicFont === true ? 'opendyslexic' : 'default')); setShowLangPicker(false); setShowFrontCheckPicker(false); setEditPalette(null); setFrontCheckInterval(settings?.frontCheckInterval || 0); setNotifRefreshMins(settings?.notificationRefreshMinutes || 0); setShowNotifRefreshPicker(false); setNoteboardNotifs(settings?.noteboardNotifications ?? false); setAppLockPw(settings?.appLockPassword || ''); setShowAppLockPw(!!settings?.appLockPassword); } }, [visible, system, settings]);
 
   const addLoc = () => {if (newLocation.trim() && !locs.includes(newLocation.trim())) {setLocs([...locs, newLocation.trim()]); setNewLocation('');}};
   const addMood = () => {if (newMood.trim() && !moods.includes(newMood.trim())) {setMoods([...moods, newMood.trim()]); setNewMood('');}};
@@ -1223,14 +1363,15 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
 
 
   return (
-    <Sheet visible={visible} title={t('modal.systemSettings')} theme={T} onClose={onClose} footer={<Btn T={T} onPress={() => {
+    <Sheet visible={visible} title={t('modal.systemSettings')} theme={T} onClose={onClose} footer={<Btn instant T={T} onPress={() => {
       onSave({...f, journalPassword: showJournalPw && f.journalPassword ? f.journalPassword : undefined});
-      onSaveSettings({...settings, locations: locs, customMoods: moods, language: selectedLang, notificationsEnabled: notifEnabled, filesEnabled, textScale, fontChoice, useDyslexicFont: fontChoice === 'opendyslexic', frontCheckInterval, noteboardNotifications: noteboardNotifs, appLockPassword: showAppLockPw && appLockPw ? appLockPw : undefined});
+      onSaveSettings({...settings, accountMode: singletMode ? 'singlet' : 'system', locations: locs, customMoods: moods, language: selectedLang, notificationsEnabled: notifEnabled, filesEnabled, textScale, fontChoice, useDyslexicFont: fontChoice === 'opendyslexic', frontCheckInterval, notificationRefreshMinutes: notifRefreshMins, noteboardNotifications: noteboardNotifs, appLockPassword: showAppLockPw && appLockPw ? appLockPw : undefined});
       onClose();
     }}>{t('common.save')}</Btn>}>
-      <Field label={t('modal.systemName')} value={f.name} onChange={(v: string) => setF((x: any) => ({...x, name: v}))} placeholder={t('modal.systemNamePlaceholder')} T={T} />
-      <Field label={t('modal.descriptionLabel')} value={f.description} onChange={(v: string) => setF((x: any) => ({...x, description: v}))} placeholder={t('modal.descriptionFieldPlaceholder')} multiline numberOfLines={3} T={T} />
+      <Field label={singletMode ? t('modal.name') : t('modal.systemName')} value={f.name} onChange={(v: string) => setF((x: any) => ({...x, name: v}))} placeholder={singletMode ? t('setup.yourNamePlaceholder') : t('modal.systemNamePlaceholder')} T={T} />
+      <Field label={singletMode ? t('modal.goals') : t('modal.descriptionLabel')} value={f.description} onChange={(v: string) => setF((x: any) => ({...x, description: v}))} placeholder={singletMode ? t('setup.goalsPlaceholder') : t('modal.descriptionFieldPlaceholder')} multiline numberOfLines={3} T={T} />
 
+      {!singletMode && (<>
       <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 8, marginTop: 14, fontWeight: '600'}}>{t('systemProfile.title')}</Text>
       <View style={{flexDirection: 'row', gap: 12, marginBottom: 14, alignItems: 'flex-start'}}>
         <TouchableOpacity onPress={async () => {
@@ -1276,6 +1417,7 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
           <Btn T={T} disabled={avatarLinking || !avatarLinkInput.trim()} onPress={applyAvatarLink} style={{paddingHorizontal: 12, paddingVertical: 9}}>{t('common.add')}</Btn>
         </View>
       )}
+      </>)}
 
       <View style={{borderTopWidth: 1, borderTopColor: T.border, paddingTop: 14, marginTop: 4}}>
         <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, marginBottom: 8, fontWeight: '600'}}>{t('modal.palette')}</Text>
@@ -1401,6 +1543,34 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
           )}
         </View>
 
+        <View style={{marginTop: 12}}>
+          <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 4}}>{t('notification.refreshTitle')}</Text>
+          <Text style={{fontSize: fs(11), color: T.muted, lineHeight: 15, marginBottom: 8}}>{t('notification.refreshDesc')}</Text>
+          <TouchableOpacity onPress={() => setShowNotifRefreshPicker(!showNotifRefreshPicker)} activeOpacity={0.7}
+            accessibilityRole="button" accessibilityState={{expanded: showNotifRefreshPicker}} accessibilityLabel={t('notification.refreshTitle')} accessibilityValue={{text: notifRefreshMins === 0 ? t('notification.off') : notifRefreshMins < 60 ? t('notification.everyNMinutes', {count: notifRefreshMins}) : t('notification.everyNHours', {count: notifRefreshMins / 60})}}
+            style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, borderWidth: 1, backgroundColor: T.surface, borderColor: showNotifRefreshPicker ? `${T.accent}60` : T.border}}>
+            <Text style={{fontSize: fs(14), color: T.text}}>{notifRefreshMins === 0 ? t('notification.off') : notifRefreshMins < 60 ? t('notification.everyNMinutes', {count: notifRefreshMins}) : t('notification.everyNHours', {count: notifRefreshMins / 60})}</Text>
+            <Text style={{fontSize: fs(12), color: T.dim}} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{showNotifRefreshPicker ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
+          {showNotifRefreshPicker && (
+            <View style={{backgroundColor: T.card, borderRadius: 8, borderWidth: 1, borderColor: T.border, marginTop: 4, overflow: 'hidden'}}>
+              {[0, 15, 30, 60, 240, 480, 720, 1440].map(mins => {
+                const label = mins === 0 ? t('notification.off') : mins < 60 ? t('notification.everyNMinutes', {count: mins}) : t('notification.everyNHours', {count: mins / 60});
+                return (
+                  <TouchableOpacity key={mins} onPress={() => {setNotifRefreshMins(mins); setShowNotifRefreshPicker(false);}} activeOpacity={0.7}
+                    accessibilityRole="menuitem" accessibilityState={{selected: notifRefreshMins === mins}} accessibilityLabel={label}
+                    style={{paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: T.border,
+                      backgroundColor: notifRefreshMins === mins ? `${T.accent}15` : 'transparent'}}>
+                    <Text style={{fontSize: fs(14), color: notifRefreshMins === mins ? T.accent : T.text, fontWeight: notifRefreshMins === mins ? '600' : '400'}}>
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+        </View>
+
         <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14}}>
           <View style={{flex: 1}}>
             <Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 4}}>{t('notification.noteboard')}</Text>
@@ -1468,11 +1638,15 @@ export const SystemModal = ({visible, theme: T, system, settings, palettes, acti
           <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 8}}>{items.map((l: string) => (<TouchableOpacity key={l} onPress={() => setItems(items.filter((x: string) => x !== l))} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={`${t('common.remove')} ${l}`} style={{flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1, borderColor: T.border, backgroundColor: T.surface}}><Text style={{fontSize: fs(12), color: T.dim}}>{l}</Text><Text style={{fontSize: fs(10), color: T.danger}} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">✕</Text></TouchableOpacity>))}</View>
           <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}><TextInput value={val} onChangeText={setVal} placeholder={placeholder} placeholderTextColor={T.muted} style={{flex: 1, backgroundColor: T.surface, color: T.text, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontSize: fs(13)}} onSubmitEditing={add} returnKeyType="done" /><Btn T={T} onPress={add} style={{paddingHorizontal: 12, paddingVertical: 9}}>{t('common.add')}</Btn></View>
         </View>))}
+      <View style={{borderTopWidth: 1, borderTopColor: T.border, paddingTop: 14, marginTop: 14}}>
+        <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}><View style={{flex: 1}}><Text style={{fontSize: fs(10), letterSpacing: 1, textTransform: 'uppercase', color: T.dim, fontWeight: '600', marginBottom: 4}}>{t('settings.observatory')}</Text><Text style={{fontSize: fs(11), color: T.muted, lineHeight: 15}}>{t('settings.observatoryDesc')}</Text></View>
+          <TouchableOpacity onPress={() => setSingletMode(!singletMode)} activeOpacity={0.8} accessibilityRole="switch" accessibilityState={{checked: singletMode}} accessibilityLabel={t('settings.observatory')} style={{width: 40, height: 22, borderRadius: 11, backgroundColor: singletMode ? T.accent : T.toggleOff, justifyContent: 'center', marginLeft: 12}}><View style={{width: 16, height: 16, borderRadius: 8, backgroundColor: '#fff', position: 'absolute', left: singletMode ? 20 : 3}} /></TouchableOpacity></View>
+      </View>
     </Sheet>
   );
 };
 
-export const CustomFrontModal = ({visible, theme: T, customFront, onSave, onDelete, onClose, isFronting = false}: any) => {
+export const CustomFrontModal = ({visible, theme: T, customFront, onSave, onDelete, onClose, isFronting = false, statusMode = false}: any) => {
   const {t} = useTranslation();
   const fs = (s: number) => Math.round(s * (T.textScale || 1));
   const isNew = !customFront;
@@ -1508,11 +1682,11 @@ export const CustomFrontModal = ({visible, theme: T, customFront, onSave, onDele
   const removePfp = async () => { await deleteAvatar(f.id); set('avatar', undefined); };
 
   return (
-    <Sheet visible={visible} title={isNew ? t('customFront.add') : t('customFront.edit')} theme={T} onClose={onClose} footer={<>
-      {!isNew && !confirmDel && <Btn variant="danger" T={T} disabled={isFronting} onPress={() => setConfirmDel(true)}>{t('common.delete')}</Btn>}
-      {confirmDel && (<><Btn variant="danger" T={T} onPress={() => {onDelete(f.id); onClose();}}>{t('modal.confirmDelete')}</Btn><Btn variant="ghost" T={T} onPress={() => setConfirmDel(false)}>{t('common.cancel')}</Btn></>)}
-      {!confirmDel && <Btn variant="ghost" T={T} onPress={onClose}>{t('common.cancel')}</Btn>}
-      {!confirmDel && <Btn T={T} onPress={() => {if (f.name.trim()) {onSave({...f, isCustomFront: true}); onClose();}}}>{t('common.save')}</Btn>}</>}>
+    <Sheet visible={visible} title={statusMode ? (isNew ? t('status.add') : t('status.edit')) : (isNew ? t('customFront.add') : t('customFront.edit'))} theme={T} onClose={onClose} footer={<>
+      {!isNew && !confirmDel && <Btn instant variant="danger" T={T} disabled={isFronting} onPress={() => setConfirmDel(true)}>{t('common.delete')}</Btn>}
+      {confirmDel && (<><Btn instant variant="danger" T={T} onPress={() => {onDelete(f.id); onClose();}}>{t('modal.confirmDelete')}</Btn><Btn instant variant="ghost" T={T} onPress={() => setConfirmDel(false)}>{t('common.cancel')}</Btn></>)}
+      {!confirmDel && <Btn instant variant="ghost" T={T} onPress={onClose}>{t('common.cancel')}</Btn>}
+      {!confirmDel && <Btn instant T={T} onPress={() => {if (f.name.trim()) {onSave({...f, isCustomFront: true}); onClose();}}}>{t('common.save')}</Btn>}</>}>
       <View style={{alignItems: 'center', marginBottom: 16}}>
         <TouchableOpacity onPress={pickPfp} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={t('modal.changePfp')}>
           {f.avatar ? (

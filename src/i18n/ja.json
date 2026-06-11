@@ -58,7 +58,9 @@
     "members": "メンバー",
     "hub": "ハブ",
     "journal": "ジャーナル",
-    "history": "履歴"
+    "history": "履歴",
+    "status": "ステータス",
+    "profile": "プロフィール"
   },
   "tier": {
     "primaryFront": "プライマリフロント",
@@ -79,7 +81,42 @@
     "systemNamePlaceholder": "例：私たちのシステム",
     "description": "説明（任意）",
     "descriptionPlaceholder": "簡単な説明…",
-    "enter": "開始"
+    "enter": "開始",
+    "subtitleSinglet": "パーソナルスペースを設定して始めましょう。",
+    "yourName": "あなたの名前 *",
+    "yourNamePlaceholder": "例：Alex",
+    "goals": "目標（任意）",
+    "goalsPlaceholder": "何を記録したいですか？目指したいことは？",
+    "observatory": "天文台",
+    "observatoryHint": "お一人ですか？個人向けインターフェースに切り替え — ステータス記録付きのパーソナルジャーナルです。"
+  },
+  "status": {
+    "current": "現在のステータス",
+    "update": "ステータスを更新",
+    "noneSet": "ステータスが未設定です。「ステータスを更新」をタップしてチェックインしましょう。",
+    "noStatuses": "ステータスが選択されていません。",
+    "statuses": "ステータス",
+    "since": "{{time}} から",
+    "editDetails": "ステータスの詳細を編集",
+    "add": "ステータスを追加",
+    "edit": "ステータスを編集",
+    "clearTitle": "ステータスをクリアしますか？",
+    "clearMsg": "ステータスがクリアされ、現在のセッションの終了が記録されます。続行しますか？"
+  },
+  "profile": {
+    "edit": "プロフィールを編集",
+    "notSetUp": "プロフィールは未設定です",
+    "noDescription": "まだ説明がありません。「プロフィールを編集」をタップして追加してください。",
+    "statuses": "ステータス",
+    "addStatus": "+ ステータスを追加",
+    "statusesDesc": "ステータスは今の自分の状態を表します — 例：睡眠中、仕事中、不安。ステータス更新時に選択できます。",
+    "noStatuses": "まだステータスがありません。まず 1 つ追加しましょう。",
+    "activeStatus": "適用中",
+    "favoriteColor": "好きな色"
+  },
+  "settings": {
+    "observatory": "天文台インターフェース（個人）",
+    "observatoryDesc": "おひとり向けモード：「ステータス」と「プロフィール」タブが「フロント」と「メンバー」に置き換わり、システム専用ツールが非表示になります。"
   },
   "front": {
     "currentlyFronting": "現在のフロント",
@@ -149,6 +186,11 @@
     "noteUpdated": "メモが更新されました",
     "journalEntry": "ジャーナルエントリ",
     "frontSwitch": "フロント切替",
+    "statusHistory": "ステータス履歴",
+    "byStatus": "ステータス別",
+    "searchStatus": "ステータスを検索…",
+    "statusChange": "ステータス変更",
+    "noHistorySinglet": "まだ履歴がありません。ステータスの更新は自動的にここに表示されます。",
     "tierSuffix": " ({{tier}})",
     "now": "現在",
     "mood": "気分",
@@ -300,6 +342,8 @@
     "importCategories": "これらのカテゴリをインポート",
     "controlVisibility": "共有エクスポートとメール要約の表示内容を制御。",
     "showCurrentFront": "現在のフロントを表示",
+    "showCurrentStatus": "現在のステータスを表示",
+    "nameGoals": "名前と目標",
     "showMemberList": "メンバーリストを表示",
     "showMemberDescriptions": "メンバーの説明を表示",
     "preview": "プレビュー",
@@ -433,6 +477,8 @@
     "systemSettings": "システム設定",
     "systemName": "システム名",
     "systemNamePlaceholder": "あなたのシステム名",
+    "goals": "目標",
+    "viewEntry": "ジャーナルエントリ",
     "descriptionLabel": "説明",
     "descriptionFieldPlaceholder": "簡単な説明…",
     "globalJournalPassword": "グローバルジャーナルパスワード",
@@ -498,6 +544,10 @@
     "frontCheckDesc": "フロントの確認をリマインド。",
     "frontCheckInterval": "チェック間隔",
     "everyNHours": "{{count}} 時間ごと",
+    "everyNMinutes": "{{count}} 分ごと",
+    "off": "オフ",
+    "refreshTitle": "通知の再表示",
+    "refreshDesc": "常駐通知を定期的に再投稿し、通知シェードの上部付近に保ちます。",
     "whosFronting": "今誰がフロントしていますか？",
     "noteboard": "掲示板通知",
     "noteboardDesc": "フロントのメンバーの掲示板に未読のメモがあるときに通知する。",
@@ -536,7 +586,8 @@
     "allGroups": "すべてのグループ",
     "addPlaceholder": "新しいグループ名…",
     "deleteGroup": "グループを削除",
-    "deleteGroupMsg": "このグループを削除しますか？メンバーは削除されません。"
+    "deleteGroupMsg": "このグループを削除しますか？メンバーは削除されません。",
+    "deleteWithChildrenMsg": "{{count}} 件の入れ子項目が含まれています。1 つ上の階層に残しますか、それともすべて削除しますか？"
   },
   "stats": {
     "showMore": "もっと見る",
@@ -549,6 +600,9 @@
     "sessions": "セッション",
     "messages": "メッセージ",
     "topFronters": "トップフロンター",
+    "topStatuses": "よく使うステータス",
+    "statusDetails": "ステータスの詳細",
+    "coStatuses": "よく同時に有効",
     "topCoFronters": "トップコフロンター",
     "topCoCon": "トップコーコンシャス",
     "topChatters": "トップチャッター",

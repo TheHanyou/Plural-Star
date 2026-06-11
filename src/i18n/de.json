@@ -58,7 +58,9 @@
     "members": "Mitglieder",
     "hub": "Zentrum",
     "journal": "Tagebuch",
-    "history": "Verlauf"
+    "history": "Verlauf",
+    "status": "Status",
+    "profile": "Profil"
   },
   "tier": {
     "primaryFront": "Primärer Front",
@@ -79,7 +81,42 @@
     "systemNamePlaceholder": "z.B. Das Hanyou System",
     "description": "BESCHREIBUNG (OPTIONAL)",
     "descriptionPlaceholder": "Eine kurze Beschreibung…",
-    "enter": "Eintreten"
+    "enter": "Eintreten",
+    "subtitleSinglet": "Richte deinen persönlichen Bereich ein, um zu beginnen.",
+    "yourName": "DEIN NAME *",
+    "yourNamePlaceholder": "z.B. Alex",
+    "goals": "ZIELE (OPTIONAL)",
+    "goalsPlaceholder": "Was möchtest du festhalten oder erreichen?",
+    "observatory": "Observatorium",
+    "observatoryHint": "Nur eine Person? Wechsle zur Einzelperson-Oberfläche — ein persönliches Tagebuch mit Status-Tracking."
+  },
+  "status": {
+    "current": "Aktueller Status",
+    "update": "Status aktualisieren",
+    "noneSet": "Kein Status gesetzt. Tippe auf Status aktualisieren, um einzuchecken.",
+    "noStatuses": "Keine Status ausgewählt.",
+    "statuses": "Status",
+    "since": "Seit {{time}}",
+    "editDetails": "Statusdetails bearbeiten",
+    "add": "Status hinzufügen",
+    "edit": "Status bearbeiten",
+    "clearTitle": "Status löschen?",
+    "clearMsg": "Dadurch wird dein Status gelöscht und das Ende der aktuellen Sitzung protokolliert. Fortfahren?"
+  },
+  "profile": {
+    "edit": "Profil bearbeiten",
+    "notSetUp": "Profil noch nicht eingerichtet",
+    "noDescription": "Noch keine Beschreibung. Tippe auf Profil bearbeiten, um eine hinzuzufügen.",
+    "statuses": "Status",
+    "addStatus": "+ Status hinzufügen",
+    "statusesDesc": "Status beschreiben, wie es dir geht — z.B. Schlafend, Arbeitend oder Ängstlich. Wähle sie beim Aktualisieren deines Status aus.",
+    "noStatuses": "Noch keine Status. Füge einen hinzu, um zu beginnen.",
+    "activeStatus": "Aktiv",
+    "favoriteColor": "Lieblingsfarbe"
+  },
+  "settings": {
+    "observatory": "Observatorium-Oberfläche (Einzelperson)",
+    "observatoryDesc": "Einzelpersonen-Modus: Die Tabs Status und Profil ersetzen Front und Mitglieder, System-Werkzeuge werden ausgeblendet."
   },
   "front": {
     "currentlyFronting": "Aktuell am Front",
@@ -147,6 +184,11 @@
     "noteUpdated": "Notiz Aktualisiert",
     "journalEntry": "Tagebucheintrag",
     "frontSwitch": "Front-Wechsel",
+    "statusHistory": "Statusverlauf",
+    "byStatus": "Nach Status",
+    "searchStatus": "Status suchen…",
+    "statusChange": "Statusänderung",
+    "noHistorySinglet": "Noch kein Verlauf. Statusaktualisierungen erscheinen hier automatisch.",
     "tierSuffix": " ({{tier}})",
     "now": "jetzt",
     "mood": "Stimmung",
@@ -294,6 +336,8 @@
     "importCategories": "Diese Kategorien importieren",
     "controlVisibility": "Steuere, was in geteilten Exporten und E-Mail-Zusammenfassungen sichtbar ist.",
     "showCurrentFront": "Aktuellen Front anzeigen",
+    "showCurrentStatus": "Aktuellen Status anzeigen",
+    "nameGoals": "Name & Ziele",
     "showMemberList": "Mitgliederliste anzeigen",
     "showMemberDescriptions": "Mitgliederbeschreibungen anzeigen",
     "preview": "Vorschau",
@@ -398,6 +442,8 @@
     "systemSettings": "Systemeinstellungen",
     "systemName": "Systemname",
     "systemNamePlaceholder": "Der Name deines Systems",
+    "goals": "Ziele",
+    "viewEntry": "Tagebucheintrag",
     "descriptionLabel": "Beschreibung",
     "descriptionFieldPlaceholder": "Eine kurze Beschreibung…",
     "globalJournalPassword": "Globales Tagebuch-Passwort",
@@ -464,6 +510,10 @@
     "frontCheck": "Front-Erinnerung",
     "frontCheckDesc": "Regelmäßige Benachrichtigung, um den aktuellen Fronter zu prüfen.",
     "everyNHours": "Alle {{count}}h",
+    "everyNMinutes": "Alle {{count}} Min.",
+    "off": "Aus",
+    "refreshTitle": "Benachrichtigung auffrischen",
+    "refreshDesc": "Veröffentlicht die dauerhafte Benachrichtigung regelmäßig neu, damit sie oben in der Benachrichtigungsleiste bleibt.",
     "frontCheckInterval": "Intervall",
     "whosFronting": "Wer ist gerade am Front?",
     "noteboard": "Notizbrett-Benachrichtigungen",
@@ -503,7 +553,8 @@
     "allGroups": "Alle Gruppen",
     "addPlaceholder": "Gruppenname…",
     "deleteGroup": "Gruppe Löschen",
-    "deleteGroupMsg": "Diese Gruppe entfernen? Mitglieder werden nicht gelöscht."
+    "deleteGroupMsg": "Diese Gruppe entfernen? Mitglieder werden nicht gelöscht.",
+    "deleteWithChildrenMsg": "Enthält {{count}} verschachtelte Elemente. Behalten und eine Ebene nach oben verschieben, oder alles löschen?"
   },
   "hub": {
     "front": "Front",
@@ -549,6 +600,9 @@
     "sessions": "Sitzungen",
     "messages": "Nachrichten",
     "topFronters": "Top Fronter",
+    "topStatuses": "Top Status",
+    "statusDetails": "Statusdetails",
+    "coStatuses": "Oft gemeinsam aktiv",
     "topCoFronters": "Top Co-Fronter",
     "topCoCon": "Top Co-Bewusst",
     "topChatters": "Top Chatter",
