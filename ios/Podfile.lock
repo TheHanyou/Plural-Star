@@ -1424,7 +1424,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-blob-util (0.24.8):
+  - react-native-blob-util (0.24.9):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2339,7 +2339,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: fec3e025f0ffba6b32cd2a1d7bbdee3e269aae90
   React-microtasksnativemodule: ab33a818d339f5a1da308893c11b487be66121a8
   React-mutationobservernativemodule: a42d1626651ccd7d0dc02a56e69d4ec77c248893
-  react-native-blob-util: fee8f26813fcc4cb01008ba7f5b485b290d33bcc
+  react-native-blob-util: f73add8409fa1416c0856ccf91ac0d9f8c7e9c44
   react-native-document-picker: caf6e3dfe4f15da98b7082c9413bde2f19d0a0f1
   react-native-image-editor: 33cf9b239e7deecb3e378529f245ff49fe10ffd7
   react-native-image-picker: 23540feacc79c63c60857f318fdfa8477c26e70a
