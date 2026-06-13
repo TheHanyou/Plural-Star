@@ -82,12 +82,9 @@ Local-only IRC-style chat for your system. Create, rename, and organize channels
 
 **◉ System Journal**  
 Write journal entries with the same editor available in member profiles. Entries open in a clean read-only view with a one-tap Edit button. Pin important entries to the top of the list, and start new ones from saved templates with preset titles, bodies, and tags. Tag entries with authors (searchable by name), add topic hashtags (searchable by tag), and optionally lock individual entries or the entire journal behind passwords. Export individual entries or the full journal in `.txt`, `.md`, or `.json`.
-<<<<<<< HEAD
 
 **⚕ Medical**  
 Medication reminders, appointments, medical history, and emergency info in one Hub tile — available in both system and Observatory modes. Medications support dosage, multiple daily reminder times, notes, and a pause toggle. Appointments take a date and time, location, and a remind-before offset (at time, 30 minutes, 1 hour, or 1 day). Keep a dated medical history of conditions, surgeries, and diagnoses. The Emergency section stores conditions, allergies, and blood type — and can display them on the persistent notification, visible from the lock screen for first responders.
-=======
->>>>>>> 2b8de1374047d567f2b7ea8d834af384c00674ae
 
 **⇅ Import & Export**  
 Migrating from another app? Import your full system data — members, history, custom fields, and system info — from Simply Plural, PluralKit, Octocon, Ampersand, Ourcana, HiveMind, or PluralSpace, via API token or export file. Co-fronting sessions from Simply Plural are correctly grouped into combined entries. Profile pictures are imported from avatar URLs. Custom field names and values are mapped automatically with bidirectional ID normalization.
@@ -95,11 +92,8 @@ Migrating from another app? Import your full system data — members, history, c
 Export your full system data as JSON (reimportable), HTML (opens in Google Docs), or send a formatted summary to any email address. Granular per-category toggles — pick exactly what to export or restore: system info, members, avatars, banners, front history, journal, groups, chat, moods, palettes, settings, custom fields, noteboards, polls, System Map relationships, medical. Import `.txt`, `.md`, or `.json` files directly as journal entries.
 
 **🌐 Multilingual**  
-<<<<<<< HEAD
+
 Full interface available in English, Español, Français, Deutsch, Português, Suomi, Norsk, Italiano, Türkçe, Bahasa Melayu, Tiếng Việt, ไทย, 简体中文, 繁體中文, 日本語, Русский, and Українська — 17 languages total. Auto-detects your device language on first launch, including Traditional vs Simplified Chinese by region. Change anytime via the dropdown in System Settings.
-=======
-Full interface available in English, Español, Français, Deutsch, Português, Suomi, Norsk, Русский, Українська, 中文, and 日本語 — 11 languages total. Auto-detects your device language on first launch. Change anytime via the dropdown in System Settings.
->>>>>>> 2b8de1374047d567f2b7ea8d834af384c00674ae
 
 **Other Features**
 - Obsidian Blue dark theme and Steel light theme built-in, plus 10 custom palette slots — define your own four-color theme
